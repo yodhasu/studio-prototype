@@ -3,12 +3,12 @@
     <div class="mx-auto max-w-7xl space-y-8">
       <header class="flex items-end justify-between">
         <div>
-          <h1 class="font-display text-2xl font-bold tracking-tight text-text">Today's Mission</h1>
-          <p class="mt-1 text-sm text-muted">Active production workstreams and priority deliverables.</p>
+          <h1 class="font-display text-2xl font-bold tracking-tight text-text">Workspace Overview</h1>
+          <p class="mt-1 text-sm text-muted">A top-level view of your current projects and upcoming tasks.</p>
         </div>
         <div class="view-switcher">
           <button class="view-switcher__btn active">Overview</button>
-          <NuxtLink to="/projects" class="view-switcher__btn">Project Hub</NuxtLink>
+          <NuxtLink to="/projects" class="view-switcher__btn">All Projects</NuxtLink>
         </div>
       </header>
 
@@ -17,22 +17,21 @@
           label="Active Projects" 
           :value="workspace.projects.length" 
           trend="Live" 
-          detail="Projects with active movement in the last 72h."
+          detail="Total number of ongoing projects in your workspace."
           tone="brand"
         />
         <DashboardMetricCard 
-          label="Team Load" 
-          value="84%" 
-          trend="Busy" 
-          detail="Total studio resource utilization."
-          tone="warning"
-          :progress="84"
+          label="Project Progression" 
+          :value="progressionValue" 
+          trend="Live" 
+          detail="Tasks finished across all projects"
+          tone="cyan"
         />
         <DashboardMetricCard 
           label="Upcoming Deadlines" 
           :value="workspace.tasks.length" 
           trend="Tracked" 
-          detail="Milestones due within the next 7 days."
+          detail="Tasks and milestones due within the next 7 days."
           tone="cyan"
         />
       </section>
@@ -41,8 +40,8 @@
         <div class="xl:col-span-8 space-y-6">
           <article class="dashboard-panel">
             <div class="flex items-center justify-between">
-              <h3 class="font-display text-lg font-bold text-text">Live Production Flow</h3>
-              <NuxtLink to="/projects" class="text-xs font-bold text-brand hover:underline">View All Projects</NuxtLink>
+              <h3 class="font-display text-lg font-bold text-text">Recent Projects</h3>
+              <NuxtLink to="/projects" class="text-xs font-bold text-brand hover:underline">View Directory</NuxtLink>
             </div>
             
             <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -56,7 +55,7 @@
                 <h4 class="mt-4 font-display font-bold text-text group-hover:text-brand transition-colors">{{ project.name }}</h4>
                 <div class="mt-4 flex items-center justify-between text-[11px] text-muted">
                   <div class="flex items-center gap-3">
-                    <span class="flex items-center gap-1"><FolderKanban class="h-3 w-3" /> {{ project.card_count }} cards</span>
+                    <span class="flex items-center gap-1"><FolderKanban class="h-3 w-3" /> {{ project.card_count }} boards</span>
                     <span class="flex items-center gap-1"><CalendarDays class="h-3 w-3" /> {{ project.task_count }} tasks</span>
                   </div>
                 </div>
@@ -67,8 +66,8 @@
 
         <div class="xl:col-span-4">
           <article class="dashboard-panel h-full">
-            <h3 class="font-display text-lg font-bold text-text">Priority Focus</h3>
-            <p class="mt-1 text-xs text-muted">Deliverables requiring immediate attention.</p>
+            <h3 class="font-display text-lg font-bold text-text">Upcoming Tasks</h3>
+            <p class="mt-1 text-xs text-muted">Items requiring your attention soon.</p>
             
             <div class="mt-6 space-y-4">
               <div v-for="task in workspace.tasks.slice(0, 5)" :key="task.id" class="flex items-center gap-4 p-3 rounded-lg border border-border bg-panel/30 hover:border-brand/30 transition-colors cursor-pointer">
@@ -94,6 +93,12 @@ import { useWorkspaceBoot } from '~/composables/useWorkspaceBoot'
 
 const workspace = useWorkspaceStore()
 const { ensureSession } = useWorkspaceBoot()
+
+const progressionValue = computed(() => {
+  const total = workspace.tasks.length
+  const finished = workspace.tasks.filter(t => t.status === 'DONE').length
+  return `${finished} / ${total}`
+})
 
 onMounted(async () => {
   await ensureSession()

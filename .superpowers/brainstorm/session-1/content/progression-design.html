@@ -1,0 +1,60 @@
+<h2>Designing the Progression Metric</h2>
+<p class="subtitle">You've chosen <strong>Project Progression</strong>. How should we display and calculate this to keep you focused and motivated?</p>
+
+<div class="cards">
+  <!-- Option 1: The Literal Progress -->
+  <div class="card" data-choice="literal" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: #111; padding: 20px; border-radius: 8px;">
+      <div style="font-size: 24px; font-weight: bold; color: #fff;">84%</div>
+      <div style="font-size: 10px; color: #888; text-transform: uppercase; margin-top: 5px;">Total Progress</div>
+      <div style="font-size: 12px; color: #555; margin-top: 10px;">42 of 50 tasks completed</div>
+    </div>
+    <div class="card-body">
+      <h3>The Literal View</h3>
+      <p>Shows the exact ratio of tasks completed. Best for pure transparency and accuracy.</p>
+    </div>
+  </div>
+
+  <!-- Option 2: The Weekly Sprints -->
+  <div class="card" data-choice="weekly" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: #111; padding: 20px; border-radius: 8px;">
+      <div style="font-size: 24px; font-weight: bold; color: #00d4ff;">84%</div>
+      <div style="font-size: 10px; color: #00d4ff; text-transform: uppercase; margin-top: 5px;">This Week</div>
+      <div style="font-size: 12px; color: #555; margin-top: 10px;">8 tasks left to finish the week</div>
+    </div>
+    <div class="card-body">
+      <h3>The Weekly Focus</h3>
+      <p>Only counts tasks due this week. Resets every Monday. Feels less overwhelming for big projects.</p>
+    </div>
+  </div>
+
+  <!-- Option 3: Milestone Momentum -->
+  <div class="card" data-choice="milestone" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: #111; padding: 20px; border-radius: 8px;">
+      <div style="font-size: 24px; font-weight: bold; color: #ff0055;">84%</div>
+      <div style="font-size: 10px; color: #ff0055; text-transform: uppercase; margin-top: 5px;">Current Milestone</div>
+      <div style="font-size: 12px; color: #555; margin-top: 10px;">Stage: Rendering (9/12 tasks)</div>
+    </div>
+    <div class="card-body">
+      <h3>Milestone View</h3>
+      <p>Focuses on the current production stage (e.g. Lineart, Color, Polish) of your most active project.</p>
+    </div>
+  </div>
+</div>
+
+<div class="pros-cons">
+  <div class="pros">
+    <h4>Why Option A?</h4>
+    <ul>
+      <li>Most accurate for long-term tracking</li>
+      <li>Simple to understand immediately</li>
+    </ul>
+  </div>
+  <div class="cons">
+    <h4>Considerations</h4>
+    <ul>
+      <li>Option B keeps you moving faster</li>
+      <li>Option C feels the most "Art-Workflow" centric</li>
+    </ul>
+  </div>
+</div>
