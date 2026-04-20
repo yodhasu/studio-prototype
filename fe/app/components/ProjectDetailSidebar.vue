@@ -1,6 +1,6 @@
 <template>
   <USlideover v-model="isOpen">
-    <div class="p-8 flex-1 flex flex-col h-full bg-slate-900 border-l border-border/50">
+    <div class="p-8 flex-1 flex flex-col h-full overflow-hidden bg-surface border-l border-border/50 shadow-[0_0_40px_rgba(0,0,0,0.1)]">
       <div class="flex items-start justify-between mb-8">
         <div class="flex-1">
           <h2 class="text-2xl font-bold text-text font-display">{{ project?.name || 'Project Details' }}</h2>

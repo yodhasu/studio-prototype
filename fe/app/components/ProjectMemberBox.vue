@@ -6,13 +6,14 @@
     <div class="flex flex-col">
       <span class="text-xs font-bold text-muted uppercase tracking-wider">Assigned Members</span>
       <div class="mt-2 flex -space-x-2 overflow-hidden">
-        <div 
+        <UAvatar 
           v-for="member in projectMembers" 
           :key="member.id"
-          class="inline-block ring-2 ring-surface rounded-full overflow-hidden w-8 h-8"
-        >
-          <UAvatar :src="member.avatar_url" :alt="member.name" size="xs" />
-        </div>
+          :src="member.avatar_url" 
+          :alt="member.name" 
+          size="sm"
+          class="ring-2 ring-surface bg-brand/10 text-brand font-bold"
+        />
         <div v-if="projectMembers.length === 0" class="text-sm italic text-faint">No members assigned</div>
       </div>
     </div>
