@@ -10,11 +10,20 @@ export interface Project {
   id: string
   org_id: string
   name: string
+  description?: string
   color_code?: string | null
   status: string
   current_user_role?: ProjectRole
   card_count: number
   task_count: number
+  member_ids?: string[]
+}
+
+export interface StudioMember {
+  id: string
+  name: string
+  avatar_url?: string
+  role: string
 }
 
 export interface Card {
@@ -46,6 +55,10 @@ export interface Task {
   card_title: string
   project_id: string
   project_name: string
+  description?: string
+  due_date: string
+  priority: 'LOW' | 'MEDIUM' | 'HIGH'
+  assignee_id?: string
 }
 
 export const useWorkspaceStore = defineStore('workspace', {
@@ -54,6 +67,7 @@ export const useWorkspaceStore = defineStore('workspace', {
     edges: MOCK_EDGES as CardEdge[],
     projects: MOCK_PROJECTS as Project[],
     tasks: MOCK_TASKS as Task[],
+    members: MOCK_PROJECT_ACTIVITY.map(a => ({ id: a.user.replace(' ', '').toLowerCase(), name: a.user, role: 'Artist' })) as StudioMember[],
     currentProject: MOCK_PROJECTS[0] as Project | null,
     dashboardMetrics: MOCK_DASHBOARD_SUMMARY,
     loading: false,

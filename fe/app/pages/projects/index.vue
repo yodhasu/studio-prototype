@@ -22,11 +22,11 @@
       </div>
 
       <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <NuxtLink 
+        <div 
           v-for="project in workspace.projects" 
           :key="project.id" 
-          :to="`/projects/${project.id}`"
-          class="project-card group"
+          class="project-card group cursor-pointer"
+          @click="openProject(project.id)"
         >
           <div class="flex items-start justify-between">
             <div class="h-12 w-12 rounded-xl flex items-center justify-center font-bold text-lg" :style="{ backgroundColor: project.color_code + '20', color: project.color_code }">
@@ -44,9 +44,15 @@
             </div>
             <ArrowRight class="h-4 w-4 text-faint group-hover:translate-x-1 group-hover:text-brand transition-all" />
           </div>
-        </NuxtLink>
+        </div>
       </div>
     </div>
+
+    <!-- Project Detail Sidebar -->
+    <ProjectDetailSidebar 
+      v-model="isSidebarOpen" 
+      :project-id="selectedProjectId" 
+    />
   </div>
 </template>
 
@@ -59,6 +65,13 @@ import { useWorkspaceBoot } from '~/composables/useWorkspaceBoot'
 const workspace = useWorkspaceStore()
 const { ensureSession } = useWorkspaceBoot()
 const createProject = ref(false)
+const isSidebarOpen = ref(false)
+const selectedProjectId = ref<string | null>(null)
+
+function openProject(id: string) {
+  selectedProjectId.value = id
+  isSidebarOpen.value = true
+}
 
 onMounted(async () => {
   await ensureSession()
