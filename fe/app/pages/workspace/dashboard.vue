@@ -6,10 +6,6 @@
           <h1 class="font-display text-2xl font-bold tracking-tight text-text">Workspace Overview</h1>
           <p class="mt-1 text-sm text-muted">A top-level view of your current projects and upcoming tasks.</p>
         </div>
-        <div class="view-switcher">
-          <button class="view-switcher__btn active">Overview</button>
-          <NuxtLink to="/projects" class="view-switcher__btn">All Projects</NuxtLink>
-        </div>
       </header>
 
       <section class="grid grid-cols-1 gap-6 lg:grid-cols-3">
