@@ -6,10 +6,20 @@
           <h1 class="font-display text-2xl font-bold tracking-tight text-text">Production Hub</h1>
           <p class="mt-1 text-sm text-muted">Manage all active studio productions.</p>
         </div>
-        <button class="btn btn-primary">
+        <button class="btn btn-primary" @click="createProject = true">
           <Plus class="h-4 w-4 mr-2" /> New Project
         </button>
       </header>
+
+      <!-- Placeholder Toast for interactivity -->
+      <div v-if="createProject" class="fixed bottom-4 right-4 bg-surface-elevated border border-brand/30 p-4 rounded-xl shadow-2xl z-50 flex flex-col gap-2 min-w-[250px]">
+        <div class="flex justify-between items-center mb-2">
+          <span class="font-bold text-sm">Create New Project</span>
+          <button @click="createProject = false" class="text-faint hover:text-text"><X class="w-4 h-4" /></button>
+        </div>
+        <p class="text-xs text-muted mb-4">Project creation wizard coming soon.</p>
+        <button class="btn btn-primary w-full" @click="createProject = false">Acknowledge</button>
+      </div>
 
       <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         <NuxtLink 
@@ -41,12 +51,14 @@
 </template>
 
 <script setup lang="ts">
-import { Plus, FolderKanban, CalendarDays, ArrowRight } from 'lucide-vue-next'
+import { ref } from 'vue'
+import { Plus, FolderKanban, CalendarDays, ArrowRight, X } from 'lucide-vue-next'
 import { useWorkspaceStore } from '~/stores/workspace'
 import { useWorkspaceBoot } from '~/composables/useWorkspaceBoot'
 
 const workspace = useWorkspaceStore()
 const { ensureSession } = useWorkspaceBoot()
+const createProject = ref(false)
 
 onMounted(async () => {
   await ensureSession()

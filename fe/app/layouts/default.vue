@@ -60,9 +60,19 @@
         </div>
         
         <div class="flex items-center gap-4">
-          <div class="relative hidden md:block">
+          <div class="relative hidden md:block group">
             <Search class="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-faint" />
-            <input type="text" placeholder="Search resources..." class="h-9 w-64 rounded-lg border border-border bg-panel/50 pl-9 pr-4 text-xs outline-none focus:border-brand/50 transition-colors" />
+            <input v-model="searchQuery" type="text" placeholder="Search resources..." class="h-9 w-64 rounded-lg border border-border bg-panel/50 pl-9 pr-4 text-xs outline-none focus:border-brand/50 transition-colors" />
+            <!-- Search Results Dropdown -->
+            <div v-if="searchQuery" class="absolute top-full left-0 w-full mt-2 bg-surface-elevated border border-border rounded-lg shadow-xl overflow-hidden z-50">
+              <div class="p-3 text-xs text-muted text-center border-b border-border/50 bg-panel/30">
+                Searching for "<span class="text-text font-bold">{{ searchQuery }}</span>"
+              </div>
+              <div class="p-4 flex flex-col items-center justify-center text-center">
+                <p class="text-xs text-muted italic mb-2">Global search is currently indexing...</p>
+                <button @click="searchQuery = ''" class="text-[10px] uppercase font-bold text-brand hover:underline">Clear Search</button>
+              </div>
+            </div>
           </div>
           <button class="relative rounded-lg border border-border p-2 text-faint hover:bg-panel transition-colors">
             <Bell class="h-4 w-4" />
@@ -79,6 +89,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { 
   LayoutDashboard, 
   FolderKanban, 
@@ -95,6 +106,7 @@ import { useAuthStore } from '~/stores/auth'
 
 const route = useRoute()
 const auth = useAuthStore()
+const searchQuery = ref('')
 
 const workspaceNav = [
   { label: 'Dashboard', to: '/workspace/dashboard', icon: LayoutDashboard },

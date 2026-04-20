@@ -46,7 +46,7 @@
             </div>
             
             <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div v-for="project in workspace.projects.slice(0, 4)" :key="project.id" class="project-card group">
+              <NuxtLink :to="`/projects/${project.id}`" v-for="project in workspace.projects.slice(0, 4)" :key="project.id" class="project-card group">
                 <div class="flex items-start justify-between">
                   <div class="h-10 w-10 rounded-lg flex items-center justify-center font-bold text-xs" :style="{ backgroundColor: project.color_code + '20', color: project.color_code }">
                     {{ project.name[0] }}
@@ -60,7 +60,7 @@
                     <span class="flex items-center gap-1"><CalendarDays class="h-3 w-3" /> {{ project.task_count }} tasks</span>
                   </div>
                 </div>
-              </div>
+              </NuxtLink>
             </div>
           </article>
         </div>
