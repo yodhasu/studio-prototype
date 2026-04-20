@@ -1,3 +1,9 @@
+---
+type: architecture
+status: stable
+tags: [core, documentation, studio]
+related: ["[[docs/frontend_documentation/app_overview]]"]
+---
 # PROJECT OVERHAUL: PROJECT STUDIO MANAGEMENT C3
 
 **Version:** 1.0  
@@ -95,9 +101,9 @@ We implement a "Need-to-Know" permissions layer to keep the UI clean and sensiti
 
 ## III. TECHNICAL SPECIFICATIONS
 
-- **Frontend:** Nuxt (Composition API) + Vite.
-- **Styling:** Tailwind CSS (Theme: Custom Slate-900 based Dark Mode).
-- **State Management:** Pinia (Separated into `useWorkspaceStore` and `useManagementStore`).
+- **Frontend:** [[docs/frontend_documentation/app_overview|Nuxt (Composition API) + Vite]].
+- **Styling:** [[docs/assets/css/main.css|Tailwind CSS]] (Theme: Custom Slate-900 based Dark Mode).
+- **State Management:** [[docs/frontend_documentation/app_overview#3-state-management|Pinia]] (Separated into `useWorkspaceStore` and `useManagementStore`).
 - **Backend:** FastAPI (Python) for asynchronous performance.
 - **Database:** Supabase (PostgreSQL).
 - **Storage:** Supabase Buckets (for high-res asset hosting).

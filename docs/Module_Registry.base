@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "views": [
+    {
+      "id": "module-table",
+      "name": "Module Registry",
+      "type": "table",
+      "config": {
+        "columns": [
+          { "id": "name", "name": "Module Name", "type": "text", "width": 200 },
+          { "id": "status", "name": "Status", "type": "select", "options": ["Stable", "In Progress", "Planned"], "width": 120 },
+          { "id": "doc_link", "name": "Documentation", "type": "link", "width": 250 }
+        ],
+        "sort": [{ "id": "name", "desc": false }]
+      }
+    }
+  ],
+  "data": [
+    { "name": "Dashboard", "status": "In Progress", "doc_link": "[[docs/Modules/Dashboard_Documentation]]" },
+    { "name": "Projects", "status": "Stable", "doc_link": "[[docs/Architecture/Frontend_Overview]]" },
+    { "name": "Schedule", "status": "Planned", "doc_link": "" },
+    { "name": "Finance", "status": "Planned", "doc_link": "" }
+  ]
+}

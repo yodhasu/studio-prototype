@@ -1,3 +1,9 @@
+---
+type: module-spec
+status: in-progress
+tags: [dashboard, workspace, components]
+related: ["[[docs/Architecture/Frontend_Overview]]"]
+---
 # Module Documentation: Workspace Dashboard
 
 ## 1. Overview
@@ -7,12 +13,13 @@ The Dashboard is the home screen for the **Workspace** hub. It serves as the "To
 
 ### DashboardMetricCard
 A reusable component for displaying high-level KPIs.
+- **Source**: [[fe/app/components/DashboardMetricCard.vue]]
 - **Props**:
     - `label`: Title of the metric (e.g., "Active Projects").
     - `value`: Main numerical or text value (e.g., "12 / 15").
     - `trend`: Status badge text.
     - `tone`: Visual theme (`brand`, `cyan`, `success`, etc.).
-    - `to`: (Optional) Nuxt route for direct navigation.
+    - `to`: (Optional) [[docs/Architecture/Frontend_Overview#3-directory-structure-nuxt-4-pattern|Nuxt route]] for direct navigation.
 - **Interaction**: If the `to` prop is provided, the entire card behaves as an accessible `NuxtLink` with a pointer cursor and hover lift effect.
 
 ### Content Panels

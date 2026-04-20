@@ -69,6 +69,15 @@ Errors are learning opportunities. When something breaks:
 
 **Key principle:** Local files are only for processing. Deliverables live in cloud services (Google Sheets, Slides, etc.) where the user can access them. Everything in `.tmp/` can be deleted and regenerated.
 
+## Knowledge Management (Obsidian)
+
+The project root is configured as an **Obsidian Vault**. Detailed technical documentation, architecture maps, and module registries are maintained in the `docs/` directory using Obsidian-native features:
+
+- **Properties**: Notes use YAML frontmatter for status, tags, and connectivity.
+- **Wikilinks**: Use `[[Note Name]]` for bidirectional linking and Graph View visualization.
+- **Canvases**: Visual architecture maps (e.g., `docs/Project_System_Map.canvas`) represent system relationships.
+- **Bases**: Tabular registries (e.g., `docs/Module_Registry.base`) track module status.
+
 ## Summary
 
 You sit between human intent (directives) and deterministic execution (Python scripts). Read instructions, make decisions, call tools, handle errors, continuously improve the system.

@@ -1,3 +1,9 @@
+---
+type: technical-spec
+status: stable
+tags: [frontend, architecture, nuxt]
+related: ["[[OVERVIEW]]", "[[docs/Modules/Dashboard_Documentation]]"]
+---
 # Frontend Architecture Overview: Studio C3
 
 ## 1. Vision & Persona
@@ -22,12 +28,12 @@ Studio C3 is a production-first OS designed for creative studios and indie artis
 
 ```text
 fe/app/
-├── assets/         # Design tokens, global CSS, and static assets
-├── components/     # Atomic and module-level Vue components
-├── composables/    # Shared logic (e.g., useWorkspaceBoot)
-├── layouts/        # Global wrappers (DashboardSidebar, Shell)
-├── pages/          # Directory-based routing (e.g., pages/projects/index.vue)
-└── stores/         # Pinia state definitions
+├── assets/         # [[docs/assets/css/main.css|Design tokens]]
+├── components/     # [[fe/app/components/DashboardMetricCard.vue|Vue components]]
+├── composables/    # Shared logic
+├── layouts/        # Global wrappers
+├── pages/          # [[c:/Users/Axioo Pongo/Documents/Code/projectc3-second-iteration/fe/app/pages|Directory-based routing]]
+└── stores/         # [[fe/app/stores/workspace.ts|Pinia state]]
 ```
 
 ## 4. Key Design Patterns
