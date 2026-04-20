@@ -1,5 +1,9 @@
 <template>
-  <article class="dashboard-panel dashboard-panel--interactive flex h-full flex-col justify-between">
+  <component 
+    :is="to ? 'NuxtLink' : 'article'" 
+    :to="to"
+    class="dashboard-panel dashboard-panel--interactive flex h-full flex-col justify-between no-underline"
+  >
     <div class="flex items-start justify-between gap-4">
       <div>
         <p class="text-[11px] font-semibold uppercase tracking-[0.28em] text-faint">{{ label }}</p>
@@ -16,7 +20,7 @@
         <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-faint">{{ progress }}% utilized</p>
       </div>
     </div>
-  </article>
+  </component>
 </template>
 
 <script setup lang="ts">
@@ -27,6 +31,7 @@ const props = withDefaults(defineProps<{
   detail?: string
   tone?: 'brand' | 'success' | 'warning' | 'danger' | 'neutral'
   progress?: number | null
+  to?: string
 }>(), {
   detail: '',
   tone: 'neutral',

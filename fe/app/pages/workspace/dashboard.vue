@@ -19,6 +19,7 @@
           trend="Live" 
           detail="Total number of ongoing projects in your workspace."
           tone="brand"
+          to="/projects"
         />
         <DashboardMetricCard 
           label="Project Progression" 
@@ -33,6 +34,7 @@
           trend="Tracked" 
           detail="Tasks and milestones due within the next 7 days."
           tone="cyan"
+          to="/schedule"
         />
       </section>
 
