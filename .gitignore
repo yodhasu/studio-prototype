@@ -1,0 +1,13 @@
+.tmp/
+.env
+credentials.json
+token.json
+__pycache__/
+*.pyc
+.agent/
+task_plan.md
+findings.md
+progress.md
+implementation_plan.md
+task.md
+walkthrough.md
