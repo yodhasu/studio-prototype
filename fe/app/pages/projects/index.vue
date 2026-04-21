@@ -50,7 +50,7 @@
 
     <!-- Project Detail Sidebar -->
     <ProjectDetailSidebar 
-      v-model="isSidebarOpen" 
+      v-model:open="isSidebarOpen" 
       :project-id="selectedProjectId" 
     />
   </div>

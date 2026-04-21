@@ -19,7 +19,7 @@
     </div>
     <ChevronRight class="w-5 h-5 text-faint group-hover:text-brand group-hover:translate-x-1 transition-all" />
 
-    <ProjectMemberModal v-model="isModalOpen" :project-id="projectId" />
+    <ProjectMemberModal v-model:open="isModalOpen" :project-id="projectId" />
   </div>
 </template>
 

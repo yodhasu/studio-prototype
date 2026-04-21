@@ -1,5 +1,5 @@
 <template>
-  <UModal v-model="isOpen">
+  <UModal v-model:open="isOpen">
     <UCard :ui="{ ring: '', divide: 'divide-y divide-border' }">
       <template #header>
         <div class="flex items-center justify-between">
@@ -7,20 +7,32 @@
             Project Members
           </h3>
           <UButton 
-            color="primary" 
+            color="gray" 
             variant="ghost" 
-            icon="i-heroicons-user-plus" 
-            label="Add Member" 
-            @click="addRandomMember"
+            icon="i-heroicons-x-mark-20-solid" 
+            class="-my-1" 
+            @click="isOpen = false"
           />
         </div>
       </template>
 
-      <div class="p-4 grid grid-cols-2 gap-4">
+      <div class="px-6 py-4 border-b border-border/50 flex justify-end">
+        <UButton 
+          color="primary" 
+          variant="solid" 
+          icon="i-heroicons-user-plus" 
+          label="Add New Member" 
+          size="sm"
+          class="rounded-lg shadow-sm"
+          @click="addRandomMember"
+        />
+      </div>
+
+      <div class="p-6 grid grid-cols-2 gap-4 max-h-[400px] overflow-y-auto custom-scrollbar">
         <div 
           v-for="member in projectMembers" 
           :key="member.id"
-          class="relative group flex items-center gap-3 p-3 rounded-xl border border-border/50 bg-surface hover:bg-surface-elevated transition-colors"
+          class="relative group flex items-center gap-3 p-3 rounded-xl border border-border/50 bg-surface hover:bg-surface-elevated hover:border-brand/30 transition-all"
         >
           <UAvatar :src="member.avatar_url" :alt="member.name" size="md" />
           <div class="flex-1 min-w-0">
@@ -29,11 +41,16 @@
           </div>
           
           <button 
-            class="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 bg-red-500/20 text-red-500 hover:bg-red-500 hover:text-white p-1 rounded-full text-[10px] transition-all"
+            class="absolute -top-1.5 -right-1.5 opacity-0 group-hover:opacity-100 bg-red-500 text-white shadow-lg p-1.5 rounded-full transition-all hover:scale-110 active:scale-95 z-10"
+            title="Unassign Member"
             @click="removeMember(member.id)"
           >
             <X class="w-3 h-3" />
           </button>
+        </div>
+
+        <div v-if="projectMembers.length === 0" class="col-span-2 py-8 text-center text-sm text-faint italic">
+          No members assigned to this production yet.
         </div>
       </div>
     </UCard>
@@ -45,18 +62,15 @@ import { computed } from 'vue'
 import { X } from 'lucide-vue-next'
 import { useWorkspaceStore } from '~/stores/workspace'
 
+const isOpen = defineModel<boolean>('open', { default: false })
+
 const props = defineProps<{
-  modelValue: boolean
   projectId: string
 }>()
 
-const emit = defineEmits(['update:modelValue'])
 const workspace = useWorkspaceStore()
 
-const isOpen = computed({
-  get: () => props.modelValue,
-  set: (val) => emit('update:modelValue', val)
-})
+
 
 const project = computed(() => workspace.projects.find(p => p.id === props.projectId))
 const projectMembers = computed(() => {

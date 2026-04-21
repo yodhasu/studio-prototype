@@ -5,7 +5,10 @@
       <span class="text-xs text-faint">{{ projectTasks.length }} Total</span>
     </div>
 
-    <div class="space-y-2">
+    <div 
+      class="space-y-2 transition-all duration-300 overflow-y-auto custom-scrollbar"
+      :class="{ 'max-h-[400px] pr-2': isExpanded }"
+    >
       <div 
         v-for="task in displayedTasks" 
         :key="task.id"
@@ -75,7 +78,7 @@ const projectTasks = computed(() => {
 
 const displayedTasks = computed(() => {
   if (isExpanded.value) {
-    return projectTasks.value.slice(0, 6)
+    return projectTasks.value
   }
   return projectTasks.value.slice(0, 3)
 })
