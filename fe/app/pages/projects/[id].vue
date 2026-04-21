@@ -1,56 +1,80 @@
 <template>
-  <div class="relative h-full w-full overflow-hidden bg-bg">
+  <div class="relative h-full w-full overflow-hidden bg-[var(--c-bg)]">
     <!-- Canvas Grid -->
     <div 
-      class="canvas-bg absolute inset-0 z-0 transition-transform duration-0 ease-linear"
+      class="canvas-bg absolute z-0 transition-transform duration-0 ease-linear"
+      style="top: 0; left: 0; right: 0; bottom: 0;"
       :style="canvasTransform"
       @mousedown="onCanvasMouseDown"
       @mousemove="onCanvasMouseMove"
       @mouseup="onCanvasMouseUp"
       @wheel="onCanvasWheel"
     >
-      <LinkLayer :edges="workspace.edges" :cards="workspace.cards" />
+      <LinkLayer 
+        :edges="workspace.edges" 
+        :cards="workspace.cards" 
+        :pending-edge="(linkingState.isLinking && linkingState.startId) ? {
+          source: workspace.cards.find(c => c.id === linkingState.startId),
+          sourceAnchor: linkingState.startAnchor!,
+          targetPos: linkingState.mousePos
+        } : null"
+      />
       
-      <CardNode
-        v-for="card in workspace.cards"
-        :key="card.id"
+      <CardNode 
+        v-for="card in workspace.cards" 
+        :key="card.id" 
         :card="card"
         :is-selected="selectedCardId === card.id"
+        :is-linking-target="linkingState.targetId === card.id"
         @select="selectCard"
-        @update="updateCard"
         @drag-start="onCardDragStart"
+        @update="updateCard"
+        @link-start="onLinkStart"
+        @link-drop="onLinkDrop"
       />
     </div>
 
-    <!-- UI Overlay -->
-    <div class="absolute left-6 top-6 z-10 flex flex-col gap-4">
-      <div class="flex items-center gap-2 rounded-xl border border-border bg-surface/80 p-1.5 backdrop-blur-md shadow-lg">
-        <button class="btn btn-ghost h-9 w-9 p-0" @click="addCard">
-          <Plus class="h-4 w-4" />
-        </button>
-        <div class="h-4 w-px bg-border mx-1"></div>
-        <button class="btn btn-ghost h-9 w-9 p-0" title="Zoom In" @click="zoomIn">
-          <ZoomIn class="h-4 w-4" />
-        </button>
-        <button class="btn btn-ghost h-9 w-9 p-0" title="Zoom Out" @click="zoomOut">
-          <ZoomOut class="h-4 w-4" />
-        </button>
-        <button class="btn btn-ghost h-9 w-9 p-0" title="Reset View" @click="resetView">
-          <Maximize class="h-4 w-4" />
-        </button>
+    <!-- PREMIUM WORKSPACE TOOLBAR -->
+    <div class="absolute left-6 top-6 z-10 flex items-center gap-3">
+      <!-- Main Actions Block -->
+      <div class="flex items-center gap-1.5 sketch-border bg-surface/90 backdrop-blur-md p-1.5 shadow-lg">
+        <div class="flex items-center px-1">
+          <button class="btn btn-ghost h-8 w-8 !p-0 hover:bg-brand/5 hover:text-brand transition-all" title="Add Card" @click="addCard">
+            <Plus class="h-4.5 w-4.5" />
+          </button>
+        </div>
+        <div class="h-6 w-px bg-border/40 mx-0.5"></div>
+        <div class="flex items-center gap-0.5">
+          <button class="btn btn-ghost h-8 w-8 !p-0 hover:bg-brand/5" title="Zoom In" @click="zoomIn">
+            <ZoomIn class="h-3.5 w-3.5" />
+          </button>
+          <button class="btn btn-ghost h-8 w-8 !p-0 hover:bg-brand/5" title="Zoom Out" @click="zoomOut">
+            <ZoomOut class="h-3.5 w-3.5" />
+          </button>
+          <button class="btn btn-ghost h-8 w-8 !p-0 hover:bg-brand/5" title="Reset View" @click="resetView">
+            <Maximize class="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+
+      <!-- Collaborative Stack (Integrated look) -->
+      <div 
+        class="flex items-center gap-2.5 sketch-border bg-surface/90 backdrop-blur-md px-3 py-1.5 shadow-lg cursor-pointer hover:bg-panel/40 transition-all group"
+        @click="isSidebarOpen = true"
+      >
+        <div class="flex -space-x-1.5">
+          <div v-for="i in 2" :key="i" class="h-5.5 w-5.5 rounded-full border border-surface bg-brand/10 flex items-center justify-center text-[8px] font-bold text-brand">
+            {{ ['AM', 'JH'][i-1] }}
+          </div>
+        </div>
+        <span class="text-[9px] font-black uppercase tracking-[0.15em] text-muted group-hover:text-brand transition-colors">Team</span>
       </div>
     </div>
 
-    <div class="absolute right-6 top-6 z-10">
-      <div class="flex items-center gap-3 rounded-xl border border-border bg-surface/80 p-2 backdrop-blur-md shadow-lg">
-        <div class="flex -space-x-2">
-          <div v-for="i in 3" :key="i" class="h-7 w-7 rounded-full border-2 border-surface bg-brand/20 flex items-center justify-center text-[10px] font-bold">
-            {{ ['AM', 'MC', 'JH'][i-1] }}
-          </div>
-        </div>
-        <button class="btn btn-primary h-8 px-3 text-xs">Share</button>
-      </div>
-    </div>
+    <ProjectDetailSidebar 
+      v-model:open="isSidebarOpen" 
+      :project-id="(route.params.id as string)" 
+    />
   </div>
 </template>
 
@@ -71,6 +95,16 @@ const zoom = ref(1)
 const isPanning = ref(false)
 const lastMousePos = ref({ x: 0, y: 0 })
 
+const linkingState = ref({
+  isLinking: false,
+  startId: null as string | null,
+  startAnchor: null as 'top' | 'right' | 'bottom' | 'left' | null,
+  targetId: null as string | null,
+  mousePos: { x: 0, y: 0 }
+})
+
+const isSidebarOpen = ref(false)
+
 const canvasTransform = computed(() => ({
   transform: `translate(${panX.value}px, ${panY.value}px) scale(${zoom.value})`,
   transformOrigin: '0 0'
@@ -78,6 +112,7 @@ const canvasTransform = computed(() => ({
 
 const selectCard = (id: string) => {
   selectedCardId.value = id
+  isSidebarOpen.value = true
 }
 
 const updateCard = (payload: any) => {
@@ -85,9 +120,13 @@ const updateCard = (payload: any) => {
 }
 
 const addCard = () => {
-  const x = (window.innerWidth / 2 - panX.value) / zoom.value
-  const y = (window.innerHeight / 2 - panY.value) / zoom.value
-  workspace.createCard(route.params.id as string, 'New Concept', x, y)
+  const ws = workspace.workspaces.find(w => w.project_id === route.params.id)
+  if (!ws) return
+
+  const jitter = () => (Math.random() - 0.5) * 40
+  const x = (window.innerWidth / 2 - panX.value) / zoom.value + jitter()
+  const y = (window.innerHeight / 2 - panY.value) / zoom.value + jitter()
+  workspace.createCard(ws.id, 'New Concept', x, y)
 }
 
 const onCanvasMouseDown = (e: MouseEvent) => {
@@ -96,6 +135,7 @@ const onCanvasMouseDown = (e: MouseEvent) => {
     lastMousePos.value = { x: e.clientX, y: e.clientY }
   } else if (e.target === e.currentTarget) {
     selectedCardId.value = null
+    isSidebarOpen.value = false
   }
 }
 
@@ -107,10 +147,24 @@ const onCanvasMouseMove = (e: MouseEvent) => {
     panY.value += dy
     lastMousePos.value = { x: e.clientX, y: e.clientY }
   }
+
+  if (linkingState.value.isLinking) {
+    linkingState.value.mousePos = {
+      x: (e.clientX - panX.value) / zoom.value,
+      y: (e.clientY - panY.value) / zoom.value
+    }
+  }
 }
 
 const onCanvasMouseUp = () => {
   isPanning.value = false
+  // If we release on the canvas (not a card), cancel linking
+  setTimeout(() => {
+    if (linkingState.value.isLinking) {
+      linkingState.value.isLinking = false
+      linkingState.value.startId = null
+    }
+  }, 50)
 }
 
 const onCanvasWheel = (e: WheelEvent) => {
@@ -127,6 +181,18 @@ const onCanvasWheel = (e: WheelEvent) => {
 
 const zoomIn = () => zoom.value = Math.min(zoom.value + 0.1, 2)
 const zoomOut = () => zoom.value = Math.max(zoom.value - 0.1, 0.1)
+
+
+const onLinkDrop = (targetId: string) => {
+  if (linkingState.value.isLinking && linkingState.value.startId) {
+    if (linkingState.value.startId !== targetId) {
+      workspace.createEdge(linkingState.value.startId, targetId)
+    }
+    linkingState.value.isLinking = false
+    linkingState.value.startId = null
+  }
+}
+
 const resetView = () => {
   panX.value = 0
   panY.value = 0
@@ -166,6 +232,39 @@ const onCardDragStart = (payload: any) => {
   }
 }
 
+const onLinkStart = (payload: { id: string, anchor: 'top' | 'right' | 'bottom' | 'left', event: MouseEvent }) => {
+  linkingState.value.isLinking = true
+  linkingState.value.startId = payload.id
+  linkingState.value.startAnchor = payload.anchor
+  
+  const updateMouse = (e: MouseEvent) => {
+    linkingState.value.mousePos = {
+      x: (e.clientX - panX.value) / zoom.value,
+      y: (e.clientY - panY.value) / zoom.value
+    }
+  }
+  
+  const endLinking = () => {
+    if (linkingState.value.targetId && linkingState.value.targetId !== linkingState.value.startId) {
+      workspace.createEdge(linkingState.value.startId!, linkingState.value.targetId!)
+    }
+    linkingState.value.isLinking = false
+    linkingState.value.startId = null
+    linkingState.value.startAnchor = null
+    linkingState.value.targetId = null
+    window.removeEventListener('mousemove', updateMouse)
+    window.removeEventListener('mouseup', endLinking)
+  }
+  
+  updateMouse(payload.event)
+  window.addEventListener('mousemove', updateMouse)
+  window.addEventListener('mouseup', endLinking)
+}
+
+const onLinkHover = (id: string | null) => {
+  linkingState.value.targetId = id
+}
+
 onMounted(async () => {
   await ensureSession()
   await workspace.fetchCards(route.params.id as string)
@@ -173,8 +272,11 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+@reference "~/assets/css/main.css";
+
 .canvas-bg {
-  background-image: radial-gradient(circle, rgba(var(--c-border), 0.3) 1px, transparent 1px);
+  @apply bg-[var(--c-bg)] absolute inset-0 z-0;
+  background-image: radial-gradient(circle, rgba(var(--c-border-hi), 0.3) 1px, transparent 1px);
   background-size: 32px 32px;
 }
 </style>

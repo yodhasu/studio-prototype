@@ -43,7 +43,12 @@
             </div>
             
             <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <NuxtLink :to="`/projects/${project.id}`" v-for="project in workspace.projects.slice(0, 4)" :key="project.id" class="project-card group">
+              <div 
+                v-for="project in workspace.projects.slice(0, 4)" 
+                :key="project.id" 
+                class="project-card group cursor-pointer"
+                @click="openProject(project.id)"
+              >
                 <div class="flex items-start justify-between">
                   <div class="h-10 w-10 rounded-lg flex items-center justify-center font-bold text-xs" :style="{ backgroundColor: project.color_code + '20', color: project.color_code }">
                     {{ project.name[0] }}
@@ -57,7 +62,7 @@
                     <span class="flex items-center gap-1"><CalendarDays class="h-3 w-3" /> {{ project.task_count }} tasks</span>
                   </div>
                 </div>
-              </NuxtLink>
+              </div>
             </div>
           </article>
         </div>
@@ -71,16 +76,21 @@
               <div v-for="task in workspace.tasks.slice(0, 5)" :key="task.id" class="flex items-center gap-4 p-3 rounded-lg border border-border bg-panel/30 hover:border-brand/30 transition-colors cursor-pointer">
                 <div class="h-2 w-2 rounded-full" :style="{ backgroundColor: task.status === 'DONE' ? 'rgb(var(--c-green))' : 'rgb(var(--c-amber))' }"></div>
                 <div class="flex-1 min-w-0">
-                  <p class="truncate text-xs font-bold text-text">{{ task.card_title }}</p>
+                  <p class="truncate text-xs font-bold text-text">{{ task.title }}</p>
                   <p class="truncate text-[10px] text-muted">{{ task.project_name }}</p>
-                </div>
-                <span class="text-[10px] font-mono text-faint">7d</span>
+                </div>                <span class="text-[10px] font-mono text-faint">7d</span>
               </div>
             </div>
           </article>
         </div>
       </div>
     </div>
+    
+    <!-- Project Detail Sidebar -->
+    <ProjectDetailSidebar 
+      v-model:open="isSidebarOpen" 
+      :project-id="selectedProjectId" 
+    />
   </div>
 </template>
 
@@ -92,11 +102,19 @@ import { useWorkspaceBoot } from '~/composables/useWorkspaceBoot'
 const workspace = useWorkspaceStore()
 const { ensureSession } = useWorkspaceBoot()
 
+const isSidebarOpen = ref(false)
+const selectedProjectId = ref<string | null>(null)
+
 const progressionValue = computed(() => {
   const total = workspace.tasks.length
   const finished = workspace.tasks.filter(t => t.status === 'DONE').length
   return `${finished} / ${total}`
 })
+
+function openProject(id: string) {
+  selectedProjectId.value = id
+  isSidebarOpen.value = true
+}
 
 onMounted(async () => {
   await ensureSession()

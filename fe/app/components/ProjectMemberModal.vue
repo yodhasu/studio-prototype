@@ -1,5 +1,5 @@
 <template>
-  <UModal v-model:open="isOpen">
+  <UModal v-model:open="isOpen" :ui="{ overlay: 'z-[100]', content: 'z-[101]' }">
     <UCard :ui="{ ring: '', divide: 'divide-y divide-border' }">
       <template #header>
         <div class="flex items-center justify-between">

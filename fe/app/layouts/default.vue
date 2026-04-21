@@ -1,5 +1,5 @@
 <template>
-  <div class="flex min-h-screen bg-bg text-text selection:bg-brand/30">
+  <div class="flex min-h-screen bg-[var(--c-bg)] text-text selection:bg-brand/30">
     <aside class="hidden w-[260px] flex-col border-r border-border bg-surface-elevated/50 backdrop-blur-xl lg:flex">
       <div class="p-6">
         <div class="flex items-center gap-3">
@@ -54,7 +54,7 @@
     </aside>
 
     <main class="flex min-w-0 flex-1 flex-col">
-      <header class="flex h-16 shrink-0 items-center justify-between border-b border-border bg-bg/50 px-8 backdrop-blur-md sticky top-0 z-40">
+      <header class="flex h-16 shrink-0 items-center justify-between border-b border-border bg-[var(--c-bg)]/50 px-8 backdrop-blur-md sticky top-0 z-40">
         <div class="flex items-center gap-4">
           <h2 class="font-display text-sm font-bold tracking-tight text-text">{{ pageTitle }}</h2>
         </div>

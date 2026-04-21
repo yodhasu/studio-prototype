@@ -1,31 +1,45 @@
 <template>
-  <div 
-    class="flex items-center justify-between p-4 rounded-2xl border border-border/50 bg-surface/50 hover:bg-surface hover:border-brand/30 transition-all cursor-pointer group"
-    @click="isModalOpen = true"
-  >
-    <div class="flex flex-col">
-      <span class="text-xs font-bold text-muted uppercase tracking-wider">Assigned Members</span>
-      <div class="mt-2 flex -space-x-2 overflow-hidden">
+  <div class="space-y-4">
+    <div v-if="projectMembers.length === 0" class="text-sm italic text-faint py-8 text-center">
+      No members assigned to this workspace yet.
+    </div>
+    <div v-else class="grid gap-3">
+      <div 
+        v-for="member in projectMembers" 
+        :key="member.id"
+        class="flex items-center gap-3 p-3 sketch-border bg-[var(--c-bg)]/40 border-border/20"
+      >
         <UAvatar 
-          v-for="member in projectMembers" 
-          :key="member.id"
           :src="member.avatar_url" 
           :alt="member.name" 
           size="sm"
-          class="ring-2 ring-surface bg-brand/10 text-brand font-bold"
+          class="sketch-border ring-2 ring-surface"
         />
-        <div v-if="projectMembers.length === 0" class="text-sm italic text-faint">No members assigned</div>
+        <div class="flex flex-col">
+          <span class="text-sm font-bold text-text">{{ member.name }}</span>
+          <span class="text-[10px] text-faint uppercase font-bold tracking-tight">{{ member.role || 'Member' }}</span>
+        </div>
+        <div class="ml-auto">
+          <span class="h-2 w-2 rounded-full bg-green-500 block" title="Online"></span>
+        </div>
       </div>
     </div>
-    <ChevronRight class="w-5 h-5 text-faint group-hover:text-brand group-hover:translate-x-1 transition-all" />
-
-    <ProjectMemberModal v-model:open="isModalOpen" :project-id="projectId" />
+    
+    <div class="mt-6 pt-6 border-t border-border/10">
+      <UButton 
+        block 
+        color="gray" 
+        variant="ghost" 
+        icon="i-heroicons-user-plus" 
+        label="Add Member" 
+        class="text-[10px] font-bold uppercase tracking-widest"
+      />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { ChevronRight } from 'lucide-vue-next'
+import { computed } from 'vue'
 import { useWorkspaceStore } from '~/stores/workspace'
 
 const props = defineProps<{
@@ -33,7 +47,6 @@ const props = defineProps<{
 }>()
 
 const workspace = useWorkspaceStore()
-const isModalOpen = ref(false)
 
 const project = computed(() => workspace.projects.find(p => p.id === props.projectId))
 const projectMembers = computed(() => {

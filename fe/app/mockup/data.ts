@@ -21,29 +21,29 @@ export const MOCK_DASHBOARD_SUMMARY = {
 export const MOCK_CARDS = [
   {
     id: 'c1',
-    project_id: 'p1',
+    workspace_id: 'w1',
     org_id: 'mock-org-1',
     title: 'Initial Discovery',
-    content: { notes: 'Explore current infrastructure and identify pain points.' },
+    description: 'Explore current infrastructure and identify pain points.',
+    text: '## Discovery Goals\n- Identify legacy bottlenecks\n- Audit storage costs\n- Interview lead artists',
     x_pos: 100,
     y_pos: 100,
-    width: 300,
+    width: 320,
     comments: [],
-    link_count: 1,
-    task: { id: 't1', start_date: '2026-04-01', end_date: '2026-04-10', status: 'DONE' }
+    link_count: 1
   },
   {
     id: 'c2',
-    project_id: 'p1',
+    workspace_id: 'w1',
     org_id: 'mock-org-1',
     title: 'Cloud Vendor Analysis',
-    content: { notes: 'Compare AWS, GCP, and Azure for cost and features.' },
+    description: 'Compare AWS, GCP, and Azure for cost and features.',
+    text: 'We need to focus on high-performance egress for large 3D assets.',
     x_pos: 500,
     y_pos: 150,
-    width: 300,
+    width: 320,
     comments: [{ id: 'com1', author_name: 'Alex', body: 'AWS seems most mature.', created_at: '2026-04-05T10:00:00Z' }],
-    link_count: 1,
-    task: { id: 't2', start_date: '2026-04-11', end_date: '2026-04-20', status: 'PROGRESS' }
+    link_count: 1
   }
 ]
 
@@ -52,13 +52,13 @@ export const MOCK_EDGES = [
 ]
 
 export const MOCK_TASKS = [
-  { id: 't1', card_id: 'c1', due_date: '2026-04-10', status: 'DONE', priority: 'HIGH', card_title: 'Initial Discovery', project_id: 'p1', project_name: 'Infrastructure Migration', project_color_code: '#8b5cf6', description: 'Review all current VPC and storage configurations.' },
-  { id: 't2', card_id: 'c2', due_date: '2026-04-20', status: 'PROGRESS', priority: 'MEDIUM', card_title: 'Cloud Vendor Analysis', project_id: 'p1', project_name: 'Infrastructure Migration', project_color_code: '#8b5cf6', description: 'Compare cost vs performance for AWS S3 and GCP Buckets.' },
-  { id: 't3', card_id: 'c3', due_date: '2026-04-15', status: 'TODO', priority: 'HIGH', card_title: 'Security Audit', project_id: 'p1', project_name: 'Infrastructure Migration', project_color_code: '#8b5cf6', description: 'Ensure all IAM policies follow principle of least privilege.' },
-  { id: 't4', card_id: 'c4', due_date: '2026-04-25', status: 'TODO', priority: 'LOW', card_title: 'Documentation', project_id: 'p1', project_name: 'Infrastructure Migration', project_color_code: '#8b5cf6', description: 'Document the migration path and rollback strategy.' },
-  { id: 't5', card_id: 'c5', due_date: '2026-04-12', status: 'TODO', priority: 'MEDIUM', card_title: 'Asset Inventory', project_id: 'p1', project_name: 'Infrastructure Migration', project_color_code: '#8b5cf6', description: 'Create a full list of assets to be migrated.' },
-  { id: 't6', card_id: 'c6', due_date: '2026-04-18', status: 'TODO', priority: 'HIGH', card_title: 'Traffic Routing', project_id: 'p1', project_name: 'Infrastructure Migration', project_color_code: '#8b5cf6', description: 'Plan the Route53 switchover logic.' },
-  { id: 't7', card_id: 'c7', due_date: '2026-04-22', status: 'TODO', priority: 'LOW', card_title: 'Post-Migration Cleanup', project_id: 'p1', project_name: 'Infrastructure Migration', project_color_code: '#8b5cf6', description: 'Decommission old instances.' },
+  { id: 't1', project_id: 'p1', title: 'Initial Discovery', detail: 'Review all current VPC and storage configurations.', status: 'DONE', priority: 'HIGH', due_date: '2026-04-10', project_name: 'Infrastructure Migration' },
+  { id: 't2', project_id: 'p1', title: 'Cloud Vendor Analysis', detail: 'Compare cost vs performance for AWS S3 and GCP Buckets.', status: 'PROGRESS', priority: 'MEDIUM', due_date: '2026-04-20', project_name: 'Infrastructure Migration' },
+  { id: 't3', project_id: 'p1', title: 'Security Audit', detail: 'Ensure all IAM policies follow principle of least privilege.', status: 'TODO', priority: 'HIGH', due_date: '2026-04-15', project_name: 'Infrastructure Migration' },
+  { id: 't4', project_id: 'p1', title: 'Documentation', detail: 'Document the migration path and rollback strategy.', status: 'TODO', priority: 'LOW', due_date: '2026-04-25', project_name: 'Infrastructure Migration' },
+  { id: 't5', project_id: 'p1', title: 'Asset Inventory', detail: 'Create a full list of assets to be migrated.', status: 'TODO', priority: 'MEDIUM', due_date: '2026-04-12', project_name: 'Infrastructure Migration' },
+  { id: 't6', project_id: 'p1', title: 'Traffic Routing', detail: 'Plan the Route53 switchover logic.', status: 'TODO', priority: 'HIGH', due_date: '2026-04-18', project_name: 'Infrastructure Migration' },
+  { id: 't7', project_id: 'p1', title: 'Post-Migration Cleanup', detail: 'Decommission old instances.', status: 'TODO', priority: 'LOW', due_date: '2026-04-22', project_name: 'Infrastructure Migration' },
 ]
 
 export const MOCK_LEDGER = [

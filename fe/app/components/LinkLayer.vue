@@ -1,32 +1,59 @@
 <template>
   <svg class="absolute inset-0 h-full w-full overflow-visible pointer-events-none">
     <g v-for="edge in edges" :key="edge.id" class="pointer-events-auto">
+      <!-- Broad Hit Area -->
       <path
         :d="edgePath(edge).path"
         fill="none"
         stroke="transparent"
-        stroke-width="18"
+        stroke-width="20"
         class="cursor-pointer"
       />
+      
+      <!-- Inked Path: Background Bleed -->
       <path
         :d="edgePath(edge).path"
         fill="none"
-        stroke="rgba(var(--c-cyan), 0.5)"
-        stroke-width="2"
+        stroke="rgb(var(--c-brand) / 0.1)"
+        stroke-width="4"
         stroke-linecap="round"
-        class="transition-all hover:stroke-cyan duration-300"
+        stroke-linejoin="round"
+      />
+
+      <!-- Inked Path: Main Stroke (More weight and darker) -->
+      <path
+        :d="edgePath(edge).path"
+        fill="none"
+        stroke="var(--c-brand)"
+        stroke-width="1.8"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-dasharray="180 2 120 1 200 1.5"
+        class="transition-all hover:stroke-brand/80 hover:stroke-[2.2px] duration-300"
       />
       
       <foreignObject
-        :x="edgePath(edge).mid.x - 34"
-        :y="edgePath(edge).mid.y - 12"
-        width="68"
-        height="24"
+        :x="edgePath(edge).mid.x - 40"
+        :y="edgePath(edge).mid.y - 14"
+        width="80"
+        height="28"
       >
         <div class="flex justify-center">
-          <span class="badge badge-cyan !px-2 !py-0.5 !text-[9px] bg-bg/80 backdrop-blur-sm border-cyan/30">{{ edge.type.replace('_', ' ') }}</span>
+          <span class="badge badge-brand !px-3 !py-1 !text-[8.5px] bg-[var(--c-bg)]/95 backdrop-blur-md border-brand/20 sketch-border shadow-md uppercase tracking-widest font-black">{{ edge.type.replace('_', ' ') }}</span>
         </div>
       </foreignObject>
+    </g>
+    
+    <!-- Pending Connection Line (Live Drag) -->
+    <g v-if="pendingEdge" class="pointer-events-none">
+      <path
+        :d="curve(anchorPoint(pendingEdge.source, pendingEdge.sourceAnchor), pendingEdge.targetPos).path"
+        fill="none"
+        stroke="rgb(var(--c-brand) / 0.4)"
+        stroke-width="2"
+        stroke-dasharray="8 6"
+        stroke-linecap="round"
+      />
     </g>
   </svg>
 </template>
@@ -37,13 +64,18 @@ import type { Card, CardEdge } from '~/stores/workspace'
 const props = defineProps<{
   cards: Card[]
   edges: CardEdge[]
+  pendingEdge?: {
+    source: Card
+    sourceAnchor: 'top' | 'right' | 'bottom' | 'left'
+    targetPos: { x: number; y: number }
+  } | null
 }>()
 
 const cardMap = computed(() => new Map(props.cards.map((card) => [card.id, card])))
 
 const anchorPoint = (card: Card, anchor: 'top' | 'right' | 'bottom' | 'left') => {
   const width = card.width || 300
-  const height = 200 // Default height
+  const height = card.height || 200
   const center = { x: card.x_pos + width / 2, y: card.y_pos + height / 2 }
 
   switch (anchor) {
@@ -87,3 +119,9 @@ const edgePath = (edge: CardEdge) => {
   return curve(start, end)
 }
 </script>
+
+<style scoped>
+.sketch-border {
+  border-radius: 6px 8px 5px 7px;
+}
+</style>
