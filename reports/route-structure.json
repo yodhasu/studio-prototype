@@ -1,0 +1,125 @@
+{
+  "/projects": {
+    "url": "http://172.23.150.223:3001/projects",
+    "title": "Studio C3 | Agent Managed OS",
+    "headings": [
+      "STUDIO C3",
+      "Production / Projects",
+      "Production Hub",
+      "Infrastructure Migration",
+      "Brand Redesign",
+      "Q4 Marketing Campaign",
+      "Client Onboarding Portal",
+      "Annual Retreat Planning",
+      "V2 Platform Launch",
+      "Collaborators"
+    ],
+    "buttons": [
+      "New Project"
+    ],
+    "links": [
+      {
+        "t": "Dashboard",
+        "h": "/workspace/dashboard"
+      },
+      {
+        "t": "Projects",
+        "h": "/projects"
+      },
+      {
+        "t": "Schedule",
+        "h": "/schedule"
+      },
+      {
+        "t": "Studio Pulse",
+        "h": "/management/dashboard"
+      },
+      {
+        "t": "Finance",
+        "h": "/billing"
+      },
+      {
+        "t": "Clients",
+        "h": "/clients"
+      },
+      {
+        "t": "Settings",
+        "h": "/settings"
+      }
+    ],
+    "textSample": [
+      "C3",
+      "STUDIO C3",
+      "PRODUCTION OS",
+      "EXECUTION",
+      "Dashboard",
+      "Projects",
+      "Schedule",
+      "BUSINESS",
+      "Studio Pulse",
+      "Finance",
+      "Clients",
+      "Settings",
+      "AD",
+      "Admin User",
+      "STUDIO OWNER",
+      "Production / Projects",
+      "Production Hub",
+      "Manage all active studio productions.",
+      "New Project",
+      "I",
+      "ACTIVE",
+      "Infrastructure Migration",
+      "Standard production environment for infrastructure migration.",
+      "12",
+      "5",
+      "B",
+      "ACTIVE",
+      "Brand Redesign",
+      "Standard production environment for brand redesign.",
+      "8",
+      "3",
+      "Q",
+      "ACTIVE",
+      "Q4 Marketing Campaign",
+      "Standard production environment for q4 marketing campaign.",
+      "15",
+      "8",
+      "C",
+      "ACTIVE",
+      "Client Onboarding Portal",
+      "Standard production environment for client onboarding portal.",
+      "4",
+      "1",
+      "A",
+      "ACTIVE",
+      "Annual Retreat Planning",
+      "Standard production environment for annual retreat planning.",
+      "22",
+      "11",
+      "V",
+      "ACTIVE",
+      "V2 Platform Launch",
+      "Standard production environment for v2 platform launch.",
+      "35",
+      "19",
+      "Collaborators"
+    ]
+  },
+  "/projects/p1": {
+    "url": "http://172.23.150.223:3001/projects/p1",
+    "title": "",
+    "headings": [],
+    "buttons": [],
+    "links": [],
+    "textSample": []
+  },
+  "/schedule": {
+    "url": "http://172.23.150.223:3001/schedule",
+    "title": "Studio C3 | Agent Managed OS",
+    "headings": [],
+    "buttons": [],
+    "links": [],
+    "textSample": []
+  }
+}

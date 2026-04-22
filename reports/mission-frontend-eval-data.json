@@ -1,0 +1,329 @@
+{
+  "routes": [
+    {
+      "route": "/workspace/dashboard",
+      "title": "Studio C3 | Agent Managed OS",
+      "h1": "STUDIO C3",
+      "sample": [
+        "C3",
+        "STUDIO C3",
+        "PRODUCTION OS",
+        "EXECUTION",
+        "Dashboard",
+        "Projects",
+        "Schedule",
+        "BUSINESS",
+        "Studio Pulse",
+        "Finance",
+        "Clients",
+        "Settings",
+        "AD",
+        "Admin User",
+        "STUDIO OWNER",
+        "Production / Dashboard",
+        "Workspace Overview",
+        "A top-level view of your current projects and upcoming tasks.",
+        "ACTIVE PROJECTS",
+        "6",
+        "LIVE",
+        "Total number of ongoing projects in your workspace.",
+        "PROJECT PROGRESSION",
+        "1 / 7"
+      ],
+      "screenshot": "/home/yodhasu/work/studio-prototype/reports/evidence__workspace_dashboard.png"
+    },
+    {
+      "route": "/projects",
+      "title": "Studio C3 | Agent Managed OS",
+      "h1": "STUDIO C3",
+      "sample": [],
+      "screenshot": "/home/yodhasu/work/studio-prototype/reports/evidence__projects.png"
+    },
+    {
+      "route": "/projects/p1",
+      "title": "Studio C3 | Agent Managed OS",
+      "h1": "STUDIO C3",
+      "sample": [],
+      "screenshot": "/home/yodhasu/work/studio-prototype/reports/evidence__projects_p1.png"
+    },
+    {
+      "route": "/schedule",
+      "title": "Studio C3 | Agent Managed OS",
+      "h1": "STUDIO C3",
+      "sample": [
+        "C3",
+        "STUDIO C3",
+        "PRODUCTION OS",
+        "EXECUTION",
+        "Dashboard",
+        "Projects",
+        "Schedule",
+        "BUSINESS",
+        "Studio Pulse",
+        "Finance",
+        "Clients",
+        "Settings",
+        "AD",
+        "Admin User",
+        "STUDIO OWNER",
+        "Studio C3",
+        "Production Schedule",
+        "Timeline view of active production workstreams.",
+        "Schedule Event",
+        "Apr 11",
+        "Apr 12",
+        "Milestone Delivery",
+        "10:00 AM - 12:00 PM",
+        "Apr 13"
+      ],
+      "screenshot": "/home/yodhasu/work/studio-prototype/reports/evidence__schedule.png"
+    },
+    {
+      "route": "/management/dashboard",
+      "title": "Studio C3 | Agent Managed OS",
+      "h1": "STUDIO C3",
+      "sample": [
+        "C3",
+        "STUDIO C3",
+        "PRODUCTION OS",
+        "EXECUTION",
+        "Dashboard",
+        "Projects",
+        "Schedule",
+        "BUSINESS",
+        "Studio Pulse",
+        "Finance",
+        "Clients",
+        "Settings",
+        "AD",
+        "Admin User",
+        "STUDIO OWNER",
+        "Business / Studio Pulse",
+        "Studio Pulse",
+        "Financial health and resource allocation overview.",
+        "Financial Ledger",
+        "Generate Report",
+        "TOTAL REVENUE",
+        "$150,000",
+        "MTD",
+        "Total recognized revenue this month."
+      ],
+      "screenshot": "/home/yodhasu/work/studio-prototype/reports/evidence__management_dashboard.png"
+    }
+  ],
+  "stress": {
+    "iterations": 35,
+    "failures": 0,
+    "avgMs": 871,
+    "p95Ms": 2094,
+    "timings": [
+      {
+        "route": "/workspace/dashboard",
+        "ms": 605,
+        "ok": true
+      },
+      {
+        "route": "/projects",
+        "ms": 851,
+        "ok": true
+      },
+      {
+        "route": "/schedule",
+        "ms": 1053,
+        "ok": true
+      },
+      {
+        "route": "/projects/p1",
+        "ms": 731,
+        "ok": true
+      },
+      {
+        "route": "/management/dashboard",
+        "ms": 694,
+        "ok": true
+      },
+      {
+        "route": "/workspace/dashboard",
+        "ms": 857,
+        "ok": true
+      },
+      {
+        "route": "/projects",
+        "ms": 627,
+        "ok": true
+      },
+      {
+        "route": "/schedule",
+        "ms": 608,
+        "ok": true
+      },
+      {
+        "route": "/projects/p1",
+        "ms": 849,
+        "ok": true
+      },
+      {
+        "route": "/management/dashboard",
+        "ms": 710,
+        "ok": true
+      },
+      {
+        "route": "/workspace/dashboard",
+        "ms": 696,
+        "ok": true
+      },
+      {
+        "route": "/projects",
+        "ms": 843,
+        "ok": true
+      },
+      {
+        "route": "/schedule",
+        "ms": 642,
+        "ok": true
+      },
+      {
+        "route": "/projects/p1",
+        "ms": 836,
+        "ok": true
+      },
+      {
+        "route": "/management/dashboard",
+        "ms": 704,
+        "ok": true
+      },
+      {
+        "route": "/workspace/dashboard",
+        "ms": 599,
+        "ok": true
+      },
+      {
+        "route": "/projects",
+        "ms": 418,
+        "ok": true
+      },
+      {
+        "route": "/schedule",
+        "ms": 719,
+        "ok": true
+      },
+      {
+        "route": "/projects/p1",
+        "ms": 465,
+        "ok": true
+      },
+      {
+        "route": "/management/dashboard",
+        "ms": 367,
+        "ok": true
+      },
+      {
+        "route": "/workspace/dashboard",
+        "ms": 4023,
+        "ok": true
+      },
+      {
+        "route": "/projects",
+        "ms": 458,
+        "ok": true
+      },
+      {
+        "route": "/schedule",
+        "ms": 858,
+        "ok": true
+      },
+      {
+        "route": "/projects/p1",
+        "ms": 972,
+        "ok": true
+      },
+      {
+        "route": "/management/dashboard",
+        "ms": 897,
+        "ok": true
+      },
+      {
+        "route": "/workspace/dashboard",
+        "ms": 791,
+        "ok": true
+      },
+      {
+        "route": "/projects",
+        "ms": 903,
+        "ok": true
+      },
+      {
+        "route": "/schedule",
+        "ms": 2094,
+        "ok": true
+      },
+      {
+        "route": "/projects/p1",
+        "ms": 1714,
+        "ok": true
+      },
+      {
+        "route": "/management/dashboard",
+        "ms": 316,
+        "ok": true
+      },
+      {
+        "route": "/workspace/dashboard",
+        "ms": 611,
+        "ok": true
+      },
+      {
+        "route": "/projects",
+        "ms": 1163,
+        "ok": true
+      },
+      {
+        "route": "/schedule",
+        "ms": 289,
+        "ok": true
+      },
+      {
+        "route": "/projects/p1",
+        "ms": 1058,
+        "ok": true
+      },
+      {
+        "route": "/management/dashboard",
+        "ms": 480,
+        "ok": true
+      }
+    ]
+  },
+  "tests": [
+    {
+      "feature": "project_management",
+      "check": "list visibility + open project",
+      "pass": false,
+      "details": {
+        "hasProjectList": true,
+        "opened": false,
+        "url": "http://172.23.150.223:3001/projects"
+      }
+    },
+    {
+      "feature": "scheduling",
+      "check": "schedule UI and primary action",
+      "pass": false,
+      "details": {
+        "hasSched": false,
+        "clicked": false
+      }
+    },
+    {
+      "feature": "collaborative_workspace",
+      "check": "canvas card create",
+      "pass": false,
+      "details": {
+        "before": 2,
+        "after": 2,
+        "clicked": false
+      }
+    }
+  ],
+  "errors": []
+}
