@@ -127,9 +127,10 @@ function tasksByDueDate(isoDate: string) {
   return workspace.tasks.filter(t => (t.due_date || '').slice(0, 10) === isoDate)
 }
 
+const { getColor } = useProjectColor()
+
 function projectColor(projectId: string) {
-  const p = workspace.projects.find(x => x.id === projectId)
-  return p?.color_code || 'rgb(var(--c-border))'
+  return getColor(projectId)
 }
 
 onMounted(async () => {

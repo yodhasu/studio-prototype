@@ -4,11 +4,11 @@
       <div
         aria-hidden="true"
         class="h-12 w-12 rounded-xl flex items-center justify-center font-bold text-lg"
-        :style="colorStyle"
+        :style="chipStyle(project.id)"
       >
         {{ project.name?.[0] || '?' }}
       </div>
-      <span class="badge" :style="badgeStyle">{{ project.status }}</span>
+      <span class="badge" :style="chipStyle(project.id)">{{ project.status }}</span>
     </div>
 
     <h3 class="mt-6 font-display text-lg font-bold text-text group-hover:text-brand transition-colors">
@@ -22,7 +22,7 @@
       <div class="mb-3 flex items-center justify-between">
         <div class="flex items-center gap-4 text-[11px] font-bold text-faint">
           <span class="flex items-center gap-1.5">
-            <span class="h-1.5 w-1.5 rounded-full" :style="{ backgroundColor: color }" />
+            <span class="h-1.5 w-1.5 rounded-full" :style="dotStyle(project.id)" />
             {{ project.card_count }} cards
           </span>
           <span class="flex items-center gap-1.5">
@@ -55,18 +55,5 @@ const props = defineProps<{
 
 const openLabel = computed(() => props.openLabel || 'Command Sheet')
 const workspaceLabel = computed(() => props.workspaceLabel || 'Workspace')
-
-const color = computed(() => props.project.color_code || 'rgb(var(--c-border))')
-
-const colorStyle = computed(() =>
-  props.project.color_code
-    ? { backgroundColor: props.project.color_code + '20', color: props.project.color_code }
-    : undefined
-)
-
-const badgeStyle = computed(() =>
-  props.project.color_code
-    ? { borderColor: props.project.color_code + '40', color: props.project.color_code }
-    : undefined
-)
+const { chipStyle, dotStyle } = useProjectColor()
 </script>
