@@ -1,5 +1,13 @@
 <template>
   <div class="relative h-full w-full overflow-hidden bg-[var(--c-bg)]">
+    <div v-if="!project" class="flex h-full items-center justify-center p-8">
+      <div class="max-w-md text-center sketch-border bg-surface p-6">
+        <p class="text-xs font-bold uppercase tracking-widest text-faint">Project Not Found</p>
+        <p class="mt-2 text-sm text-muted">The requested workspace does not exist or is unavailable.</p>
+      </div>
+    </div>
+
+    <template v-else>
     <!-- Canvas Grid -->
     <div 
       class="canvas-bg absolute z-0 transition-transform duration-0 ease-linear"
@@ -68,6 +76,18 @@
     </div>
 
     <ProjectMemberModal v-model:open="isTeamModalOpen" :project-id="(route.params.id as string)" />
+
+    <div
+      v-if="workspace.cards.length === 0"
+      class="pointer-events-none absolute inset-0 z-10 flex items-center justify-center"
+    >
+      <div class="pointer-events-auto sketch-border bg-surface/95 p-5 text-center shadow-lg">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-faint">Empty Workspace</p>
+        <p class="mt-2 text-xs text-muted">No cards yet. Create the first concept node.</p>
+        <button class="btn btn-primary mt-4" @click="addCard">Create First Card</button>
+      </div>
+    </div>
+    </template>
   </div>
 </template>
 

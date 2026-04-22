@@ -47,7 +47,11 @@
           v-for="project in workspace.projects" 
           :key="project.id" 
           class="project-card group cursor-pointer"
+          role="button"
+          tabindex="0"
           @click="openProject(project.id)"
+          @keydown.enter.prevent="openProject(project.id)"
+          @keydown.space.prevent="openProject(project.id)"
         >
           <div class="flex items-start justify-between">
             <div class="h-12 w-12 rounded-xl flex items-center justify-center font-bold text-lg" :style="project.color_code ? { backgroundColor: project.color_code + '20', color: project.color_code } : undefined">

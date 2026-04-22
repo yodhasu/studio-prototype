@@ -66,7 +66,7 @@
           </div>
           <div class="flex items-center gap-2">
             <UIcon name="i-heroicons-calendar" class="w-3.5 h-3.5 text-muted" />
-            <span class="text-[10px] font-bold uppercase tracking-widest text-faint">JUN 30</span>
+            <span class="text-[10px] font-bold uppercase tracking-widest text-faint">{{ projectDueLabel }}</span>
           </div>
         </div>
 
@@ -220,6 +220,8 @@ const projectPriority = computed(() => {
   if (!project.value) return 'Normal'
   return project.value.card_count > 10 ? 'High' : 'Normal'
 })
+
+const projectDueLabel = computed(() => 'No deadline')
 
 const isNotWorkspacePage = computed(() => {
   return router.currentRoute.value.path !== `/projects/${project.value?.id}`
