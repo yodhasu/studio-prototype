@@ -84,6 +84,17 @@ export interface ProjectActivity {
   timestamp: string
 }
 
+export interface LedgerEntry {
+  id: string
+  org_id: string
+  project_id: string
+  project_name: string
+  amount: number
+  type: LedgerType
+  description: string
+  created_at: string
+}
+
 export const useWorkspaceStore = defineStore('workspace', {
   state: () => ({
     workspaces: [{ id: 'w1', project_id: 'p1' }] as Workspace[],
@@ -92,6 +103,7 @@ export const useWorkspaceStore = defineStore('workspace', {
     projects: MOCK_PROJECTS as unknown as Project[],
     tasks: MOCK_TASKS as any[] as Task[],
     activities: MOCK_PROJECT_ACTIVITY as any[] as ProjectActivity[],
+    ledger: MOCK_LEDGER as any[] as LedgerEntry[],
     members: MOCK_PROJECT_ACTIVITY.map(a => ({ id: a.user.replace(' ', '').toLowerCase(), name: a.user, role: 'Artist' })) as StudioMember[],
     currentProject: MOCK_PROJECTS[0] as Project | null,
     dashboardMetrics: MOCK_DASHBOARD_SUMMARY,
@@ -216,6 +228,22 @@ export const useWorkspaceStore = defineStore('workspace', {
       if (!existing) return
       this.tasks[index] = { ...existing, ...updates }
       this.addLog(existing.project_id, `Updated task: ${this.tasks[index].title}`, 'TASK')
+    },
+    async createLedgerEntry(payload: { project_id: string, project_name: string, amount: number, type: LedgerType, description?: string }) {
+      if (payload.amount <= 0) return null
+      const entry: LedgerEntry = {
+        id: 'l' + Date.now(),
+        org_id: 'mock-org-1',
+        project_id: payload.project_id,
+        project_name: payload.project_name,
+        amount: payload.amount,
+        type: payload.type,
+        description: payload.description || 'Manual Entry',
+        created_at: new Date().toISOString()
+      }
+      this.ledger.unshift(entry)
+      this.addLog(payload.project_id, `Recorded ${payload.type === 'EXPENSE' ? 'expense' : 'budget'} entry`, 'SYSTEM')
+      return entry
     },
     addLog(projectId: string, message: string, type: ProjectActivity['type'] = 'SYSTEM') {
       this.activities.unshift({

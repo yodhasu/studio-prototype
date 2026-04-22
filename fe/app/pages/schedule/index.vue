@@ -12,25 +12,24 @@
       </header>
 
       <section class="dashboard-panel">
-        <div class="grid grid-cols-[100px_1fr] gap-4 text-sm" v-for="day in 7" :key="day">
-          <div class="border-r border-border/50 py-4 pr-4 font-bold text-muted">
-            Apr {{ 10 + day }}
+        <div class="grid grid-cols-[120px_1fr] gap-4 text-sm" v-for="day in timelineDays" :key="day.iso">
+          <div class="border-r border-border/50 py-4 pr-4">
+            <p class="text-[10px] font-bold uppercase tracking-widest text-faint">{{ day.weekday }}</p>
+            <p class="mt-1 font-bold text-muted">{{ day.label }}</p>
           </div>
           <div class="space-y-3 py-4">
-            <div v-if="day % 2 === 0" class="flex flex-col gap-2 rounded-lg border border-border bg-panel/30 p-3">
+            <article
+              v-for="event in eventsByDay(day.iso)"
+              :key="event.id"
+              class="flex flex-col gap-2 rounded-lg border border-border bg-panel/30 p-3"
+            >
               <div class="flex items-center gap-2">
                 <div class="h-2 w-2 rounded-full" :style="{ backgroundColor: 'rgb(var(--c-brand))' }" />
-                <span class="text-xs font-bold text-text">Milestone Delivery</span>
-                <span class="ml-auto text-[10px] text-muted">10:00 AM - 12:00 PM</span>
+                <span class="text-xs font-bold text-text">{{ event.title }}</span>
+                <span class="ml-auto text-[10px] text-muted">All Day</span>
               </div>
-            </div>
-            <div v-if="day % 3 === 0" class="flex flex-col gap-2 rounded-lg border border-border bg-panel/30 p-3">
-              <div class="flex items-center gap-2">
-                <div class="h-2 w-2 rounded-full" :style="{ backgroundColor: 'rgb(var(--c-amber))' }" />
-                <span class="text-xs font-bold text-text">Client Review Sync</span>
-                <span class="ml-auto text-[10px] text-muted">2:00 PM - 3:00 PM</span>
-              </div>
-            </div>
+            </article>
+            <p v-if="eventsByDay(day.iso).length === 0" class="text-xs text-faint italic">No scheduled events.</p>
           </div>
         </div>
       </section>
@@ -84,10 +83,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { Plus, X } from 'lucide-vue-next'
 
 type ScheduleEvent = { id: string, title: string, date: string }
+
+type TimelineDay = { iso: string, label: string, weekday: string }
 
 const showEventModal = ref(false)
 const draftTitle = ref('')
@@ -98,14 +99,37 @@ const events = ref<ScheduleEvent[]>([
   { id: 'ev-1', title: 'Weekly planning sync', date: draftDate.value }
 ])
 
+const timelineDays = computed<TimelineDay[]>(() => {
+  const today = new Date()
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(today)
+    d.setDate(today.getDate() + i)
+    const iso = d.toISOString().slice(0, 10)
+    return {
+      iso,
+      weekday: d.toLocaleDateString('en-US', { weekday: 'short' }),
+      label: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    }
+  })
+})
+
+function eventsByDay(isoDate: string) {
+  return events.value.filter(e => e.date === isoDate)
+}
+
 function closeEventModal() {
   showEventModal.value = false
   eventError.value = ''
 }
 
 function createEvent() {
+  eventError.value = ''
   if (!draftTitle.value.trim()) {
     eventError.value = 'Event title is required.'
+    return
+  }
+  if (!draftDate.value) {
+    eventError.value = 'Event date is required.'
     return
   }
 

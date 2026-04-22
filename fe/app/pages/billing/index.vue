@@ -26,16 +26,16 @@
       <section class="dashboard-panel">
         <h3 class="text-xs font-bold text-muted uppercase tracking-widest mb-6">Record New Transaction</h3>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <select class="input-base" v-model="newEntry.project">
+          <select class="input-base" v-model="newEntry.projectId">
             <option value="" disabled>Select Project</option>
-            <option v-for="p in workspace.projects" :key="p.id" :value="p.name">{{ p.name }}</option>
+            <option v-for="p in workspace.projects" :key="p.id" :value="p.id">{{ p.name }}</option>
           </select>
           <select class="input-base" v-model="newEntry.type">
             <option value="Income">Income</option>
             <option value="Expense">Expense</option>
           </select>
           <input type="number" placeholder="Amount" class="input-base" v-model.number="newEntry.amount" />
-          <button class="btn btn-primary" @click="addTransaction" :disabled="!newEntry.project || !newEntry.amount || newEntry.amount <= 0">Add Entry</button>
+          <button class="btn btn-primary" @click="addTransaction" :disabled="!newEntry.projectId || !newEntry.amount || newEntry.amount <= 0">Add Entry</button>
         </div>
         <p v-if="validationError" class="mt-3 text-xs font-semibold text-red">{{ validationError }}</p>
       </section>
@@ -57,15 +57,15 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-border/50">
-            <tr v-for="(tx, idx) in transactions" :key="idx" class="bg-surface/50 hover:bg-panel/30 transition-colors">
-              <td class="px-6 py-4 text-muted">{{ tx.date }}</td>
-              <td class="px-6 py-4 font-bold text-text">{{ tx.project }}</td>
+            <tr v-for="tx in transactions" :key="tx.id" class="bg-surface/50 hover:bg-panel/30 transition-colors">
+              <td class="px-6 py-4 text-muted">{{ formatDate(tx.created_at) }}</td>
+              <td class="px-6 py-4 font-bold text-text">{{ tx.project_name }}</td>
               <td class="px-6 py-4">
-                <span class="badge" :class="tx.type === 'Income' ? 'badge-green' : 'badge-brand'">{{ tx.type }}</span>
+                <span class="badge" :class="tx.type === 'BUDGET_ALLOCATION' ? 'badge-green' : 'badge-brand'">{{ tx.type === 'BUDGET_ALLOCATION' ? 'Income' : 'Expense' }}</span>
               </td>
-              <td class="px-6 py-4 text-muted">{{ tx.desc }}</td>
-              <td class="px-6 py-4 text-right font-mono font-bold" :class="tx.type === 'Income' ? 'text-green' : 'text-red'">
-                {{ tx.type === 'Income' ? '+' : '-' }}${{ tx.amount.toLocaleString() }}
+              <td class="px-6 py-4 text-muted">{{ tx.description }}</td>
+              <td class="px-6 py-4 text-right font-mono font-bold" :class="tx.type === 'BUDGET_ALLOCATION' ? 'text-green' : 'text-red'">
+                {{ tx.type === 'BUDGET_ALLOCATION' ? '+' : '-' }}${{ tx.amount.toLocaleString() }}
               </td>
             </tr>
           </tbody>
@@ -86,47 +86,54 @@ const { ensureSession } = useWorkspaceBoot()
 const saved = ref(false)
 const validationError = ref('')
 const newEntry = ref({
-  project: '',
+  projectId: '',
   type: 'Expense',
   amount: null as number | null
 })
 
-const transactions = ref([
-  { date: 'Apr 11, 2026', project: 'Project C3', type: 'Income', desc: 'Initial Retainer', amount: 3500 },
-  { date: 'Apr 12, 2026', project: 'Infrastructure Migration', type: 'Expense', desc: 'Consultancy Fees', amount: 1200 },
-])
+const transactions = computed(() => workspace.ledger)
 
 const totalRevenue = computed(() =>
   transactions.value
-    .filter(tx => tx.type === 'Income')
+    .filter(tx => tx.type === 'BUDGET_ALLOCATION')
     .reduce((sum, tx) => sum + tx.amount, 0)
 )
 
 const totalExpenses = computed(() =>
   transactions.value
-    .filter(tx => tx.type === 'Expense')
+    .filter(tx => tx.type === 'EXPENSE')
     .reduce((sum, tx) => sum + tx.amount, 0)
 )
 
 const netProfit = computed(() => totalRevenue.value - totalExpenses.value)
 
-const addTransaction = () => {
+const addTransaction = async () => {
   validationError.value = ''
-  if (!newEntry.value.project || !newEntry.value.amount || newEntry.value.amount <= 0) {
+  if (!newEntry.value.projectId || !newEntry.value.amount || newEntry.value.amount <= 0) {
     validationError.value = 'Please select a project and enter an amount greater than 0.'
     return
   }
-  transactions.value.unshift({
-    date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-    project: newEntry.value.project,
-    type: newEntry.value.type,
-    desc: 'Manual Entry',
-    amount: newEntry.value.amount
+
+  const project = workspace.projects.find(p => p.id === newEntry.value.projectId)
+  if (!project) {
+    validationError.value = 'Selected project is invalid.'
+    return
+  }
+
+  await workspace.createLedgerEntry({
+    project_id: project.id,
+    project_name: project.name,
+    amount: newEntry.value.amount,
+    type: newEntry.value.type === 'Income' ? 'BUDGET_ALLOCATION' : 'EXPENSE',
+    description: 'Manual Entry'
   })
+
   saved.value = true
   setTimeout(() => { saved.value = false }, 3000)
   newEntry.value.amount = null
 }
+
+const formatDate = (iso: string) => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 
 onMounted(async () => {
   await ensureSession()
