@@ -22,14 +22,14 @@
           :value="progressionValue" 
           trend="Live" 
           detail="Tasks finished across all projects"
-          tone="cyan"
+          tone="brand"
         />
         <DashboardMetricCard 
           label="Upcoming Deadlines" 
           :value="workspace.tasks.length" 
           trend="Tracked" 
           detail="Tasks and milestones due within the next 7 days."
-          tone="cyan"
+          tone="brand"
           to="/schedule"
         />
       </section>
@@ -50,10 +50,10 @@
                 @click="openProject(project.id)"
               >
                 <div class="flex items-start justify-between">
-                  <div class="h-10 w-10 rounded-lg flex items-center justify-center font-bold text-xs" :style="{ backgroundColor: project.color_code + '20', color: project.color_code }">
+                  <div class="h-10 w-10 rounded-lg flex items-center justify-center font-bold text-xs" :style="project.color_code ? { backgroundColor: project.color_code + '20', color: project.color_code } : undefined">
                     {{ project.name[0] }}
                   </div>
-                  <span class="badge" :style="{ borderColor: project.color_code + '40', color: project.color_code }">{{ project.status }}</span>
+                  <span class="badge" :style="project.color_code ? { borderColor: project.color_code + '40', color: project.color_code } : undefined">{{ project.status }}</span>
                 </div>
                 <h4 class="mt-4 font-display font-bold text-text group-hover:text-brand transition-colors">{{ project.name }}</h4>
                 <div class="mt-4 flex items-center justify-between text-[11px] text-muted">

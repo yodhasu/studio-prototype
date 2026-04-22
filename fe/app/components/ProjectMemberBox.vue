@@ -28,7 +28,7 @@
     <div class="mt-6 pt-6 border-t border-border/10">
       <UButton 
         block 
-        color="gray" 
+        color="neutral" 
         variant="ghost" 
         icon="i-heroicons-user-plus" 
         label="Add Member" 
