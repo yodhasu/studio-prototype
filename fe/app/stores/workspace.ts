@@ -42,13 +42,13 @@ export interface Card {
     lockedType?: string | null
     media?: Array<{ type: string, url?: string, name?: string }>
   }
-  media_container?: any // JSONB references
-  file_container?: any // JSONB references
+  media_container?: unknown // JSONB references
+  file_container?: unknown // JSONB references
   x_pos: number
   y_pos: number
   width: number
   height?: number
-  comments: any[]
+  comments: unknown[]
   link_count: number
 }
 
@@ -87,11 +87,11 @@ export interface ProjectActivity {
 export const useWorkspaceStore = defineStore('workspace', {
   state: () => ({
     workspaces: [{ id: 'w1', project_id: 'p1' }] as Workspace[],
-    cards: MOCK_CARDS as any[] as Card[],
+    cards: MOCK_CARDS as unknown as Card[],
     edges: MOCK_EDGES as CardEdge[],
     projects: MOCK_PROJECTS as unknown as Project[],
-    tasks: MOCK_TASKS as any[] as Task[],
-    activities: MOCK_PROJECT_ACTIVITY as any[] as ProjectActivity[],
+    tasks: MOCK_TASKS as unknown as Task[],
+    activities: MOCK_PROJECT_ACTIVITY as unknown as ProjectActivity[],
     members: MOCK_PROJECT_ACTIVITY.map(a => ({ id: a.user.replace(' ', '').toLowerCase(), name: a.user, role: 'Artist' })) as StudioMember[],
     currentProject: MOCK_PROJECTS[0] as Project | null,
     dashboardMetrics: MOCK_DASHBOARD_SUMMARY,
@@ -129,7 +129,8 @@ export const useWorkspaceStore = defineStore('workspace', {
       const pid = projectId || this.currentProject?.id
       const ws = this.workspaces.find(w => w.project_id === pid)
       if (ws) {
-        this.cards = (MOCK_CARDS as any[] as Card[]).filter(c => c.workspace_id === ws.id)
+        const allCards = MOCK_CARDS as unknown as Card[]
+        this.cards = allCards.filter(c => c.workspace_id === ws.id)
       } else {
         // Fallback or create workspace logic
         this.cards = []
