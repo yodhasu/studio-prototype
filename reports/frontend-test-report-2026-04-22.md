@@ -40,7 +40,7 @@ Single-tab CDP rule was enforced during all runs.
 - Removed invalid `task.description` fallback from `createTask()` to prevent type drift.
 
 ## Stress and feature validation results (after fixes)
-Source: `reports/feature-stress-results.json` (latest run)
+Source: `reports/feature-stress-results.json` (latest run, rerun at 2026-04-22T03:06:51.625Z)
 
 - `project_management:new-project-action` → **PASS**
 - `project_management:open-project-workspace` → **PASS**
