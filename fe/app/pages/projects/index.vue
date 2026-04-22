@@ -11,14 +11,35 @@
         </button>
       </header>
 
-      <!-- Placeholder Toast for interactivity -->
-      <div v-if="createProject" class="fixed bottom-4 right-4 bg-surface-elevated border border-brand/30 p-4 rounded-xl shadow-2xl z-50 flex flex-col gap-2 min-w-[250px]">
-        <div class="flex justify-between items-center mb-2">
-          <span class="font-bold text-sm">Create New Project</span>
-          <button @click="createProject = false" class="text-faint hover:text-text"><X class="w-4 h-4" /></button>
+      <div v-if="createProject" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" role="dialog" aria-modal="true">
+        <div class="w-full max-w-md rounded-2xl border border-border bg-surface p-5 shadow-2xl">
+          <div class="mb-4 flex items-center justify-between">
+            <h2 class="font-display text-lg font-bold text-text">Create New Project</h2>
+            <button @click="closeCreateModal" class="text-faint hover:text-text" aria-label="Close create project modal"><X class="h-4 w-4" /></button>
+          </div>
+
+          <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-faint">Project Name</label>
+          <input
+            v-model="newProjectName"
+            class="mb-4 w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 text-sm text-text outline-none focus:border-brand"
+            placeholder="e.g. Campaign Revamp"
+            @keydown.enter.prevent="submitCreateProject"
+          >
+
+          <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-faint">Accent Color</label>
+          <input
+            v-model="newProjectColor"
+            type="color"
+            class="mb-5 h-10 w-20 cursor-pointer rounded border border-border bg-surface-elevated"
+          >
+
+          <p v-if="createError" class="mb-3 text-xs text-red-400">{{ createError }}</p>
+
+          <div class="flex justify-end gap-2">
+            <button class="btn" @click="closeCreateModal">Cancel</button>
+            <button class="btn btn-primary" @click="submitCreateProject">Create Project</button>
+          </div>
         </div>
-        <p class="text-xs text-muted mb-4">Project creation wizard coming soon.</p>
-        <button class="btn btn-primary w-full" @click="createProject = false">Acknowledge</button>
       </div>
 
       <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -37,22 +58,26 @@
           <h3 class="mt-6 font-display text-lg font-bold text-text group-hover:text-brand transition-colors">{{ project.name }}</h3>
           <p class="mt-2 text-sm text-muted line-clamp-2 italic">Standard production environment for {{ project.name.toLowerCase() }}.</p>
           
-          <div class="mt-8 flex items-center justify-between border-t border-border/50 pt-4">
-            <div class="flex items-center gap-4 text-[11px] font-bold text-faint">
-              <span class="flex items-center gap-1.5"><FolderKanban class="h-3.5 w-3.5" /> {{ project.card_count }}</span>
-              <span class="flex items-center gap-1.5"><CalendarDays class="h-3.5 w-3.5" /> {{ project.task_count }}</span>
+          <div class="mt-8 border-t border-border/50 pt-4">
+            <div class="mb-3 flex items-center justify-between">
+              <div class="flex items-center gap-4 text-[11px] font-bold text-faint">
+                <span class="flex items-center gap-1.5"><FolderKanban class="h-3.5 w-3.5" /> {{ project.card_count }}</span>
+                <span class="flex items-center gap-1.5"><CalendarDays class="h-3.5 w-3.5" /> {{ project.task_count }}</span>
+              </div>
+              <ArrowRight class="h-4 w-4 text-faint group-hover:translate-x-1 group-hover:text-brand transition-all" />
             </div>
-            <ArrowRight class="h-4 w-4 text-faint group-hover:translate-x-1 group-hover:text-brand transition-all" />
+            <NuxtLink
+              class="btn btn-ghost w-full justify-center text-xs"
+              :to="`/projects/${project.id}`"
+              @click.stop
+            >
+              Open Workspace
+            </NuxtLink>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Project Detail Sidebar -->
-    <ProjectDetailSidebar 
-      v-model:open="isSidebarOpen" 
-      :project-id="selectedProjectId" 
-    />
   </div>
 </template>
 
@@ -65,12 +90,38 @@ import { useWorkspaceBoot } from '~/composables/useWorkspaceBoot'
 const workspace = useWorkspaceStore()
 const { ensureSession } = useWorkspaceBoot()
 const createProject = ref(false)
-const isSidebarOpen = ref(false)
-const selectedProjectId = ref<string | null>(null)
+const newProjectName = ref('')
+const newProjectColor = ref('#6A5AF9')
+const createError = ref('')
 
 function openProject(id: string) {
-  selectedProjectId.value = id
-  isSidebarOpen.value = true
+  navigateTo(`/projects/${id}`)
+}
+
+function closeCreateModal() {
+  createProject.value = false
+  createError.value = ''
+}
+
+async function submitCreateProject() {
+  if (!newProjectName.value.trim()) {
+    createError.value = 'Project name is required.'
+    return
+  }
+
+  const created = await workspace.createProject({
+    name: newProjectName.value,
+    color_code: newProjectColor.value
+  })
+
+  if (!created) {
+    createError.value = 'Failed to create project.'
+    return
+  }
+
+  closeCreateModal()
+  newProjectName.value = ''
+  await navigateTo(`/projects/${created.id}`)
 }
 
 onMounted(async () => {

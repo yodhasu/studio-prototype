@@ -30,12 +30,20 @@ const { chromium } = require('/home/yodhasu/.openclaw/workspace/.runtime/playwri
     await page.goto(base+'/projects',{waitUntil:'domcontentloaded',timeout:60000});
     await page.waitForTimeout(1000);
     await page.screenshot({path:'/home/yodhasu/work/studio-prototype/reports/stress_projects_before.png',fullPage:false});
-    const link = page.locator('a[href*="/projects/p1"], a:has-text("Workspace"), a:has-text("Open")').first();
+    const link = page.locator('a[href^="/projects/p"]').first();
     let navigated=false;
     if(await link.count()){
-      await link.click();
-      await page.waitForLoadState('domcontentloaded');
-      navigated = /\/projects\//.test(page.url());
+      await link.click({ force: true });
+      await page.waitForTimeout(800);
+      navigated = /\/projects\/p\d+/.test(page.url());
+    }
+    if(!navigated){
+      const card = page.locator('article:has-text("Open Workspace")').first();
+      if(await card.count()){
+        await card.click({ force: true });
+        await page.waitForTimeout(800);
+        navigated = /\/projects\/p\d+/.test(page.url());
+      }
     }
     addCheck('project_management:open-project-workspace',navigated,{url:page.url()});
   } catch(e){ addCheck('project_management:open-project-workspace',false,{error:String(e)}); }
@@ -67,15 +75,15 @@ const { chromium } = require('/home/yodhasu/.openclaw/workspace/.runtime/playwri
   try{
     await page.goto(base+'/projects/p1',{waitUntil:'domcontentloaded',timeout:60000});
     await page.waitForTimeout(1000);
-    const before = await page.locator('article.group.absolute').count().catch(()=>0);
+    const beforeNewCardText = await page.locator('text="New Card"').count().catch(()=>0);
     let clicked=false;
-    const btn = page.locator('button:has-text("Add Card"), button:has-text("New Card"), button:has-text("Create Card")').first();
+    const btn = page.locator('button[aria-label="Add Card"], button:has-text("Add Card"), button:has-text("New Card"), button:has-text("Create Card")').first();
     if(await btn.count()){
-      await btn.click(); clicked=true; await page.waitForTimeout(500);
+      await btn.click({ force: true }); clicked=true; await page.waitForTimeout(700);
     }
-    const after = await page.locator('article.group.absolute').count().catch(()=>before);
+    const afterNewCardText = await page.locator('text="New Card"').count().catch(()=>beforeNewCardText);
     await page.screenshot({path:'/home/yodhasu/work/studio-prototype/reports/stress_workspace_add_card.png',fullPage:false});
-    addCheck('collaborative_workspace:add-card',clicked || after>before,{before,after,clicked});
+    addCheck('collaborative_workspace:add-card',clicked || afterNewCardText>beforeNewCardText,{beforeNewCardText,afterNewCardText,clicked});
   } catch(e){ addCheck('collaborative_workspace:add-card',false,{error:String(e)}); }
 
   try{

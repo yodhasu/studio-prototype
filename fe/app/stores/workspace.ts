@@ -38,6 +38,7 @@ export interface Card {
   title: string
   description?: string
   text?: string // Rich Text / Markdown
+  content?: { media?: Array<{ type: string, url: string }> }
   media_container?: any // JSONB references
   file_container?: any // JSONB references
   x_pos: number
@@ -94,6 +95,29 @@ export const useWorkspaceStore = defineStore('workspace', {
     loading: false,
   }),
   actions: {
+    async fetchProjects() {
+      this.projects = [...MOCK_PROJECTS]
+      return this.projects
+    },
+    async createProject(payload: { name: string, description?: string, color_code?: string }) {
+      const name = payload.name.trim()
+      if (!name) return null
+
+      const project: Project = {
+        id: 'p' + Date.now(),
+        org_id: 'mock-org-1',
+        name,
+        description: payload.description,
+        color_code: payload.color_code || '#6A5AF9',
+        status: 'Planning',
+        card_count: 0,
+        task_count: 0,
+        member_ids: []
+      }
+
+      this.projects.unshift(project)
+      return project
+    },
     async fetchDashboardSummary() {
       this.dashboardMetrics = MOCK_DASHBOARD_SUMMARY
       return MOCK_DASHBOARD_SUMMARY
@@ -164,7 +188,7 @@ export const useWorkspaceStore = defineStore('workspace', {
         id: 't' + Date.now(),
         project_id: task.project_id!,
         title: task.title || 'New Task',
-        detail: task.detail || task.description || '',
+        detail: task.detail || '',
         status: task.status || 'TODO',
         due_date: task.due_date || new Date().toISOString(),
         priority: task.priority || 'MEDIUM',

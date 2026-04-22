@@ -8,6 +8,7 @@
         </div>
         <div class="flex items-center gap-3">
           <NuxtLink to="/billing" class="btn btn-ghost">Financial Ledger</NuxtLink>
+          <button class="btn" @click="openNewProjectModal">New Project</button>
           <button class="btn btn-primary">Generate Report</button>
         </div>
       </header>
@@ -83,16 +84,70 @@
           </div>
         </article>
       </div>
+
+      <div v-if="showCreateProject" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" role="dialog" aria-modal="true">
+        <div class="w-full max-w-md rounded-xl border border-border bg-surface p-5 shadow-2xl">
+          <div class="mb-4 flex items-center justify-between">
+            <h2 class="font-display text-lg font-bold text-text">Create New Project</h2>
+            <button class="text-faint hover:text-text" @click="closeNewProjectModal" aria-label="Close create project modal">✕</button>
+          </div>
+
+          <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-faint">Project Name</label>
+          <input
+            v-model="newProjectName"
+            class="mb-4 w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 text-sm text-text outline-none focus:border-brand"
+            placeholder="e.g. New Enterprise Program"
+          >
+
+          <p v-if="createProjectError" class="mb-3 text-xs text-red-400">{{ createProjectError }}</p>
+
+          <div class="flex justify-end gap-2">
+            <button class="btn" @click="closeNewProjectModal">Cancel</button>
+            <button class="btn btn-primary" @click="createProjectFromManagement">Create Project</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useWorkspaceStore } from '~/stores/workspace'
 import { useWorkspaceBoot } from '~/composables/useWorkspaceBoot'
 
 const workspace = useWorkspaceStore()
 const { ensureSession } = useWorkspaceBoot()
+
+const showCreateProject = ref(false)
+const newProjectName = ref('')
+const createProjectError = ref('')
+
+function openNewProjectModal() {
+  showCreateProject.value = true
+}
+
+function closeNewProjectModal() {
+  showCreateProject.value = false
+  createProjectError.value = ''
+}
+
+async function createProjectFromManagement() {
+  if (!newProjectName.value.trim()) {
+    createProjectError.value = 'Project name is required.'
+    return
+  }
+
+  const created = await workspace.createProject({ name: newProjectName.value })
+  if (!created) {
+    createProjectError.value = 'Failed to create project.'
+    return
+  }
+
+  closeNewProjectModal()
+  newProjectName.value = ''
+  await navigateTo(`/projects/${created.id}`)
+}
 
 const teamCapacity = [
   { name: 'Alex Mercer', role: 'Lead Illustrator', percent: 95 },

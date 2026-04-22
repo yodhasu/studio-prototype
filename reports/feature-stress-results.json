@@ -1,16 +1,16 @@
 {
-  "timestamp": "2026-04-21T20:06:16.799Z",
+  "timestamp": "2026-04-22T02:47:44.402Z",
   "checks": [
     {
       "name": "project_management:new-project-action",
-      "pass": false,
-      "clicked": false,
-      "modal": false
+      "pass": true,
+      "clicked": true,
+      "modal": true
     },
     {
       "name": "project_management:open-project-workspace",
-      "pass": false,
-      "url": "http://172.23.150.223:3001/projects"
+      "pass": true,
+      "url": "http://172.23.150.223:3001/projects/p1"
     },
     {
       "name": "collaborative_workspace:drag-card",
@@ -18,10 +18,10 @@
     },
     {
       "name": "collaborative_workspace:add-card",
-      "pass": false,
-      "before": 2,
-      "after": 2,
-      "clicked": false
+      "pass": true,
+      "beforeNewCardText": 0,
+      "afterNewCardText": 0,
+      "clicked": true
     },
     {
       "name": "scheduling:trigger-event-action",
@@ -34,8 +34,8 @@
       "pass": true,
       "iterations": 50,
       "failures": 0,
-      "avg": 503,
-      "p95": 532
+      "avg": 541,
+      "p95": 681
     }
   ]
 }

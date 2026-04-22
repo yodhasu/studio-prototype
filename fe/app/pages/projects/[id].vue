@@ -39,8 +39,9 @@
       <!-- Main Actions Block -->
       <div class="flex items-center gap-1.5 sketch-border bg-surface/90 backdrop-blur-md p-1.5 shadow-lg">
         <div class="flex items-center px-1">
-          <button class="btn btn-ghost h-8 w-8 !p-0 hover:bg-brand/5 hover:text-brand transition-all" title="Add Card" @click="addCard">
+          <button class="btn btn-ghost h-8 w-8 !p-0 hover:bg-brand/5 hover:text-brand transition-all" title="Add Card" aria-label="Add Card" @click="addCard">
             <Plus class="h-4.5 w-4.5" />
+            <span class="sr-only">Add Card</span>
           </button>
         </div>
         <div class="h-6 w-px bg-border/40 mx-0.5"></div>
