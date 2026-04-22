@@ -3,119 +3,138 @@
     <div class="mx-auto max-w-7xl space-y-8">
       <header class="flex items-end justify-between">
         <div>
-          <h1 class="font-display text-2xl font-bold tracking-tight text-text">Production Schedule</h1>
-          <p class="mt-1 text-sm text-muted">Timeline view of active production workstreams.</p>
+          <h1 class="font-display text-2xl font-bold tracking-tight text-text">Schedule</h1>
+          <p class="mt-1 text-sm text-muted">Kanban for production flow, calendar for date-bound visibility.</p>
         </div>
-        <button class="btn btn-primary" @click="showEventModal = true">
-          <Plus class="mr-2 h-4 w-4" /> Schedule Event
-        </button>
+
+        <div class="flex items-center gap-2 sketch-border bg-surface p-1">
+          <button
+            class="px-3 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg"
+            :class="mode === 'kanban' ? 'bg-panel/40 text-text' : 'text-faint hover:text-muted'"
+            @click="mode = 'kanban'"
+          >
+            Kanban
+          </button>
+          <button
+            class="px-3 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg"
+            :class="mode === 'calendar' ? 'bg-panel/40 text-text' : 'text-faint hover:text-muted'"
+            @click="mode = 'calendar'"
+          >
+            Calendar
+          </button>
+        </div>
       </header>
 
-      <section class="dashboard-panel">
-        <div class="grid grid-cols-[100px_1fr] gap-4 text-sm" v-for="day in 7" :key="day">
-          <div class="border-r border-border/50 py-4 pr-4 font-bold text-muted">
-            Apr {{ 10 + day }}
-          </div>
-          <div class="space-y-3 py-4">
-            <div v-if="day % 2 === 0" class="flex flex-col gap-2 rounded-lg border border-border bg-panel/30 p-3">
-              <div class="flex items-center gap-2">
-                <div class="h-2 w-2 rounded-full" :style="{ backgroundColor: 'rgb(var(--c-brand))' }" />
-                <span class="text-xs font-bold text-text">Milestone Delivery</span>
-                <span class="ml-auto text-[10px] text-muted">10:00 AM - 12:00 PM</span>
-              </div>
-            </div>
-            <div v-if="day % 3 === 0" class="flex flex-col gap-2 rounded-lg border border-border bg-panel/30 p-3">
-              <div class="flex items-center gap-2">
-                <div class="h-2 w-2 rounded-full" :style="{ backgroundColor: 'rgb(var(--c-amber))' }" />
-                <span class="text-xs font-bold text-text">Client Review Sync</span>
-                <span class="ml-auto text-[10px] text-muted">2:00 PM - 3:00 PM</span>
-              </div>
-            </div>
-          </div>
+      <!-- Kanban view -->
+      <section v-if="mode === 'kanban'" class="space-y-6">
+        <div class="grid grid-cols-1 gap-6 xl:grid-cols-4">
+          <KanbanColumn v-model="draftList" title="Draft" subtitle="TODO" @moved="(id) => setStatus(id, 'TODO')" />
+          <KanbanColumn v-model="reviewList" title="Review" subtitle="PROGRESS" @moved="(id) => setStatus(id, 'PROGRESS')" />
+          <KanbanColumn v-model="polishList" title="Polish" subtitle="BLOCKED" @moved="(id) => setStatus(id, 'BLOCKED')" />
+          <KanbanColumn v-model="finalList" title="Final" subtitle="DONE" @moved="(id) => setStatus(id, 'DONE')" />
         </div>
+
+        <p class="text-xs text-faint italic">
+          Drag between columns updates task status.
+        </p>
       </section>
 
-      <section class="dashboard-panel">
-        <h2 class="mb-3 text-sm font-semibold uppercase tracking-wide text-faint">Scheduled Events</h2>
-        <div v-if="events.length" class="space-y-3">
-          <article v-for="event in events" :key="event.id" class="rounded-xl border border-border/70 bg-surface/70 p-4">
+      <!-- Calendar view (week list) -->
+      <section v-else class="dashboard-panel">
+        <h2 class="text-xs font-bold uppercase tracking-widest text-muted">Week View</h2>
+        <div class="mt-6 space-y-4">
+          <div v-for="day in weekDays" :key="day.iso" class="sketch-border bg-panel/20 p-4">
             <div class="flex items-center justify-between">
-              <p class="text-sm font-semibold text-text">{{ event.title }}</p>
-              <span class="text-xs text-faint">{{ event.date }}</span>
+              <div>
+                <p class="text-[10px] font-bold uppercase tracking-widest text-faint">{{ day.weekday }}</p>
+                <p class="mt-1 text-sm font-bold text-text">{{ day.label }}</p>
+              </div>
+              <span class="text-[10px] font-mono text-muted">{{ day.iso }}</span>
             </div>
-          </article>
+
+            <div class="mt-4 space-y-2">
+              <NuxtLink
+                v-for="t in tasksByDueDate(day.iso)"
+                :key="t.id"
+                class="flex items-center gap-3 rounded-lg border border-border bg-surface/60 p-3 hover:border-brand/30 transition-colors"
+                :to="`/projects/${t.project_id}`"
+              >
+                <div class="h-2 w-2 rounded-full" :style="{ backgroundColor: projectColor(t.project_id) }"></div>
+                <div class="min-w-0 flex-1">
+                  <p class="truncate text-xs font-bold text-text">{{ t.title }}</p>
+                  <p class="truncate text-[10px] text-muted">{{ t.project_name || 'Project' }} • {{ t.status }}</p>
+                </div>
+              </NuxtLink>
+
+              <p v-if="tasksByDueDate(day.iso).length === 0" class="text-xs text-faint italic">No date-bound items.</p>
+            </div>
+          </div>
         </div>
-        <p v-else class="text-sm text-muted">No events scheduled yet.</p>
       </section>
-
-      <div v-if="showEventModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" role="dialog" aria-modal="true">
-        <div class="w-full max-w-md rounded-xl border border-border bg-surface p-6 shadow-2xl">
-          <div class="mb-4 flex items-center justify-between">
-            <h2 class="font-display text-lg font-bold">Schedule Event</h2>
-            <button @click="closeEventModal" class="text-faint hover:text-text" aria-label="Close schedule event modal">
-              <X class="h-4 w-4" />
-            </button>
-          </div>
-
-          <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-faint">Title</label>
-          <input
-            v-model="draftTitle"
-            class="mb-4 w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 text-sm text-text outline-none focus:border-brand"
-            placeholder="e.g. Client review"
-          >
-
-          <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-faint">Date</label>
-          <input
-            v-model="draftDate"
-            type="date"
-            class="mb-5 w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 text-sm text-text outline-none focus:border-brand"
-          >
-
-          <p v-if="eventError" class="mb-3 text-xs text-red-400">{{ eventError }}</p>
-
-          <div class="flex justify-end gap-2">
-            <button class="btn" @click="closeEventModal">Cancel</button>
-            <button class="btn btn-primary" @click="createEvent">Add Event</button>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Plus, X } from 'lucide-vue-next'
+import { computed, ref, watch } from 'vue'
+import { useWorkspaceStore, type Task, type TaskStatus } from '~/stores/workspace'
+import { useWorkspaceBoot } from '~/composables/useWorkspaceBoot'
 
-type ScheduleEvent = { id: string, title: string, date: string }
+const workspace = useWorkspaceStore()
+const { ensureSession } = useWorkspaceBoot()
 
-const showEventModal = ref(false)
-const draftTitle = ref('')
-const draftDate = ref(new Date().toISOString().slice(0, 10))
-const eventError = ref('')
+const mode = ref<'kanban' | 'calendar'>('kanban')
 
-const events = ref<ScheduleEvent[]>([
-  { id: 'ev-1', title: 'Weekly planning sync', date: draftDate.value }
-])
+const draftList = ref<Task[]>([])
+const reviewList = ref<Task[]>([])
+const polishList = ref<Task[]>([])
+const finalList = ref<Task[]>([])
 
-function closeEventModal() {
-  showEventModal.value = false
-  eventError.value = ''
+function syncFromStore() {
+  draftList.value = workspace.tasks.filter(t => t.status === 'TODO')
+  reviewList.value = workspace.tasks.filter(t => t.status === 'PROGRESS')
+  polishList.value = workspace.tasks.filter(t => t.status === 'BLOCKED')
+  finalList.value = workspace.tasks.filter(t => t.status === 'DONE')
 }
 
-function createEvent() {
-  if (!draftTitle.value.trim()) {
-    eventError.value = 'Event title is required.'
-    return
-  }
+watch(() => workspace.tasks.map(t => `${t.id}:${t.status}`).join('|'), () => {
+  syncFromStore()
+})
 
-  events.value.unshift({
-    id: `ev-${Date.now()}`,
-    title: draftTitle.value.trim(),
-    date: draftDate.value
+function setStatus(taskId: string, status: TaskStatus) {
+  workspace.updateTask(taskId, { status })
+  // Re-sync lists after state change to keep cross-column drag stable.
+  syncFromStore()
+}
+
+type WeekDay = { iso: string, label: string, weekday: string }
+
+const weekDays = computed<WeekDay[]>(() => {
+  const today = new Date()
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(today)
+    d.setDate(today.getDate() + i)
+    const iso = d.toISOString().slice(0, 10)
+    return {
+      iso,
+      weekday: d.toLocaleDateString('en-US', { weekday: 'short' }),
+      label: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    }
   })
+})
 
-  draftTitle.value = ''
-  closeEventModal()
+function tasksByDueDate(isoDate: string) {
+  return workspace.tasks.filter(t => (t.due_date || '').slice(0, 10) === isoDate)
 }
+
+function projectColor(projectId: string) {
+  const p = workspace.projects.find(x => x.id === projectId)
+  return p?.color_code || 'rgb(var(--c-border))'
+}
+
+onMounted(async () => {
+  await ensureSession()
+  await workspace.fetchProjects()
+  syncFromStore()
+})
 </script>
