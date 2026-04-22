@@ -10,9 +10,8 @@
   >
     <template #header>
       <div class="px-8 pt-10 pr-20 pb-4 relative">
-        <div class="absolute top-9 right-14 flex gap-1">
-          <UButton icon="i-heroicons-pencil-square" variant="ghost" color="gray" size="xs" />
-          <UButton icon="i-heroicons-share" variant="ghost" color="gray" size="xs" />
+        <div class="absolute top-9 right-14">
+          <span class="text-[9px] font-bold uppercase tracking-widest text-faint">Edit flow pending</span>
         </div>
         <h2 class="text-xl font-bold text-foreground line-clamp-1 tracking-tight">{{ project?.name || 'Workspace Context' }}</h2>
         <p class="text-[13px] text-muted line-clamp-2 mt-1 leading-snug">{{ project?.description || 'Active production workspace.' }}</p>
@@ -43,7 +42,7 @@
             <span class="text-[10px] font-bold text-muted uppercase tracking-widest px-1">Collaborators</span>
             <UButton 
               variant="link" 
-              color="gray" 
+              color="neutral" 
               size="xs" 
               label="Open Team" 
               @click="showMembers = true" 
@@ -56,7 +55,7 @@
             </div>
             <div class="space-y-1">
               <p class="text-[11px] font-bold uppercase tracking-widest text-text">Team Directory</p>
-              <p class="text-[10px] text-faint">{{ project ? project.member_ids.length : 0 }} collaborators hidden until opened</p>
+              <p class="text-[10px] text-faint">{{ project?.member_ids?.length ?? 0 }} collaborators hidden until opened</p>
             </div>
             <div class="ml-auto flex items-center text-faint">
               <UIcon name="i-heroicons-chevron-right" class="w-4 h-4" />
@@ -86,7 +85,7 @@
                 block 
                 icon="i-heroicons-banknotes" 
                 label="View Financials" 
-                color="gray" 
+                color="neutral" 
                 variant="ghost" 
                 class="h-10 rounded-lg text-[10px] font-bold uppercase tracking-widest text-faint hover:text-brand transition-colors"
                 @click="handleMonetization"
@@ -124,7 +123,7 @@
     <template #footer>
       <div class="absolute bottom-6 left-0 right-0 flex justify-center px-8">
         <UButton 
-          color="black" 
+          color="primary" 
           label="Enter Studio Workspace" 
           icon="i-heroicons-arrow-right-circle" 
           @click="goToWorkspace" 
@@ -143,7 +142,7 @@
           <UIcon name="i-heroicons-users" class="w-5 h-5 text-brand" />
           Collaborators
         </h3>
-        <UButton color="gray" variant="ghost" icon="i-heroicons-x-mark" @click="showMembers = false" />
+        <UButton color="neutral" variant="ghost" icon="i-heroicons-x-mark" @click="showMembers = false" />
       </div>
       <ProjectMemberBox v-if="project" :project-id="project.id" />
     </div>

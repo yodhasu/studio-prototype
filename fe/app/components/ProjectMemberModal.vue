@@ -1,13 +1,13 @@
 <template>
   <UModal v-model:open="isOpen" :ui="{ overlay: 'z-[100]', content: 'z-[101]' }">
-    <UCard :ui="{ ring: '', divide: 'divide-y divide-border' }">
+    <UCard variant="outline" :ui="{ root: 'divide-y divide-border ring-0' }">
       <template #header>
         <div class="flex items-center justify-between">
           <h3 class="text-base font-semibold leading-6 text-text">
             Project Members
           </h3>
           <UButton 
-            color="gray" 
+            color="neutral" 
             variant="ghost" 
             icon="i-heroicons-x-mark-20-solid" 
             class="-my-1" 

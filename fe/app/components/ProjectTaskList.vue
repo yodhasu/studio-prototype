@@ -67,7 +67,7 @@
 import { ref, computed } from 'vue'
 import { Calendar, ArrowUpRight, ChevronDown } from 'lucide-vue-next'
 import { useWorkspaceStore } from '~/stores/workspace'
-import type { Task } from '~/stores/workspace'
+import type { Task, TaskStatus } from '~/stores/workspace'
 
 const props = defineProps<{
   projectId: string
@@ -84,8 +84,8 @@ const projectTasks = computed(() => {
     .filter(t => t.project_id === props.projectId)
     .sort((a, b) => {
       // Sort by due date first
-      const dateA = new Date(a.due_date).getTime()
-      const dateB = new Date(b.due_date).getTime()
+      const dateA = a.due_date ? new Date(a.due_date).getTime() : Number.POSITIVE_INFINITY
+      const dateB = b.due_date ? new Date(b.due_date).getTime() : Number.POSITIVE_INFINITY
       if (dateA !== dateB) return dateA - dateB
       
       // Then by priority
@@ -109,12 +109,12 @@ function getPriorityClass(priority: string) {
   }
 }
 
-function getStatusColor(status: string) {
+function getStatusColor(status: TaskStatus): 'success' | 'info' | 'error' | 'neutral' {
   switch (status) {
-    case 'DONE': return 'green'
-    case 'PROGRESS': return 'blue'
-    case 'BLOCKED': return 'red'
-    default: return 'gray'
+    case 'DONE': return 'success'
+    case 'PROGRESS': return 'info'
+    case 'BLOCKED': return 'error'
+    default: return 'neutral'
   }
 }
 

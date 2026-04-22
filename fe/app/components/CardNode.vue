@@ -215,9 +215,9 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   select: [id: string]
-  dragStart: [payload: { id: string, event: MouseEvent }]
+  'drag-start': [payload: { id: string; event: MouseEvent }]
   update: [payload: any]
-  'link-start': [payload: { id: string, anchor: 'top' | 'right' | 'bottom' | 'left', event: MouseEvent }]
+  'link-start': [payload: { id: string; anchor: 'top' | 'right' | 'bottom' | 'left'; event: MouseEvent }]
   'link-hover': [id: string | null]
   'link-drop': [id: string]
 }>()

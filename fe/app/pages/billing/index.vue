@@ -11,15 +11,15 @@
       <section class="grid grid-cols-1 gap-6 md:grid-cols-3">
         <div class="project-card border-green/20 bg-green/5">
           <p class="text-[10px] font-bold uppercase tracking-widest text-green">Total Revenue</p>
-          <p class="mt-4 font-display text-3xl font-bold text-green">$150,000</p>
+          <p class="mt-4 font-display text-3xl font-bold text-green">${{ totalRevenue.toLocaleString() }}</p>
         </div>
         <div class="project-card border-red/20 bg-red/5">
           <p class="text-[10px] font-bold uppercase tracking-widest text-red">Total Expenses</p>
-          <p class="mt-4 font-display text-3xl font-bold text-red">$45,000</p>
+          <p class="mt-4 font-display text-3xl font-bold text-red">${{ totalExpenses.toLocaleString() }}</p>
         </div>
         <div class="project-card border-brand/20 bg-brand/5">
           <p class="text-[10px] font-bold uppercase tracking-widest text-brand">Net Profit</p>
-          <p class="mt-4 font-display text-3xl font-bold text-text">$105,000</p>
+          <p class="mt-4 font-display text-3xl font-bold text-text">${{ netProfit.toLocaleString() }}</p>
         </div>
       </section>
 
@@ -35,8 +35,9 @@
             <option value="Expense">Expense</option>
           </select>
           <input type="number" placeholder="Amount" class="input-base" v-model.number="newEntry.amount" />
-          <button class="btn btn-primary" @click="addTransaction" :disabled="!newEntry.project || !newEntry.amount">Add Entry</button>
+          <button class="btn btn-primary" @click="addTransaction" :disabled="!newEntry.project || !newEntry.amount || newEntry.amount <= 0">Add Entry</button>
         </div>
+        <p v-if="validationError" class="mt-3 text-xs font-semibold text-red">{{ validationError }}</p>
       </section>
 
       <!-- Success Toast -->
@@ -75,7 +76,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useWorkspaceStore } from '~/stores/workspace'
 import { useWorkspaceBoot } from '~/composables/useWorkspaceBoot'
 
@@ -83,6 +84,7 @@ const workspace = useWorkspaceStore()
 const { ensureSession } = useWorkspaceBoot()
 
 const saved = ref(false)
+const validationError = ref('')
 const newEntry = ref({
   project: '',
   type: 'Expense',
@@ -94,8 +96,26 @@ const transactions = ref([
   { date: 'Apr 12, 2026', project: 'Infrastructure Migration', type: 'Expense', desc: 'Consultancy Fees', amount: 1200 },
 ])
 
+const totalRevenue = computed(() =>
+  transactions.value
+    .filter(tx => tx.type === 'Income')
+    .reduce((sum, tx) => sum + tx.amount, 0)
+)
+
+const totalExpenses = computed(() =>
+  transactions.value
+    .filter(tx => tx.type === 'Expense')
+    .reduce((sum, tx) => sum + tx.amount, 0)
+)
+
+const netProfit = computed(() => totalRevenue.value - totalExpenses.value)
+
 const addTransaction = () => {
-  if (!newEntry.value.project || !newEntry.value.amount) return
+  validationError.value = ''
+  if (!newEntry.value.project || !newEntry.value.amount || newEntry.value.amount <= 0) {
+    validationError.value = 'Please select a project and enter an amount greater than 0.'
+    return
+  }
   transactions.value.unshift({
     date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
     project: newEntry.value.project,

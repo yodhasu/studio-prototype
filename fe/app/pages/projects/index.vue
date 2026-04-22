@@ -50,10 +50,10 @@
           @click="openProject(project.id)"
         >
           <div class="flex items-start justify-between">
-            <div class="h-12 w-12 rounded-xl flex items-center justify-center font-bold text-lg" :style="{ backgroundColor: project.color_code + '20', color: project.color_code }">
+            <div class="h-12 w-12 rounded-xl flex items-center justify-center font-bold text-lg" :style="project.color_code ? { backgroundColor: project.color_code + '20', color: project.color_code } : undefined">
               {{ project.name[0] }}
             </div>
-            <span class="badge" :style="{ borderColor: project.color_code + '40', color: project.color_code }">{{ project.status }}</span>
+            <span class="badge" :style="project.color_code ? { borderColor: project.color_code + '40', color: project.color_code } : undefined">{{ project.status }}</span>
           </div>
           <h3 class="mt-6 font-display text-lg font-bold text-text group-hover:text-brand transition-colors">{{ project.name }}</h3>
           <p class="mt-2 text-sm text-muted line-clamp-2 italic">Standard production environment for {{ project.name.toLowerCase() }}.</p>
@@ -96,7 +96,7 @@ const { ensureSession } = useWorkspaceBoot()
 
 const route = useRoute()
 const isSidebarOpen = ref(false)
-const selectedProjectId = ref<string | null>(null)
+const selectedProjectId = ref<string | undefined>(undefined)
 const createProject = ref(false)
 const newProjectName = ref('')
 const newProjectColor = ref('#6A5AF9')
@@ -146,7 +146,7 @@ onMounted(async () => {
 
 watch(isSidebarOpen, (open) => {
   if (open) return
-  selectedProjectId.value = null
+  selectedProjectId.value = undefined
   const q = { ...route.query } as Record<string, any>
   delete q.open
   navigateTo({ path: '/projects', query: q }, { replace: true })

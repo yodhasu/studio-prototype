@@ -38,7 +38,10 @@ export interface Card {
   title: string
   description?: string
   text?: string // Rich Text / Markdown
-  content?: { media?: Array<{ type: string, url: string }> }
+  content?: {
+    lockedType?: string | null
+    media?: Array<{ type: string; url?: string; name?: string }>
+  }
   media_container?: any // JSONB references
   file_container?: any // JSONB references
   x_pos: number
