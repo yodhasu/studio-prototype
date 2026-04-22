@@ -11,3 +11,8 @@ progress.md
 implementation_plan.md
 task.md
 walkthrough.md
+
+# Local agent artifacts
+_inbound/
+reports/
+fe/evidence/

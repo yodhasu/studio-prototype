@@ -89,7 +89,7 @@ export const useWorkspaceStore = defineStore('workspace', {
     workspaces: [{ id: 'w1', project_id: 'p1' }] as Workspace[],
     cards: MOCK_CARDS as any[] as Card[],
     edges: MOCK_EDGES as CardEdge[],
-    projects: MOCK_PROJECTS as Project[],
+    projects: MOCK_PROJECTS as unknown as Project[],
     tasks: MOCK_TASKS as any[] as Task[],
     activities: MOCK_PROJECT_ACTIVITY as any[] as ProjectActivity[],
     members: MOCK_PROJECT_ACTIVITY.map(a => ({ id: a.user.replace(' ', '').toLowerCase(), name: a.user, role: 'Artist' })) as StudioMember[],
@@ -99,7 +99,7 @@ export const useWorkspaceStore = defineStore('workspace', {
   }),
   actions: {
     async fetchProjects() {
-      this.projects = [...MOCK_PROJECTS]
+      this.projects = [...MOCK_PROJECTS] as unknown as Project[]
       return this.projects
     },
     async createProject(payload: { name: string, description?: string, color_code?: string }) {
@@ -136,11 +136,11 @@ export const useWorkspaceStore = defineStore('workspace', {
       }
       return this.cards
     },
-    async updateCard(cardId: string, updates: Partial<Card>) {
+    async updateCard(cardId: string, updates: Partial<Omit<Card, 'id' | 'workspace_id' | 'org_id'>>) {
       const index = this.cards.findIndex(c => c.id === cardId)
-      if (index !== -1) {
-        this.cards[index] = { ...this.cards[index], ...updates }
-      }
+      const existing = index !== -1 ? this.cards[index] : null
+      if (!existing) return
+      this.cards[index] = { ...existing, ...updates }
     },
     async deleteCard(cardId: string) {
       this.cards = this.cards.filter(c => c.id !== cardId)
@@ -200,12 +200,12 @@ export const useWorkspaceStore = defineStore('workspace', {
       this.addLog(newTask.project_id, `Created new task: ${newTask.title}`, 'TASK')
       return newTask
     },
-    async updateTask(taskId: string, updates: Partial<Task>) {
+    async updateTask(taskId: string, updates: Partial<Omit<Task, 'id' | 'project_id'>>) {
       const index = this.tasks.findIndex(t => t.id === taskId)
-      if (index !== -1) {
-        this.tasks[index] = { ...this.tasks[index], ...updates }
-        this.addLog(this.tasks[index].project_id, `Updated task: ${this.tasks[index].title}`, 'TASK')
-      }
+      const existing = index !== -1 ? this.tasks[index] : null
+      if (!existing) return
+      this.tasks[index] = { ...existing, ...updates }
+      this.addLog(existing.project_id, `Updated task: ${this.tasks[index].title}`, 'TASK')
     },
     addLog(projectId: string, message: string, type: ProjectActivity['type'] = 'SYSTEM') {
       this.activities.unshift({

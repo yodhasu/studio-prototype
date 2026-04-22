@@ -22,8 +22,8 @@ export const useAuthStore = defineStore('auth', {
       subscription_tier: 'STUDIO_PRO',
       org_links: [{ org_id: 'mock-org-1', role: 'TIER_1' }]
     } as AuthUser | null,
-    token: 'mock-token',
-    activeOrgId: 'mock-org-1',
+    token: 'mock-token' as string | null,
+    activeOrgId: 'mock-org-1' as string | null,
   }),
   getters: {
     isLoggedIn: (state) => Boolean(state.token),

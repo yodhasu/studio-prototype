@@ -13,11 +13,7 @@
       <LinkLayer 
         :edges="workspace.edges" 
         :cards="workspace.cards" 
-        :pending-edge="(linkingState.isLinking && linkingState.startId) ? {
-          source: workspace.cards.find(c => c.id === linkingState.startId),
-          sourceAnchor: linkingState.startAnchor!,
-          targetPos: linkingState.mousePos
-        } : null"
+        :pending-edge="pendingEdge"
       />
       
       <CardNode 
@@ -30,13 +26,13 @@
         @drag-start="onCardDragStart"
         @update="updateCard"
         @link-start="onLinkStart"
+        @link-hover="onLinkHover"
         @link-drop="onLinkDrop"
       />
     </div>
 
-    <!-- PREMIUM WORKSPACE TOOLBAR -->
+    <!-- Workspace Toolbar -->
     <div class="absolute left-6 top-6 z-10 flex items-center gap-3">
-      <!-- Main Actions Block -->
       <div class="flex items-center gap-1.5 sketch-border bg-surface/90 backdrop-blur-md p-1.5 shadow-lg">
         <div class="flex items-center px-1">
           <button class="btn btn-ghost h-8 w-8 !p-0 hover:bg-brand/5 hover:text-brand transition-all" title="Add Card" aria-label="Add Card" @click="addCard">
@@ -58,29 +54,24 @@
         </div>
       </div>
 
-      <!-- Collaborative Stack (Integrated look) -->
-      <div 
+      <button
         class="flex items-center gap-2.5 sketch-border bg-surface/90 backdrop-blur-md px-3 py-1.5 shadow-lg cursor-pointer hover:bg-panel/40 transition-all group"
         @click="isSidebarOpen = true"
       >
-        <div class="flex -space-x-1.5">
-          <div v-for="i in 2" :key="i" class="h-5.5 w-5.5 rounded-full border border-surface bg-brand/10 flex items-center justify-center text-[8px] font-bold text-brand">
-            {{ ['AM', 'JH'][i-1] }}
-          </div>
-        </div>
-        <span class="text-[9px] font-black uppercase tracking-[0.15em] text-muted group-hover:text-brand transition-colors">Team</span>
-      </div>
+        <Users class="h-3.5 w-3.5 text-brand" />
+        <span class="text-[9px] font-black uppercase tracking-[0.15em] text-muted group-hover:text-brand transition-colors">Project</span>
+      </button>
     </div>
 
     <ProjectDetailSidebar 
       v-model:open="isSidebarOpen" 
-      :project-id="(route.params.id as string)" 
+      :project-id="(route.params.projectId as string)" 
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { Plus, ZoomIn, ZoomOut, Maximize } from 'lucide-vue-next'
+import { Plus, ZoomIn, ZoomOut, Maximize, Users } from 'lucide-vue-next'
 import { useWorkspaceStore } from '~/stores/workspace'
 import { useWorkspaceBoot } from '~/composables/useWorkspaceBoot'
 
@@ -106,6 +97,19 @@ const linkingState = ref({
 
 const isSidebarOpen = ref(false)
 
+const pid = computed(() => route.params.projectId as string)
+
+const pendingEdge = computed(() => {
+  if (!linkingState.value.isLinking || !linkingState.value.startId || !linkingState.value.startAnchor) return null
+  const source = workspace.cards.find(c => c.id === linkingState.value.startId)
+  if (!source) return null
+  return {
+    source,
+    sourceAnchor: linkingState.value.startAnchor,
+    targetPos: linkingState.value.mousePos
+  }
+})
+
 const canvasTransform = computed(() => ({
   transform: `translate(${panX.value}px, ${panY.value}px) scale(${zoom.value})`,
   transformOrigin: '0 0'
@@ -113,7 +117,6 @@ const canvasTransform = computed(() => ({
 
 const selectCard = (id: string) => {
   selectedCardId.value = id
-  isSidebarOpen.value = true
 }
 
 const updateCard = (payload: any) => {
@@ -121,7 +124,7 @@ const updateCard = (payload: any) => {
 }
 
 const addCard = () => {
-  const ws = workspace.workspaces.find(w => w.project_id === route.params.id)
+  const ws = workspace.workspaces.find(w => w.project_id === pid.value)
   if (!ws) return
 
   const jitter = () => (Math.random() - 0.5) * 40
@@ -136,7 +139,6 @@ const onCanvasMouseDown = (e: MouseEvent) => {
     lastMousePos.value = { x: e.clientX, y: e.clientY }
   } else if (e.target === e.currentTarget) {
     selectedCardId.value = null
-    isSidebarOpen.value = false
   }
 }
 
@@ -159,13 +161,13 @@ const onCanvasMouseMove = (e: MouseEvent) => {
 
 const onCanvasMouseUp = () => {
   isPanning.value = false
-  // If we release on the canvas (not a card), cancel linking
-  setTimeout(() => {
-    if (linkingState.value.isLinking) {
-      linkingState.value.isLinking = false
-      linkingState.value.startId = null
-    }
-  }, 50)
+
+  if (linkingState.value.isLinking) {
+    linkingState.value.isLinking = false
+    linkingState.value.startId = null
+    linkingState.value.startAnchor = null
+    linkingState.value.targetId = null
+  }
 }
 
 const onCanvasWheel = (e: WheelEvent) => {
@@ -183,7 +185,6 @@ const onCanvasWheel = (e: WheelEvent) => {
 const zoomIn = () => zoom.value = Math.min(zoom.value + 0.1, 2)
 const zoomOut = () => zoom.value = Math.max(zoom.value - 0.1, 0.1)
 
-
 const onLinkDrop = (targetId: string) => {
   if (linkingState.value.isLinking && linkingState.value.startId) {
     if (linkingState.value.startId !== targetId) {
@@ -191,6 +192,8 @@ const onLinkDrop = (targetId: string) => {
     }
     linkingState.value.isLinking = false
     linkingState.value.startId = null
+    linkingState.value.startAnchor = null
+    linkingState.value.targetId = null
   }
 }
 
@@ -208,43 +211,42 @@ const onCardDragStart = (payload: any) => {
   draggingCardId.value = payload.id
   const event = payload.event as MouseEvent
   const card = workspace.cards.find(c => c.id === payload.id)
-  if (card) {
-    dragStartPos.value = {
-      x: event.clientX - card.x_pos * zoom.value,
-      y: event.clientY - card.y_pos * zoom.value
-    }
-    
-    const onMouseMove = (e: MouseEvent) => {
-      if (draggingCardId.value) {
-        const x = (e.clientX - dragStartPos.value.x) / zoom.value
-        const y = (e.clientY - dragStartPos.value.y) / zoom.value
-        workspace.updateCard(draggingCardId.value, { x_pos: x, y_pos: y })
-      }
-    }
-    
-    const onMouseUp = () => {
-      draggingCardId.value = null
-      window.removeEventListener('mousemove', onMouseMove)
-      window.removeEventListener('mouseup', onMouseUp)
-    }
-    
-    window.addEventListener('mousemove', onMouseMove)
-    window.addEventListener('mouseup', onMouseUp)
+  if (!card) return
+
+  dragStartPos.value = {
+    x: event.clientX - card.x_pos * zoom.value,
+    y: event.clientY - card.y_pos * zoom.value
   }
+
+  const onMouseMove = (e: MouseEvent) => {
+    if (!draggingCardId.value) return
+    const x = (e.clientX - dragStartPos.value.x) / zoom.value
+    const y = (e.clientY - dragStartPos.value.y) / zoom.value
+    workspace.updateCard(draggingCardId.value, { x_pos: x, y_pos: y })
+  }
+
+  const onMouseUp = () => {
+    draggingCardId.value = null
+    window.removeEventListener('mousemove', onMouseMove)
+    window.removeEventListener('mouseup', onMouseUp)
+  }
+
+  window.addEventListener('mousemove', onMouseMove)
+  window.addEventListener('mouseup', onMouseUp)
 }
 
 const onLinkStart = (payload: { id: string, anchor: 'top' | 'right' | 'bottom' | 'left', event: MouseEvent }) => {
   linkingState.value.isLinking = true
   linkingState.value.startId = payload.id
   linkingState.value.startAnchor = payload.anchor
-  
+
   const updateMouse = (e: MouseEvent) => {
     linkingState.value.mousePos = {
       x: (e.clientX - panX.value) / zoom.value,
       y: (e.clientY - panY.value) / zoom.value
     }
   }
-  
+
   const endLinking = () => {
     if (linkingState.value.targetId && linkingState.value.targetId !== linkingState.value.startId) {
       workspace.createEdge(linkingState.value.startId!, linkingState.value.targetId!)
@@ -256,7 +258,7 @@ const onLinkStart = (payload: { id: string, anchor: 'top' | 'right' | 'bottom' |
     window.removeEventListener('mousemove', updateMouse)
     window.removeEventListener('mouseup', endLinking)
   }
-  
+
   updateMouse(payload.event)
   window.addEventListener('mousemove', updateMouse)
   window.addEventListener('mouseup', endLinking)
@@ -268,7 +270,7 @@ const onLinkHover = (id: string | null) => {
 
 onMounted(async () => {
   await ensureSession()
-  await workspace.fetchCards(route.params.id as string)
+  await workspace.fetchCards(pid.value)
 })
 </script>
 

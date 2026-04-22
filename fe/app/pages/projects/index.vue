@@ -66,13 +66,22 @@
               </div>
               <ArrowRight class="h-4 w-4 text-faint group-hover:translate-x-1 group-hover:text-brand transition-all" />
             </div>
-            <NuxtLink
-              class="btn btn-ghost w-full justify-center text-xs"
-              :to="`/projects/${project.id}`"
-              @click.stop
-            >
-              Open Command Sheet
-            </NuxtLink>
+            <div class="flex gap-2">
+              <NuxtLink
+                class="btn btn-ghost flex-1 justify-center text-xs"
+                :to="`/projects/${project.id}`"
+                @click.stop
+              >
+                Open Project
+              </NuxtLink>
+              <NuxtLink
+                class="btn btn-primary flex-1 justify-center text-xs"
+                :to="`/workspace/${project.id}`"
+                @click.stop
+              >
+                Enter Workspace
+              </NuxtLink>
+            </div>
           </div>
         </div>
       </div>

@@ -183,7 +183,7 @@ const projectPriority = computed(() => {
 })
 
 const isNotWorkspacePage = computed(() => {
-  return router.currentRoute.value.path !== `/projects/${project.value?.id}`
+  return router.currentRoute.value.path !== `/workspace/${project.value?.id}`
 })
 
 const projectActivities = computed(() => {
@@ -209,7 +209,7 @@ function handleMonetization() {
 function goToWorkspace() {
   if (project.value) {
     workspace.currentProject = project.value
-    router.push(`/projects/${project.value.id}`)
+    router.push(`/workspace/${project.value.id}`)
     isOpen.value = false
   }
 }

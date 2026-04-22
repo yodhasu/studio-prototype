@@ -103,7 +103,7 @@ const workspace = useWorkspaceStore()
 const { ensureSession } = useWorkspaceBoot()
 
 const isSidebarOpen = ref(false)
-const selectedProjectId = ref<string | null>(null)
+const selectedProjectId = ref<string | undefined>(undefined)
 
 const progressionValue = computed(() => {
   const total = workspace.tasks.length
