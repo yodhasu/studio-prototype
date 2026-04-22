@@ -78,24 +78,34 @@
       </div>
     </div>
 
+    <ProjectDetailSidebar
+      v-model:open="isSidebarOpen"
+      :project-id="selectedProjectId"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { Plus, FolderKanban, CalendarDays, ArrowRight, X } from 'lucide-vue-next'
 import { useWorkspaceStore } from '~/stores/workspace'
 import { useWorkspaceBoot } from '~/composables/useWorkspaceBoot'
 
 const workspace = useWorkspaceStore()
 const { ensureSession } = useWorkspaceBoot()
+
+const route = useRoute()
+const isSidebarOpen = ref(false)
+const selectedProjectId = ref<string | null>(null)
 const createProject = ref(false)
 const newProjectName = ref('')
 const newProjectColor = ref('#6A5AF9')
 const createError = ref('')
 
 function openProject(id: string) {
-  navigateTo(`/projects/${id}`)
+  selectedProjectId.value = id
+  isSidebarOpen.value = true
+  navigateTo({ path: '/projects', query: { ...route.query, open: id } }, { replace: true })
 }
 
 function closeCreateModal() {
@@ -121,10 +131,25 @@ async function submitCreateProject() {
 
   closeCreateModal()
   newProjectName.value = ''
-  await navigateTo(`/projects/${created.id}`)
+  openProject(created.id)
 }
 
 onMounted(async () => {
   await ensureSession()
+  const q = route.query.open
+  const openId = Array.isArray(q) ? q[0] : q
+  if (typeof openId === 'string' && openId) {
+    selectedProjectId.value = openId
+    isSidebarOpen.value = true
+  }
 })
+
+watch(isSidebarOpen, (open) => {
+  if (open) return
+  selectedProjectId.value = null
+  const q = { ...route.query } as Record<string, any>
+  delete q.open
+  navigateTo({ path: '/projects', query: q }, { replace: true })
+})
+
 </script>

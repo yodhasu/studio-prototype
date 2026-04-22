@@ -85,12 +85,6 @@
         </div>
       </div>
     </div>
-    
-    <!-- Project Detail Sidebar -->
-    <ProjectDetailSidebar 
-      v-model:open="isSidebarOpen" 
-      :project-id="selectedProjectId" 
-    />
   </div>
 </template>
 
@@ -102,8 +96,6 @@ import { useWorkspaceBoot } from '~/composables/useWorkspaceBoot'
 const workspace = useWorkspaceStore()
 const { ensureSession } = useWorkspaceBoot()
 
-const isSidebarOpen = ref(false)
-const selectedProjectId = ref<string | null>(null)
 
 const progressionValue = computed(() => {
   const total = workspace.tasks.length
@@ -112,8 +104,11 @@ const progressionValue = computed(() => {
 })
 
 function openProject(id: string) {
-  selectedProjectId.value = id
-  isSidebarOpen.value = true
+  // Dashboard flow:
+  // 1) User clicks a project
+  // 2) Redirect to project directory
+  // 3) Open sidebar for chosen project
+  navigateTo({ path: '/projects', query: { open: id } })
 }
 
 onMounted(async () => {

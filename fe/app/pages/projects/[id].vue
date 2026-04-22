@@ -61,7 +61,7 @@
       <!-- Team access (names hidden until modal) -->
       <button
         class="flex items-center gap-2.5 sketch-border bg-surface/90 backdrop-blur-md px-3 py-1.5 shadow-lg hover:bg-panel/40 transition-all group"
-        @click="isSidebarOpen = true"
+        @click="isTeamModalOpen = true"
       >
         <Users class="h-3.5 w-3.5 text-brand" />
         <span class="text-[9px] font-black uppercase tracking-[0.15em] text-muted group-hover:text-brand transition-colors">
@@ -70,10 +70,7 @@
       </button>
     </div>
 
-    <ProjectDetailSidebar 
-      v-model:open="isSidebarOpen" 
-      :project-id="(route.params.id as string)" 
-    />
+    <ProjectMemberModal v-model:open="isTeamModalOpen" :project-id="(route.params.id as string)" />
   </div>
 </template>
 
@@ -82,8 +79,9 @@ import { Plus, ZoomIn, ZoomOut, Maximize } from 'lucide-vue-next'
 import { useWorkspaceStore } from '~/stores/workspace'
 import { useWorkspaceBoot } from '~/composables/useWorkspaceBoot'
 
-const route = useRoute()
 const workspace = useWorkspaceStore()
+const route = useRoute()
+const project = computed(() => workspace.projects.find(p => p.id === (route.params.id as string)) || null)
 const { ensureSession } = useWorkspaceBoot()
 
 const selectedCardId = ref<string | null>(null)
@@ -102,7 +100,7 @@ const linkingState = ref({
   mousePos: { x: 0, y: 0 }
 })
 
-const isSidebarOpen = ref(false)
+const isTeamModalOpen = ref(false)
 
 const canvasTransform = computed(() => ({
   transform: `translate(${panX.value}px, ${panY.value}px) scale(${zoom.value})`,
@@ -155,13 +153,8 @@ const onCanvasMouseMove = (e: MouseEvent) => {
 
 const onCanvasMouseUp = () => {
   isPanning.value = false
-  // If we release on the canvas (not a card), cancel linking
-  setTimeout(() => {
-    if (linkingState.value.isLinking) {
-      linkingState.value.isLinking = false
-      linkingState.value.startId = null
-    }
-  }, 50)
+  // Cancel linking cleanly (prevents stuck "follow cursor" state)
+  if (linkingState.value.isLinking) cancelLinking()
 }
 
 const onCanvasWheel = (e: WheelEvent) => {
@@ -261,33 +254,61 @@ const onCardDragStart = (payload: any) => {
   document.addEventListener('visibilitychange', onVisibility)
 }
 
+const linkCleanup = ref<null | (() => void)>(null)
+
+const cancelLinking = () => {
+  if (linkCleanup.value) linkCleanup.value()
+}
+
 const onLinkStart = (payload: { id: string, anchor: 'top' | 'right' | 'bottom' | 'left', event: MouseEvent }) => {
   linkingState.value.isLinking = true
   linkingState.value.startId = payload.id
   linkingState.value.startAnchor = payload.anchor
-  
+
   const updateMouse = (e: MouseEvent) => {
+    if (!linkingState.value.isLinking) return
     linkingState.value.mousePos = {
       x: (e.clientX - panX.value) / zoom.value,
       y: (e.clientY - panY.value) / zoom.value
     }
   }
-  
-  const endLinking = () => {
-    if (linkingState.value.targetId && linkingState.value.targetId !== linkingState.value.startId) {
-      workspace.createEdge(linkingState.value.startId!, linkingState.value.targetId!)
-    }
+
+  const cleanup = () => {
     linkingState.value.isLinking = false
     linkingState.value.startId = null
     linkingState.value.startAnchor = null
     linkingState.value.targetId = null
     window.removeEventListener('mousemove', updateMouse)
-    window.removeEventListener('mouseup', endLinking)
+    window.removeEventListener('mouseup', finalize)
+    window.removeEventListener('keydown', onKeyDown)
+    window.removeEventListener('blur', cleanup)
+    document.removeEventListener('visibilitychange', onVisibility)
+    linkCleanup.value = null
   }
-  
+
+  const finalize = () => {
+    if (linkingState.value.targetId && linkingState.value.targetId !== linkingState.value.startId) {
+      workspace.createEdge(linkingState.value.startId!, linkingState.value.targetId!)
+    }
+    cleanup()
+  }
+
+  const onKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') cleanup()
+  }
+
+  const onVisibility = () => {
+    if (document.hidden) cleanup()
+  }
+
+  linkCleanup.value = cleanup
+
   updateMouse(payload.event)
   window.addEventListener('mousemove', updateMouse)
-  window.addEventListener('mouseup', endLinking)
+  window.addEventListener('mouseup', finalize)
+  window.addEventListener('keydown', onKeyDown)
+  window.addEventListener('blur', cleanup)
+  document.addEventListener('visibilitychange', onVisibility)
 }
 
 const onLinkHover = (id: string | null) => {
