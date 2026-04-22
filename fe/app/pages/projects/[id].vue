@@ -58,18 +58,16 @@
         </div>
       </div>
 
-      <!-- Collaborative Stack (Integrated look) -->
-      <div 
-        class="flex items-center gap-2.5 sketch-border bg-surface/90 backdrop-blur-md px-3 py-1.5 shadow-lg cursor-pointer hover:bg-panel/40 transition-all group"
+      <!-- Team access (names hidden until modal) -->
+      <button
+        class="flex items-center gap-2.5 sketch-border bg-surface/90 backdrop-blur-md px-3 py-1.5 shadow-lg hover:bg-panel/40 transition-all group"
         @click="isSidebarOpen = true"
       >
-        <div class="flex -space-x-1.5">
-          <div v-for="i in 2" :key="i" class="h-5.5 w-5.5 rounded-full border border-surface bg-brand/10 flex items-center justify-center text-[8px] font-bold text-brand">
-            {{ ['AM', 'JH'][i-1] }}
-          </div>
-        </div>
-        <span class="text-[9px] font-black uppercase tracking-[0.15em] text-muted group-hover:text-brand transition-colors">Team</span>
-      </div>
+        <Users class="h-3.5 w-3.5 text-brand" />
+        <span class="text-[9px] font-black uppercase tracking-[0.15em] text-muted group-hover:text-brand transition-colors">
+          {{ project?.member_ids?.length || 0 }} Members
+        </span>
+      </button>
     </div>
 
     <ProjectDetailSidebar 
@@ -113,7 +111,6 @@ const canvasTransform = computed(() => ({
 
 const selectCard = (id: string) => {
   selectedCardId.value = id
-  isSidebarOpen.value = true
 }
 
 const updateCard = (payload: any) => {
@@ -136,7 +133,6 @@ const onCanvasMouseDown = (e: MouseEvent) => {
     lastMousePos.value = { x: e.clientX, y: e.clientY }
   } else if (e.target === e.currentTarget) {
     selectedCardId.value = null
-    isSidebarOpen.value = false
   }
 }
 
@@ -200,37 +196,69 @@ const resetView = () => {
   zoom.value = 1
 }
 
-// Drag logic
+// Drag logic (thresholded, with cleanup)
 const draggingCardId = ref<string | null>(null)
 const dragStartPos = ref({ x: 0, y: 0 })
+const dragOrigin = ref({ x: 0, y: 0 })
+const cardOrigin = ref({ x: 0, y: 0 })
+const dragActive = ref(false)
+const DRAG_THRESHOLD_PX = 5
 
 const onCardDragStart = (payload: any) => {
-  draggingCardId.value = payload.id
   const event = payload.event as MouseEvent
+  if (event.button !== 0) return
+
   const card = workspace.cards.find(c => c.id === payload.id)
-  if (card) {
-    dragStartPos.value = {
-      x: event.clientX - card.x_pos * zoom.value,
-      y: event.clientY - card.y_pos * zoom.value
-    }
-    
-    const onMouseMove = (e: MouseEvent) => {
-      if (draggingCardId.value) {
-        const x = (e.clientX - dragStartPos.value.x) / zoom.value
-        const y = (e.clientY - dragStartPos.value.y) / zoom.value
-        workspace.updateCard(draggingCardId.value, { x_pos: x, y_pos: y })
-      }
-    }
-    
-    const onMouseUp = () => {
-      draggingCardId.value = null
-      window.removeEventListener('mousemove', onMouseMove)
-      window.removeEventListener('mouseup', onMouseUp)
-    }
-    
-    window.addEventListener('mousemove', onMouseMove)
-    window.addEventListener('mouseup', onMouseUp)
+  if (!card) return
+
+  dragOrigin.value = { x: event.clientX, y: event.clientY }
+  cardOrigin.value = { x: card.x_pos, y: card.y_pos }
+  dragStartPos.value = {
+    x: event.clientX - card.x_pos * zoom.value,
+    y: event.clientY - card.y_pos * zoom.value
   }
+  dragActive.value = false
+
+  const onMouseMove = (e: MouseEvent) => {
+    const dx = e.clientX - dragOrigin.value.x
+    const dy = e.clientY - dragOrigin.value.y
+
+    if (!dragActive.value) {
+      if (Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return
+      dragActive.value = true
+      draggingCardId.value = payload.id
+    }
+
+    if (draggingCardId.value) {
+      const x = cardOrigin.value.x + dx / zoom.value
+      const y = cardOrigin.value.y + dy / zoom.value
+      workspace.updateCard(draggingCardId.value, { x_pos: x, y_pos: y })
+    }
+  }
+
+  const onKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') endDrag()
+  }
+
+  const onVisibility = () => {
+    if (document.hidden) endDrag()
+  }
+
+  const endDrag = () => {
+    draggingCardId.value = null
+    dragActive.value = false
+    window.removeEventListener('mousemove', onMouseMove)
+    window.removeEventListener('mouseup', endDrag)
+    window.removeEventListener('blur', endDrag)
+    window.removeEventListener('keydown', onKeyDown)
+    document.removeEventListener('visibilitychange', onVisibility)
+  }
+
+  window.addEventListener('mousemove', onMouseMove)
+  window.addEventListener('mouseup', endDrag)
+  window.addEventListener('blur', endDrag)
+  window.addEventListener('keydown', onKeyDown)
+  document.addEventListener('visibilitychange', onVisibility)
 }
 
 const onLinkStart = (payload: { id: string, anchor: 'top' | 'right' | 'bottom' | 'left', event: MouseEvent }) => {

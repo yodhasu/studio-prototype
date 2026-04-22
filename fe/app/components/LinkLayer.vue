@@ -1,6 +1,12 @@
 <template>
   <svg class="absolute inset-0 h-full w-full overflow-visible pointer-events-none">
-    <g v-for="edge in edges" :key="edge.id" class="pointer-events-auto">
+    <g
+      v-for="edge in edges"
+      :key="edge.id"
+      class="group pointer-events-auto"
+      @mouseenter="hoveredEdgeId = edge.id"
+      @mouseleave="hoveredEdgeId = null"
+    >
       <!-- Broad Hit Area -->
       <path
         :d="edgePath(edge).path"
@@ -33,6 +39,7 @@
       />
       
       <foreignObject
+        v-if="hoveredEdgeId === edge.id"
         :x="edgePath(edge).mid.x - 40"
         :y="edgePath(edge).mid.y - 14"
         width="80"
@@ -61,7 +68,9 @@
 <script setup lang="ts">
 import type { Card, CardEdge } from '~/stores/workspace'
 
-const props = defineProps<{
+const hoveredEdgeId = ref<string | null>(null)
+
+const props = defineProps<{ 
   cards: Card[]
   edges: CardEdge[]
   pendingEdge?: {

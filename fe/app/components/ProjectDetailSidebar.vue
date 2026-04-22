@@ -50,14 +50,13 @@
               class="text-[10px] hover:text-brand"
             />
           </div>
-          <div class="flex p-3 sketch-border bg-panel/30 cursor-pointer hover:bg-panel/50 transition-colors" @click="showMembers = true">
-            <div class="flex -space-x-2">
-              <div v-for="i in 3" :key="i" class="h-7 w-7 rounded-full border-2 border-surface bg-brand/20 flex items-center justify-center text-[10px] font-bold">
-                {{ ['AM', 'MC', 'JH'][i-1] }}
-              </div>
-              <div class="h-7 w-7 rounded-full border-2 border-surface bg-[var(--c-bg)] flex items-center justify-center text-[10px] font-bold text-faint">
-                +4
-              </div>
+          <div class="flex items-center gap-3 p-3 sketch-border bg-panel/30 cursor-pointer hover:bg-panel/50 transition-colors" @click="showMembers = true">
+            <div class="h-9 w-9 rounded-full border border-border/30 bg-brand/15 flex items-center justify-center text-brand">
+              <UIcon name="i-heroicons-user-group" class="w-4 h-4" />
+            </div>
+            <div class="space-y-1">
+              <p class="text-[11px] font-bold uppercase tracking-widest text-text">Team Directory</p>
+              <p class="text-[10px] text-faint">{{ project ? project.member_ids.length : 0 }} collaborators hidden until opened</p>
             </div>
             <div class="ml-auto flex items-center text-faint">
               <UIcon name="i-heroicons-chevron-right" class="w-4 h-4" />
@@ -137,7 +136,7 @@
   </USlideover>
 
   <!-- Members Modal -->
-  <UModal v-model="showMembers">
+  <UModal v-if="showMembers" v-model="showMembers">
     <div class="p-8">
       <div class="flex items-center justify-between mb-8">
         <h3 class="text-lg font-bold flex items-center gap-2">

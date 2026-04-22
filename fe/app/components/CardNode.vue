@@ -4,7 +4,6 @@
     class="group absolute select-none transition-shadow duration-200"
     :class="{ 'z-50': isSelected, 'z-10': !isSelected }"
     :style="cardStyle"
-    @mousedown.stop="emit('drag-start', { id: card.id, event: $event })"
     @click.stop="emit('select', card.id)"
   >
     <div 
@@ -25,6 +24,8 @@
         <div 
           class="flex items-center justify-center cursor-grab active:cursor-grabbing text-faint hover:text-muted transition-colors px-4"
           title="Drag to move"
+          aria-label="Drag to move"
+          @mousedown.stop.prevent="emit('drag-start', { id: card.id, event: $event })"
         >
           <GripHorizontal class="h-3.5 w-3.5" />
         </div>
