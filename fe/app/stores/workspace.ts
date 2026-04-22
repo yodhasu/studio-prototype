@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { MOCK_PROJECTS, MOCK_DASHBOARD_SUMMARY, MOCK_CARDS, MOCK_EDGES, MOCK_TASKS, MOCK_LEDGER, MOCK_PROJECT_ACTIVITY } from '~/mockup/data'
+import { MOCK_PROJECTS, MOCK_DASHBOARD_SUMMARY, MOCK_CARDS, MOCK_EDGES, MOCK_TASKS, MOCK_PROJECT_ACTIVITY } from '~/mockup/data'
 
 export type ProjectRole = 'LEAD' | 'ASSISTANT' | 'COLLABORATOR'
 export type EdgeType = 'DEPENDS_ON' | 'RELATES_TO'
@@ -40,7 +40,7 @@ export interface Card {
   text?: string // Rich Text / Markdown
   content?: {
     lockedType?: string | null
-    media?: Array<{ type: string; url?: string; name?: string }>
+    media?: Array<{ type: string, url?: string, name?: string }>
   }
   media_container?: any // JSONB references
   file_container?: any // JSONB references
@@ -95,7 +95,7 @@ export const useWorkspaceStore = defineStore('workspace', {
     members: MOCK_PROJECT_ACTIVITY.map(a => ({ id: a.user.replace(' ', '').toLowerCase(), name: a.user, role: 'Artist' })) as StudioMember[],
     currentProject: MOCK_PROJECTS[0] as Project | null,
     dashboardMetrics: MOCK_DASHBOARD_SUMMARY,
-    loading: false,
+    loading: false
   }),
   actions: {
     async fetchProjects() {
@@ -164,9 +164,9 @@ export const useWorkspaceStore = defineStore('workspace', {
     },
     async createEdge(sourceId: string, targetId: string) {
       if (sourceId === targetId) return
-      const exists = this.edges.find(e => 
-        (e.source_card_id === sourceId && e.target_card_id === targetId) ||
-        (e.source_card_id === targetId && e.target_card_id === sourceId)
+      const exists = this.edges.find(e =>
+        (e.source_card_id === sourceId && e.target_card_id === targetId)
+        || (e.source_card_id === targetId && e.target_card_id === sourceId)
       )
       if (exists) return
 
@@ -178,12 +178,12 @@ export const useWorkspaceStore = defineStore('workspace', {
         type: 'RELATES_TO'
       }
       this.edges.push(newEdge)
-      
+
       const source = this.cards.find(c => c.id === sourceId)
       const target = this.cards.find(c => c.id === targetId)
       if (source) source.link_count++
       if (target) target.link_count++
-      
+
       return newEdge
     },
     async createTask(task: Partial<Task>) {
@@ -194,7 +194,7 @@ export const useWorkspaceStore = defineStore('workspace', {
         detail: task.detail || '',
         status: task.status || 'TODO',
         due_date: task.due_date || new Date().toISOString(),
-        priority: task.priority || 'MEDIUM',
+        priority: task.priority || 'MEDIUM'
       }
       this.tasks.push(newTask)
       this.addLog(newTask.project_id, `Created new task: ${newTask.title}`, 'TASK')

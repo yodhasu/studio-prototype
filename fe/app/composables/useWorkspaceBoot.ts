@@ -13,7 +13,7 @@ export const useWorkspaceBoot = () => {
       // or just assume we are logged in.
       return true
     }
-    
+
     if (loadProjects && !workspace.projects.length) {
       await workspace.fetchProjects()
     }

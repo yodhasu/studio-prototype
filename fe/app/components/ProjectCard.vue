@@ -8,7 +8,10 @@
       >
         {{ project.name?.[0] || '?' }}
       </div>
-      <span class="badge" :style="chipStyle(project.id)">{{ project.status }}</span>
+      <span
+        class="badge"
+        :style="chipStyle(project.id)"
+      >{{ project.status }}</span>
     </div>
 
     <h3 class="mt-6 font-display text-lg font-bold text-text group-hover:text-brand transition-colors">
@@ -22,7 +25,10 @@
       <div class="mb-3 flex items-center justify-between">
         <div class="flex items-center gap-4 text-[11px] font-bold text-faint">
           <span class="flex items-center gap-1.5">
-            <span class="h-1.5 w-1.5 rounded-full" :style="dotStyle(project.id)" />
+            <span
+              class="h-1.5 w-1.5 rounded-full"
+              :style="dotStyle(project.id)"
+            />
             {{ project.card_count }} cards
           </span>
           <span class="flex items-center gap-1.5">
@@ -32,10 +38,16 @@
       </div>
 
       <div class="flex gap-2">
-        <NuxtLink class="btn btn-ghost flex-1 justify-center text-xs" :to="`/projects/${project.id}`">
+        <NuxtLink
+          class="btn btn-ghost flex-1 justify-center text-xs"
+          :to="`/projects/${project.id}`"
+        >
           {{ openLabel }}
         </NuxtLink>
-        <NuxtLink class="btn btn-primary flex-1 justify-center text-xs" :to="`/workspace/${project.id}`">
+        <NuxtLink
+          class="btn btn-primary flex-1 justify-center text-xs"
+          :to="`/workspace/${project.id}`"
+        >
           {{ workspaceLabel }}
         </NuxtLink>
       </div>

@@ -3,8 +3,12 @@
     <div class="mx-auto max-w-7xl space-y-8">
       <header class="flex items-end justify-between">
         <div>
-          <h1 class="font-display text-2xl font-bold tracking-tight text-text">Schedule</h1>
-          <p class="mt-1 text-sm text-muted">Kanban for production flow, calendar for date-bound visibility.</p>
+          <h1 class="font-display text-2xl font-bold tracking-tight text-text">
+            Schedule
+          </h1>
+          <p class="mt-1 text-sm text-muted">
+            Kanban for production flow, calendar for date-bound visibility.
+          </p>
         </div>
 
         <div class="flex items-center gap-2 sketch-border bg-surface p-1">
@@ -26,12 +30,35 @@
       </header>
 
       <!-- Kanban view -->
-      <section v-if="mode === 'kanban'" class="space-y-6">
+      <section
+        v-if="mode === 'kanban'"
+        class="space-y-6"
+      >
         <div class="grid grid-cols-1 gap-6 xl:grid-cols-4">
-          <KanbanColumn v-model="draftList" title="Draft" subtitle="TODO" @moved="(id) => setStatus(id, 'TODO')" />
-          <KanbanColumn v-model="reviewList" title="Review" subtitle="PROGRESS" @moved="(id) => setStatus(id, 'PROGRESS')" />
-          <KanbanColumn v-model="polishList" title="Polish" subtitle="BLOCKED" @moved="(id) => setStatus(id, 'BLOCKED')" />
-          <KanbanColumn v-model="finalList" title="Final" subtitle="DONE" @moved="(id) => setStatus(id, 'DONE')" />
+          <KanbanColumn
+            v-model="draftList"
+            title="Draft"
+            subtitle="TODO"
+            @moved="(id) => setStatus(id, 'TODO')"
+          />
+          <KanbanColumn
+            v-model="reviewList"
+            title="Review"
+            subtitle="PROGRESS"
+            @moved="(id) => setStatus(id, 'PROGRESS')"
+          />
+          <KanbanColumn
+            v-model="polishList"
+            title="Polish"
+            subtitle="BLOCKED"
+            @moved="(id) => setStatus(id, 'BLOCKED')"
+          />
+          <KanbanColumn
+            v-model="finalList"
+            title="Final"
+            subtitle="DONE"
+            @moved="(id) => setStatus(id, 'DONE')"
+          />
         </div>
 
         <p class="text-xs text-faint italic">
@@ -40,14 +67,27 @@
       </section>
 
       <!-- Calendar view (week list) -->
-      <section v-else class="dashboard-panel">
-        <h2 class="text-xs font-bold uppercase tracking-widest text-muted">Week View</h2>
+      <section
+        v-else
+        class="dashboard-panel"
+      >
+        <h2 class="text-xs font-bold uppercase tracking-widest text-muted">
+          Week View
+        </h2>
         <div class="mt-6 space-y-4">
-          <div v-for="day in weekDays" :key="day.iso" class="sketch-border bg-panel/20 p-4">
+          <div
+            v-for="day in weekDays"
+            :key="day.iso"
+            class="sketch-border bg-panel/20 p-4"
+          >
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-[10px] font-bold uppercase tracking-widest text-faint">{{ day.weekday }}</p>
-                <p class="mt-1 text-sm font-bold text-text">{{ day.label }}</p>
+                <p class="text-[10px] font-bold uppercase tracking-widest text-faint">
+                  {{ day.weekday }}
+                </p>
+                <p class="mt-1 text-sm font-bold text-text">
+                  {{ day.label }}
+                </p>
               </div>
               <span class="text-[10px] font-mono text-muted">{{ day.iso }}</span>
             </div>
@@ -59,14 +99,22 @@
                 class="flex items-center gap-3 rounded-lg border border-border bg-surface/60 p-3 hover:border-brand/30 transition-colors"
                 :to="`/projects/${t.project_id}`"
               >
-                <div class="h-2 w-2 rounded-full" :style="{ backgroundColor: projectColor(t.project_id) }"></div>
+                <div
+                  class="h-2 w-2 rounded-full"
+                  :style="{ backgroundColor: projectColor(t.project_id) }"
+                />
                 <div class="min-w-0 flex-1">
                   <p class="truncate text-xs font-bold text-text">{{ t.title }}</p>
                   <p class="truncate text-[10px] text-muted">{{ t.project_name || 'Project' }} • {{ t.status }}</p>
                 </div>
               </NuxtLink>
 
-              <p v-if="tasksByDueDate(day.iso).length === 0" class="text-xs text-faint italic">No date-bound items.</p>
+              <p
+                v-if="tasksByDueDate(day.iso).length === 0"
+                class="text-xs text-faint italic"
+              >
+                No date-bound items.
+              </p>
             </div>
           </div>
         </div>

@@ -23,11 +23,11 @@ export const useAuthStore = defineStore('auth', {
       org_links: [{ org_id: 'mock-org-1', role: 'TIER_1' }]
     } as AuthUser | null,
     token: 'mock-token' as string | null,
-    activeOrgId: 'mock-org-1' as string | null,
+    activeOrgId: 'mock-org-1' as string | null
   }),
   getters: {
-    isLoggedIn: (state) => Boolean(state.token),
-    orgId: (state) => state.activeOrgId || state.user?.org_links?.[0]?.org_id || null,
+    isLoggedIn: state => Boolean(state.token),
+    orgId: state => state.activeOrgId || state.user?.org_links?.[0]?.org_id || null
   },
   actions: {
     logout() {

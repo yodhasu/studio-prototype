@@ -1,17 +1,23 @@
 <template>
   <div class="space-y-4">
-    <div v-if="projectMembers.length === 0" class="text-sm italic text-faint py-8 text-center">
+    <div
+      v-if="projectMembers.length === 0"
+      class="text-sm italic text-faint py-8 text-center"
+    >
       No members assigned to this workspace yet.
     </div>
-    <div v-else class="grid gap-3">
-      <div 
-        v-for="member in projectMembers" 
+    <div
+      v-else
+      class="grid gap-3"
+    >
+      <div
+        v-for="member in projectMembers"
         :key="member.id"
         class="flex items-center gap-3 p-3 sketch-border bg-[var(--c-bg)]/40 border-border/20"
       >
-        <UAvatar 
-          :src="member.avatar_url" 
-          :alt="member.name" 
+        <UAvatar
+          :src="member.avatar_url"
+          :alt="member.name"
           size="sm"
           class="sketch-border ring-2 ring-surface"
         />
@@ -20,18 +26,21 @@
           <span class="text-[10px] text-faint uppercase font-bold tracking-tight">{{ member.role || 'Member' }}</span>
         </div>
         <div class="ml-auto">
-          <span class="h-2 w-2 rounded-full bg-green-500 block" title="Online"></span>
+          <span
+            class="h-2 w-2 rounded-full bg-green-500 block"
+            title="Online"
+          />
         </div>
       </div>
     </div>
-    
+
     <div class="mt-6 pt-6 border-t border-border/10">
-      <UButton 
-        block 
-        color="neutral" 
-        variant="ghost" 
-        icon="i-heroicons-user-plus" 
-        label="Add Member" 
+      <UButton
+        block
+        color="neutral"
+        variant="ghost"
+        icon="i-heroicons-user-plus"
+        label="Add Member"
         class="text-[10px] font-bold uppercase tracking-widest"
       />
     </div>
