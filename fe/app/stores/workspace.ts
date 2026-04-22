@@ -125,6 +125,16 @@ export const useWorkspaceStore = defineStore('workspace', {
       this.dashboardMetrics = MOCK_DASHBOARD_SUMMARY
       return MOCK_DASHBOARD_SUMMARY
     },
+    async updateProject(projectId: string, updates: Partial<Omit<Project, 'id' | 'org_id'>>) {
+      const index = this.projects.findIndex(p => p.id === projectId)
+      const existing = index !== -1 ? this.projects[index] : null
+      if (!existing) return null
+      this.projects[index] = { ...existing, ...updates }
+      if (this.currentProject?.id === projectId) {
+        this.currentProject = this.projects[index]
+      }
+      return this.projects[index]
+    },
     async fetchCards(projectId?: string) {
       const pid = projectId || this.currentProject?.id
       const ws = this.workspaces.find(w => w.project_id === pid)

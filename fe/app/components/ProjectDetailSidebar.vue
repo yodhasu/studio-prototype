@@ -10,11 +10,45 @@
   >
     <template #header>
       <div class="px-8 pt-10 pr-20 pb-4 relative">
-        <div class="absolute top-9 right-14">
-          <span class="text-[9px] font-bold uppercase tracking-widest text-faint">Edit flow pending</span>
+        <div class="absolute top-9 right-14 flex gap-1">
+          <UButton
+            v-if="!editMode"
+            icon="i-heroicons-pencil-square"
+            variant="ghost"
+            color="neutral"
+            size="xs"
+            @click="startEdit"
+          />
+          <template v-else>
+            <UButton
+              label="Cancel"
+              variant="ghost"
+              color="neutral"
+              size="xs"
+              @click="cancelEdit"
+            />
+            <UButton
+              label="Save"
+              variant="solid"
+              color="primary"
+              size="xs"
+              :loading="savingProject"
+              @click="saveProjectMeta"
+            />
+          </template>
         </div>
-        <h2 class="text-xl font-bold text-foreground line-clamp-1 tracking-tight">{{ project?.name || 'Workspace Context' }}</h2>
-        <p class="text-[13px] text-muted line-clamp-2 mt-1 leading-snug">{{ project?.description || 'Active production workspace.' }}</p>
+
+        <template v-if="!editMode">
+          <h2 class="text-xl font-bold text-foreground line-clamp-1 tracking-tight">{{ project?.name || 'Workspace Context' }}</h2>
+          <p class="text-[13px] text-muted line-clamp-2 mt-1 leading-snug">{{ project?.description || 'Active production workspace.' }}</p>
+        </template>
+        <template v-else>
+          <div class="space-y-2">
+            <UInput v-model="draftName" placeholder="Project name" />
+            <UTextarea v-model="draftDescription" :rows="2" placeholder="Project description" />
+          </div>
+          <p v-if="saveError" class="mt-2 text-xs font-semibold text-red">{{ saveError }}</p>
+        </template>
       </div>
     </template>
 
@@ -150,7 +184,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useWorkspaceStore } from '~/stores/workspace'
 
 const isOpen = defineModel<boolean>('open', { default: false })
@@ -166,6 +200,11 @@ const props = defineProps({
 
 const workspace = useWorkspaceStore()
 const router = useRouter()
+const editMode = ref(false)
+const savingProject = ref(false)
+const saveError = ref('')
+const draftName = ref('')
+const draftDescription = ref('')
 
 const project = computed(() => {
   if (!props.projectId) return null
@@ -191,6 +230,13 @@ const projectActivities = computed(() => {
   return workspace.activities.filter(a => a.project_id === props.projectId)
 })
 
+watch(project, (val) => {
+  draftName.value = val?.name || ''
+  draftDescription.value = val?.description || ''
+  editMode.value = false
+  saveError.value = ''
+}, { immediate: true })
+
 function formatRelativeTime(dateStr: string) {
   const date = new Date(dateStr)
   const now = new Date()
@@ -200,6 +246,45 @@ function formatRelativeTime(dateStr: string) {
   if (diffInMinutes < 60) return `${diffInMinutes}m ago`
   if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+function startEdit() {
+  if (!project.value) return
+  draftName.value = project.value.name
+  draftDescription.value = project.value.description || ''
+  saveError.value = ''
+  editMode.value = true
+}
+
+function cancelEdit() {
+  editMode.value = false
+  saveError.value = ''
+  draftName.value = project.value?.name || ''
+  draftDescription.value = project.value?.description || ''
+}
+
+async function saveProjectMeta() {
+  if (!project.value) return
+  saveError.value = ''
+  const name = draftName.value.trim()
+  if (!name) {
+    saveError.value = 'Project name is required.'
+    return
+  }
+
+  savingProject.value = true
+  try {
+    await workspace.updateProject(project.value.id, {
+      name,
+      description: draftDescription.value.trim() || undefined
+    })
+    editMode.value = false
+  } catch (err) {
+    console.error('Failed to save project meta', err)
+    saveError.value = 'Failed to save project details.'
+  } finally {
+    savingProject.value = false
+  }
 }
 
 function handleMonetization() {
