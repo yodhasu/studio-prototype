@@ -17,7 +17,7 @@
         <div>
           <p class="px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-faint/60">Execution</p>
           <div class="mt-3 space-y-1">
-            <NuxtLink v-for="item in workspaceNav" :key="item.to" :to="item.to" class="nav-item group" :class="{ 'active': route.path === item.to }">
+            <NuxtLink v-for="item in workspaceNav" :key="item.to" :to="item.to" class="nav-item group" :class="{ 'active': isActive(item.to) }">
               <component :is="item.icon" class="h-4 w-4 transition-transform group-hover:scale-110" />
               <span>{{ item.label }}</span>
             </NuxtLink>
@@ -27,7 +27,7 @@
         <div>
           <p class="px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-faint/60">Business</p>
           <div class="mt-3 space-y-1">
-            <NuxtLink v-for="item in managementNav" :key="item.to" :to="item.to" class="nav-item group" :class="{ 'active': route.path === item.to }">
+            <NuxtLink v-for="item in managementNav" :key="item.to" :to="item.to" class="nav-item group" :class="{ 'active': isActive(item.to) }">
               <component :is="item.icon" class="h-4 w-4 transition-transform group-hover:scale-110" />
               <span>{{ item.label }}</span>
             </NuxtLink>
@@ -103,10 +103,14 @@ import {
   LogOut
 } from 'lucide-vue-next'
 import { useAuthStore } from '~/stores/auth'
+import { useWorkspaceStore } from '~/stores/workspace'
 
 const route = useRoute()
 const auth = useAuthStore()
+const workspace = useWorkspaceStore()
 const searchQuery = ref('')
+
+const isActive = (to: string) => route.path === to || route.path.startsWith(to + '/')
 
 const workspaceNav = [
   { label: 'Dashboard', to: '/workspace/dashboard', icon: LayoutDashboard },
@@ -123,9 +127,18 @@ const managementNav = [
 
 const pageTitle = computed(() => {
   const path = route.path
-  if (path.includes('workspace')) return 'Production / Dashboard'
-  if (path.includes('management')) return 'Business / Studio Pulse'
-  if (path.includes('projects')) return 'Production / Projects'
+
+  if (path.startsWith('/workspace')) return 'Production / Dashboard'
+  if (path.startsWith('/management')) return 'Business / Studio Pulse'
+
+  if (path.startsWith('/projects/')) {
+    const pid = route.params.id as string | undefined
+    const project = pid ? workspace.projects.find(p => p.id === pid) : null
+    return project ? `Production / ${project.name}` : 'Production / Project'
+  }
+
+  if (path.startsWith('/projects')) return 'Production / Projects'
+
   return 'Studio C3'
 })
 </script>

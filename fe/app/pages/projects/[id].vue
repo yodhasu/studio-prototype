@@ -13,11 +13,7 @@
       <LinkLayer 
         :edges="workspace.edges" 
         :cards="workspace.cards" 
-        :pending-edge="(linkingState.isLinking && linkingState.startId) ? {
-          source: workspace.cards.find(c => c.id === linkingState.startId),
-          sourceAnchor: linkingState.startAnchor!,
-          targetPos: linkingState.mousePos
-        } : null"
+        :pending-edge="pendingEdge"
       />
       
       <CardNode 
@@ -30,6 +26,7 @@
         @drag-start="onCardDragStart"
         @update="updateCard"
         @link-start="onLinkStart"
+        @link-hover="onLinkHover"
         @link-drop="onLinkDrop"
       />
     </div>
@@ -75,7 +72,7 @@
 </template>
 
 <script setup lang="ts">
-import { Plus, ZoomIn, ZoomOut, Maximize } from 'lucide-vue-next'
+import { Plus, ZoomIn, ZoomOut, Maximize, Users } from 'lucide-vue-next'
 import { useWorkspaceStore } from '~/stores/workspace'
 import { useWorkspaceBoot } from '~/composables/useWorkspaceBoot'
 
@@ -101,6 +98,17 @@ const linkingState = ref({
 })
 
 const isTeamModalOpen = ref(false)
+
+const pendingEdge = computed(() => {
+  if (!linkingState.value.isLinking || !linkingState.value.startId || !linkingState.value.startAnchor) return null
+  const source = workspace.cards.find(c => c.id === linkingState.value.startId)
+  if (!source) return null
+  return {
+    source,
+    sourceAnchor: linkingState.value.startAnchor,
+    targetPos: linkingState.value.mousePos
+  }
+})
 
 const canvasTransform = computed(() => ({
   transform: `translate(${panX.value}px, ${panY.value}px) scale(${zoom.value})`,
@@ -160,13 +168,26 @@ const onCanvasMouseUp = () => {
 const onCanvasWheel = (e: WheelEvent) => {
   if (e.ctrlKey) {
     e.preventDefault()
+
+    const el = e.currentTarget as HTMLElement | null
+    const rect = el?.getBoundingClientRect()
+
+    // Cursor-anchored zoom: preserve the world point under the cursor.
+    const cx = rect ? (e.clientX - rect.left) : e.clientX
+    const cy = rect ? (e.clientY - rect.top) : e.clientY
+    const wx = (cx - panX.value) / zoom.value
+    const wy = (cy - panY.value) / zoom.value
+
     const delta = -e.deltaY * 0.001
-    const newZoom = Math.min(Math.max(0.1, zoom.value + delta), 2)
-    zoom.value = newZoom
-  } else {
-    panX.value -= e.deltaX
-    panY.value -= e.deltaY
+    zoom.value = Math.min(Math.max(0.1, zoom.value + delta), 2)
+
+    panX.value = cx - wx * zoom.value
+    panY.value = cy - wy * zoom.value
+    return
   }
+
+  panX.value -= e.deltaX
+  panY.value -= e.deltaY
 }
 
 const zoomIn = () => zoom.value = Math.min(zoom.value + 0.1, 2)
@@ -174,13 +195,12 @@ const zoomOut = () => zoom.value = Math.max(zoom.value - 0.1, 0.1)
 
 
 const onLinkDrop = (targetId: string) => {
-  if (linkingState.value.isLinking && linkingState.value.startId) {
-    if (linkingState.value.startId !== targetId) {
-      workspace.createEdge(linkingState.value.startId, targetId)
-    }
-    linkingState.value.isLinking = false
-    linkingState.value.startId = null
+  if (!linkingState.value.isLinking || !linkingState.value.startId) return
+  if (linkingState.value.startId !== targetId) {
+    workspace.createEdge(linkingState.value.startId, targetId)
   }
+  // Ensure window-level listeners from onLinkStart are always removed.
+  cancelLinking()
 }
 
 const resetView = () => {
