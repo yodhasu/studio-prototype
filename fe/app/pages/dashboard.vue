@@ -36,34 +36,7 @@
         </div>
 
         <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <NuxtLink
-            v-for="project in workspace.projects.slice(0, 6)"
-            :key="project.id"
-            :to="`/projects/${project.id}`"
-            class="project-card group"
-          >
-            <div class="flex items-start justify-between">
-              <div
-                class="h-12 w-12 rounded-xl flex items-center justify-center font-black text-lg"
-                :style="project.color_code ? { backgroundColor: project.color_code + '20', color: project.color_code } : undefined"
-              >
-                {{ project.name[0] }}
-              </div>
-              <span class="badge" :style="project.color_code ? { borderColor: project.color_code + '40', color: project.color_code } : undefined">{{ project.status }}</span>
-            </div>
-            <h3 class="mt-6 font-display text-lg font-black text-text group-hover:text-brand transition-colors">{{ project.name }}</h3>
-            <p class="mt-2 text-sm text-muted line-clamp-2">{{ project.description || 'Project command sheet.' }}</p>
-
-            <div class="mt-8 border-t border-border/50 pt-4">
-              <div class="flex items-center justify-between text-[11px] font-black text-faint">
-                <span class="flex items-center gap-1.5">
-                  <span class="h-2 w-2 rounded-full" :style="{ backgroundColor: project.color_code || 'rgb(var(--c-brand))' }" />
-                  {{ project.card_count }} cards
-                </span>
-                <span>{{ project.task_count }} tasks</span>
-              </div>
-            </div>
-          </NuxtLink>
+          <ProjectCard v-for="project in workspace.projects.slice(0, 6)" :key="project.id" :project="project" />
         </div>
       </section>
     </div>

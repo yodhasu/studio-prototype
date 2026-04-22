@@ -43,47 +43,7 @@
       </div>
 
       <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <div 
-          v-for="project in workspace.projects" 
-          :key="project.id" 
-          class="project-card group cursor-pointer"
-          @click="openProject(project.id)"
-        >
-          <div class="flex items-start justify-between">
-            <div class="h-12 w-12 rounded-xl flex items-center justify-center font-bold text-lg" :style="project.color_code ? { backgroundColor: project.color_code + '20', color: project.color_code } : undefined">
-              {{ project.name[0] }}
-            </div>
-            <span class="badge" :style="project.color_code ? { borderColor: project.color_code + '40', color: project.color_code } : undefined">{{ project.status }}</span>
-          </div>
-          <h3 class="mt-6 font-display text-lg font-bold text-text group-hover:text-brand transition-colors">{{ project.name }}</h3>
-          <p class="mt-2 text-sm text-muted line-clamp-2 italic">Standard production environment for {{ project.name.toLowerCase() }}.</p>
-          
-          <div class="mt-8 border-t border-border/50 pt-4">
-            <div class="mb-3 flex items-center justify-between">
-              <div class="flex items-center gap-4 text-[11px] font-bold text-faint">
-                <span class="flex items-center gap-1.5"><FolderKanban class="h-3.5 w-3.5" /> {{ project.card_count }}</span>
-                <span class="flex items-center gap-1.5"><CalendarDays class="h-3.5 w-3.5" /> {{ project.task_count }}</span>
-              </div>
-              <ArrowRight class="h-4 w-4 text-faint group-hover:translate-x-1 group-hover:text-brand transition-all" />
-            </div>
-            <div class="flex gap-2">
-              <NuxtLink
-                class="btn btn-ghost flex-1 justify-center text-xs"
-                :to="`/projects/${project.id}`"
-                @click.stop
-              >
-                Open Project
-              </NuxtLink>
-              <NuxtLink
-                class="btn btn-primary flex-1 justify-center text-xs"
-                :to="`/workspace/${project.id}`"
-                @click.stop
-              >
-                Enter Workspace
-              </NuxtLink>
-            </div>
-          </div>
-        </div>
+        <ProjectCard v-for="project in workspace.projects" :key="project.id" :project="project" />
       </div>
     </div>
 
@@ -92,7 +52,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Plus, FolderKanban, CalendarDays, ArrowRight, X } from 'lucide-vue-next'
+import { Plus, X } from 'lucide-vue-next'
 import { useWorkspaceStore } from '~/stores/workspace'
 import { useWorkspaceBoot } from '~/composables/useWorkspaceBoot'
 
@@ -102,10 +62,6 @@ const createProject = ref(false)
 const newProjectName = ref('')
 const newProjectColor = ref('#6A5AF9')
 const createError = ref('')
-
-function openProject(id: string) {
-  navigateTo(`/projects/${id}`)
-}
 
 function closeCreateModal() {
   createProject.value = false
