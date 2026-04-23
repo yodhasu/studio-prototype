@@ -1,218 +1,188 @@
 <template>
-  <USlideover
-    v-model:open="isOpen"
-    :ui="{
-      content: 'max-w-lg fixed right-0 inset-y-0 z-50 bg-surface shadow-2xl backdrop-blur-md border-l border-border/10',
-      header: 'p-0 relative',
-      close: 'end-4 top-4 z-10',
-      overlay: 'fixed inset-0 bg-[var(--c-bg)]/60 backdrop-blur-sm z-40'
-    }"
-  >
-    <template #header>
-      <div class="px-8 pt-10 pr-20 pb-4 relative">
-        <div class="absolute top-9 right-14">
-          <span class="text-[9px] font-bold uppercase tracking-widest text-faint">Edit flow pending</span>
-        </div>
-        <h2 class="text-xl font-bold text-foreground line-clamp-1 tracking-tight">
-          {{ project?.name || 'Workspace Context' }}
-        </h2>
-        <p class="text-[13px] text-muted line-clamp-2 mt-1 leading-snug">
-          {{ project?.description || 'Active production workspace.' }}
-        </p>
-      </div>
-    </template>
+  <Teleport to="body">
+    <Transition name="sidebar-overlay">
+      <div
+        v-if="isOpen"
+        class="fixed inset-0 z-40 bg-bg/70 backdrop-blur-sm"
+        @click="isOpen = false"
+      />
+    </Transition>
 
-    <template #body>
-      <div class="flex-1 overflow-y-auto space-y-8 custom-scrollbar pb-24 px-8 pt-2">
-        <!-- Metadata (Extreme Minimalist) -->
-        <div class="flex items-center gap-6 py-2 px-1 border-b border-border/10 pb-6 opacity-80">
-          <div class="flex items-center gap-2">
-            <span class="h-1.5 w-1.5 rounded-full bg-green-500" />
-            <span class="text-[10px] font-bold uppercase tracking-widest text-muted">{{ project?.status || 'Active' }}</span>
+    <Transition name="sidebar-panel">
+      <aside
+        v-if="isOpen"
+        class="fixed inset-y-0 right-0 z-50 flex w-full max-w-lg flex-col border-l border-border/10 bg-surface shadow-2xl"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Project details"
+      >
+        <header class="relative px-8 pb-4 pr-20 pt-10">
+          <div class="absolute right-14 top-9">
+            <span class="text-[9px] font-bold uppercase tracking-widest text-faint">Edit flow pending</span>
           </div>
-          <div class="flex items-center gap-2">
-            <UIcon
-              name="i-heroicons-bolt"
-              class="w-3.5 h-3.5 text-amber"
-            />
-            <span class="text-[10px] font-bold uppercase tracking-widest text-muted">{{ projectPriority }}</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <UIcon
-              name="i-heroicons-calendar"
-              class="w-3.5 h-3.5 text-muted"
-            />
-            <span class="text-[10px] font-bold uppercase tracking-widest text-faint">JUN 30</span>
-          </div>
-        </div>
-
-        <!-- Collaborators (Minimalist Trigger) -->
-        <div class="space-y-4">
-          <div class="flex items-center justify-between">
-            <span class="text-[10px] font-bold text-muted uppercase tracking-widest px-1">Collaborators</span>
-            <UButton
-              variant="link"
-              color="neutral"
-              size="xs"
-              label="Open Team"
-              class="text-[10px] hover:text-brand"
-              @click="showMembers = true"
-            />
-          </div>
-          <div
-            class="flex items-center gap-3 p-3 sketch-border bg-panel/30 cursor-pointer hover:bg-panel/50 transition-colors"
-            @click="showMembers = true"
-          >
-            <div class="h-9 w-9 rounded-full border border-border/30 bg-brand/15 flex items-center justify-center text-brand">
-              <UIcon
-                name="i-heroicons-user-group"
-                class="w-4 h-4"
-              />
-            </div>
-            <div class="space-y-1">
-              <p class="text-[11px] font-bold uppercase tracking-widest text-text">
-                Team Directory
-              </p>
-              <p class="text-[10px] text-faint">
-                {{ project?.member_ids?.length ?? 0 }} collaborators hidden until opened
-              </p>
-            </div>
-            <div class="ml-auto flex items-center text-faint">
-              <UIcon
-                name="i-heroicons-chevron-right"
-                class="w-4 h-4"
-              />
-            </div>
-          </div>
-        </div>
-
-        <!-- Section Switcher (Tactile Depth Refinement) -->
-        <div class="flex p-1 bg-overlay/40 rounded-xl sketch-border mx-1 shadow-inner">
           <button
-            v-for="item in tabItems"
-            :key="item.slot"
-            class="flex-1 py-2 px-3 rounded-lg text-[10px] font-black transition-all uppercase tracking-[0.14em]"
-            :class="activeTab === item.slot ? 'bg-surface shadow-md text-brand border border-border/10' : 'text-faint hover:text-muted'"
-            @click="activeTab = item.slot"
+            type="button"
+            class="btn btn-ghost btn-icon absolute right-4 top-4"
+            aria-label="Close project details"
+            @click="isOpen = false"
           >
-            {{ item.label }}
+            x
           </button>
-        </div>
+          <h2 class="line-clamp-1 text-xl font-bold tracking-tight text-text">
+            {{ project?.name || 'Workspace Context' }}
+          </h2>
+          <p class="mt-1 line-clamp-2 text-[13px] leading-snug text-muted">
+            {{ project?.description || 'Active production workspace.' }}
+          </p>
+        </header>
 
-        <div class="px-1 min-h-[300px]">
-          <div
-            v-if="activeTab === 'details'"
-            class="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-300"
-          >
-            <ProjectTaskList
-              v-if="project"
-              :project-id="project.id"
-            />
-
-            <div class="pt-6 border-t border-border/10">
-              <UButton
-                block
-                icon="i-heroicons-banknotes"
-                label="View Financials"
-                color="neutral"
-                variant="ghost"
-                class="h-10 rounded-lg text-[10px] font-bold uppercase tracking-widest text-faint hover:text-brand transition-colors"
-                @click="handleMonetization"
-              />
+        <div class="custom-scrollbar flex-1 space-y-8 overflow-y-auto px-8 pb-24 pt-2">
+          <div class="flex items-center gap-6 border-b border-border/10 px-1 py-2 pb-6 opacity-80">
+            <div class="flex items-center gap-2">
+              <span class="h-1.5 w-1.5 rounded-full bg-green-500" />
+              <span class="text-[10px] font-bold uppercase tracking-widest text-muted">{{ project?.status || 'Active' }}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <Bolt class="h-3.5 w-3.5 text-amber" />
+              <span class="text-[10px] font-bold uppercase tracking-widest text-muted">{{ projectPriority }}</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <Calendar class="h-3.5 w-3.5 text-muted" />
+              <span class="text-[10px] font-bold uppercase tracking-widest text-faint">JUN 30</span>
             </div>
           </div>
 
-          <div
-            v-else-if="activeTab === 'activity'"
-            class="animate-in fade-in slide-in-from-bottom-2 duration-300"
-          >
-            <div
-              v-if="projectActivities.length > 0"
-              class="space-y-6 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[1px] before:bg-border/20"
-            >
-              <div
-                v-for="activity in projectActivities"
-                :key="activity.id"
-                class="relative pl-8 group"
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <span class="px-1 text-[10px] font-bold uppercase tracking-widest text-muted">Collaborators</span>
+              <button
+                type="button"
+                class="text-[10px] font-bold uppercase tracking-widest text-muted hover:text-brand"
+                @click="showMembers = true"
               >
-                <!-- Artistic Timeline Dot -->
-                <div class="absolute left-0 top-1.5 w-6 h-6 flex items-center justify-center">
-                  <div class="w-1.5 h-1.5 rounded-full bg-brand/40 group-hover:bg-brand group-hover:scale-125 transition-all outline outline-4 outline-surface" />
-                </div>
+                Open Team
+              </button>
+            </div>
+            <button
+              type="button"
+              class="flex w-full cursor-pointer items-center gap-3 bg-panel/30 p-3 text-left transition-colors hover:bg-panel/50 sketch-border"
+              @click="showMembers = true"
+            >
+              <div class="flex h-9 w-9 items-center justify-center rounded-full border border-border/30 bg-brand/15 text-brand">
+                <Users class="h-4 w-4" />
+              </div>
+              <div class="space-y-1">
+                <p class="text-[11px] font-bold uppercase tracking-widest text-text">
+                  Team Directory
+                </p>
+                <p class="text-[10px] text-faint">
+                  {{ project?.member_ids?.length ?? 0 }} collaborators hidden until opened
+                </p>
+              </div>
+              <ChevronRight class="ml-auto h-4 w-4 text-faint" />
+            </button>
+          </div>
 
-                <div class="space-y-1">
-                  <div class="flex items-center justify-between">
-                    <span class="text-[10px] font-bold text-muted uppercase tracking-widest">{{ activity.type }}</span>
-                    <span class="text-[9px] text-faint font-medium">{{ formatRelativeTime(activity.timestamp) }}</span>
-                  </div>
-                  <p class="text-[13px] text-text font-medium leading-relaxed">
-                    {{ activity.message }}
-                  </p>
-                  <p class="text-[10px] text-faint italic leading-tight">
-                    by {{ activity.user }}
-                  </p>
-                </div>
+          <div class="mx-1 flex rounded-xl bg-overlay/40 p-1 shadow-inner sketch-border">
+            <button
+              v-for="item in tabItems"
+              :key="item.slot"
+              class="flex-1 rounded-lg px-3 py-2 text-[10px] font-black uppercase tracking-[0.14em] transition-all"
+              :class="activeTab === item.slot ? 'border border-border/10 bg-surface text-brand shadow-md' : 'text-faint hover:text-muted'"
+              type="button"
+              @click="activeTab = item.slot"
+            >
+              {{ item.label }}
+            </button>
+          </div>
+
+          <div class="min-h-[300px] px-1">
+            <div
+              v-if="activeTab === 'details'"
+              class="space-y-8"
+            >
+              <ProjectTaskList
+                v-if="project"
+                :project-id="project.id"
+              />
+
+              <div class="border-t border-border/10 pt-6">
+                <button
+                  type="button"
+                  class="btn btn-ghost h-10 w-full rounded-lg text-[10px] font-bold uppercase tracking-widest text-faint transition-colors hover:text-brand"
+                  @click="handleMonetization"
+                >
+                  <Banknote class="h-4 w-4" />
+                  View Financials
+                </button>
               </div>
             </div>
-            <div
-              v-else
-              class="py-20 text-center space-y-3"
-            >
-              <UIcon
-                name="i-heroicons-clock"
-                class="w-10 h-10 text-faint/30 mx-auto"
-              />
-              <p class="text-faint text-sm italic">
-                No activity logged for {{ project?.name }} yet.
-              </p>
+
+            <div v-else-if="activeTab === 'activity'">
+              <div
+                v-if="projectActivities.length > 0"
+                class="relative space-y-6 before:absolute before:bottom-2 before:left-3 before:top-2 before:w-[1px] before:bg-border/20"
+              >
+                <div
+                  v-for="activity in projectActivities"
+                  :key="activity.id"
+                  class="group relative pl-8"
+                >
+                  <div class="absolute left-0 top-1.5 flex h-6 w-6 items-center justify-center">
+                    <div class="h-1.5 w-1.5 rounded-full bg-brand/40 outline outline-4 outline-surface transition-all group-hover:scale-125 group-hover:bg-brand" />
+                  </div>
+
+                  <div class="space-y-1">
+                    <div class="flex items-center justify-between">
+                      <span class="text-[10px] font-bold uppercase tracking-widest text-muted">{{ activity.type }}</span>
+                      <span class="text-[9px] font-medium text-faint">{{ formatRelativeTime(activity.timestamp) }}</span>
+                    </div>
+                    <p class="text-[13px] font-medium leading-relaxed text-text">
+                      {{ activity.message }}
+                    </p>
+                    <p class="text-[10px] italic leading-tight text-faint">
+                      by {{ activity.user }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div
+                v-else
+                class="space-y-3 py-20 text-center"
+              >
+                <Clock class="mx-auto h-10 w-10 text-faint/30" />
+                <p class="text-sm italic text-faint">
+                  No activity logged for {{ project?.name }} yet.
+                </p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </template>
 
-    <template #footer>
-      <div class="absolute bottom-6 left-0 right-0 flex justify-center px-8">
-        <UButton
-          color="primary"
-          label="Enter Studio Workspace"
-          icon="i-heroicons-arrow-right-circle"
-          size="xl"
-          class="w-full max-w-[340px] rounded-xl shadow-xl hover:shadow-brand/20 sketch-border !bg-brand !text-bg font-black uppercase tracking-widest transition-all hover:-translate-y-0.5 active:translate-y-0"
-          @click="goToWorkspace"
-        />
-      </div>
-    </template>
-  </USlideover>
+        <footer class="absolute bottom-6 left-0 right-0 flex justify-center px-8">
+          <button
+            type="button"
+            class="btn btn-primary w-full max-w-[340px] rounded-xl font-black uppercase tracking-widest shadow-xl transition-all hover:-translate-y-0.5 active:translate-y-0 sketch-border"
+            @click="goToWorkspace"
+          >
+            <ArrowRightCircle class="h-5 w-5" />
+            Enter Studio Workspace
+          </button>
+        </footer>
+      </aside>
+    </Transition>
+  </Teleport>
 
-  <!-- Members Modal -->
-  <UModal v-model="showMembers">
-    <div class="p-8">
-      <div class="flex items-center justify-between mb-8">
-        <h3 class="text-lg font-bold flex items-center gap-2">
-          <UIcon
-            name="i-heroicons-users"
-            class="w-5 h-5 text-brand"
-          />
-          Collaborators
-        </h3>
-        <UButton
-          color="neutral"
-          variant="ghost"
-          icon="i-heroicons-x-mark"
-          @click="showMembers = false"
-        />
-      </div>
-      <ProjectMemberBox
-        v-if="project"
-        :project-id="project.id"
-      />
-    </div>
-  </UModal>
+  <ProjectMemberModal
+    v-if="project"
+    v-model:open="showMembers"
+    :project-id="project.id"
+  />
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { ArrowRightCircle, Banknote, Bolt, Calendar, ChevronRight, Clock, Users } from 'lucide-vue-next'
 import { useWorkspaceStore } from '~/stores/workspace'
 
 const isOpen = defineModel<boolean>('open', { default: false })
@@ -277,11 +247,30 @@ function goToWorkspace() {
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
 }
+
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: rgba(var(--c-brand), 0.1);
   border-radius: 10px;
+}
+
+.sidebar-overlay-enter-active,
+.sidebar-overlay-leave-active,
+.sidebar-panel-enter-active,
+.sidebar-panel-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.sidebar-overlay-enter-from,
+.sidebar-overlay-leave-to {
+  opacity: 0;
+}
+
+.sidebar-panel-enter-from,
+.sidebar-panel-leave-to {
+  transform: translateX(100%);
 }
 </style>

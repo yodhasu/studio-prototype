@@ -15,12 +15,19 @@
         :key="member.id"
         class="flex items-center gap-3 p-3 sketch-border bg-[var(--c-bg)]/40 border-border/20"
       >
-        <UAvatar
+        <img
+          v-if="member.avatar_url"
           :src="member.avatar_url"
           :alt="member.name"
-          size="sm"
-          class="sketch-border ring-2 ring-surface"
-        />
+          class="h-8 w-8 rounded-full object-cover ring-2 ring-surface sketch-border"
+        >
+        <div
+          v-else
+          class="flex h-8 w-8 items-center justify-center rounded-full bg-panel text-[10px] font-black text-brand ring-2 ring-surface sketch-border"
+          :aria-label="member.name"
+        >
+          {{ getInitials(member.name) }}
+        </div>
         <div class="flex flex-col">
           <span class="text-sm font-bold text-text">{{ member.name }}</span>
           <span class="text-[10px] text-faint uppercase font-bold tracking-tight">{{ member.role || 'Member' }}</span>
@@ -35,14 +42,12 @@
     </div>
 
     <div class="mt-6 pt-6 border-t border-border/10">
-      <UButton
-        block
-        color="neutral"
-        variant="ghost"
-        icon="i-heroicons-user-plus"
-        label="Add Member"
-        class="text-[10px] font-bold uppercase tracking-widest"
-      />
+      <button
+        type="button"
+        class="btn btn-ghost w-full text-[10px] font-bold uppercase tracking-widest"
+      >
+        Add Member
+      </button>
     </div>
   </div>
 </template>
@@ -62,4 +67,13 @@ const projectMembers = computed(() => {
   if (!project.value?.member_ids) return []
   return workspace.members.filter(m => project.value?.member_ids?.includes(m.id))
 })
+
+function getInitials(name: string) {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(part => part[0]?.toUpperCase())
+    .join('')
+}
 </script>

@@ -37,13 +37,12 @@
               {{ task.title }}
             </p>
             <div class="mt-1 flex items-center gap-2">
-              <UBadge
-                size="xs"
-                :color="getStatusColor(task.status)"
-                variant="subtle"
+              <span
+                class="badge px-1.5 py-0.5 text-[9px]"
+                :class="getStatusClass(task.status)"
               >
                 {{ task.status }}
-              </UBadge>
+              </span>
               <span class="flex items-center gap-1 font-medium text-muted text-[10px]">
                 <Calendar class="h-2.5 w-2.5" /> Due {{ task.due_date ? formatDate(task.due_date) : 'TBD' }}
               </span>
@@ -106,12 +105,12 @@ function getPriorityClass(priority: string) {
   }
 }
 
-function getStatusColor(status: TaskStatus): 'success' | 'info' | 'error' | 'neutral' {
+function getStatusClass(status: TaskStatus) {
   switch (status) {
-    case 'DONE': return 'success'
-    case 'PROGRESS': return 'info'
-    case 'BLOCKED': return 'error'
-    default: return 'neutral'
+    case 'DONE': return 'badge-income'
+    case 'PROGRESS': return 'badge-cyan'
+    case 'BLOCKED': return 'badge-expense'
+    default: return ''
   }
 }
 
