@@ -4,7 +4,7 @@ export const useProjectColor = () => {
   const workspace = useWorkspaceStore()
 
   const getProject = (projectId?: string) =>
-    projectId ? workspace.projects.find(p => p.id === projectId) || null : null
+    projectId ? workspace.getProjectById(projectId) : null
 
   const getColor = (projectId?: string) => getProject(projectId)?.color_code || 'rgb(var(--c-border))'
 

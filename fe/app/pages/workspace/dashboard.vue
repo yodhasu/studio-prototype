@@ -4,152 +4,269 @@
       <header class="flex items-end justify-between">
         <div>
           <h1 class="font-display text-2xl font-bold tracking-tight text-text">
-            Workspace Overview
+            Workspace
           </h1>
           <p class="mt-1 text-sm text-muted">
-            A top-level view of your current projects and upcoming tasks.
+            Root context for projects, tasks, schedule, and notes.
           </p>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button
+            class="btn btn-primary"
+            @click="createOpen = true"
+          >
+            New Workspace
+          </button>
         </div>
       </header>
 
-      <section class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <section class="dashboard-panel">
+        <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p class="text-[10px] font-black uppercase tracking-widest text-faint">
+              Active workspace
+            </p>
+            <p class="mt-2 font-display text-xl font-black text-text">
+              {{ workspace.activeWorkspace?.name || 'None' }}
+            </p>
+            <p class="mt-1 text-xs text-muted">
+              {{ workspace.activeWorkspace?.kind || '—' }}
+            </p>
+          </div>
+
+          <div class="min-w-[260px]">
+            <label class="block text-[10px] font-black uppercase tracking-widest text-faint">Switch</label>
+            <select
+              v-model="selectedWorkspaceId"
+              class="input-base sketch-border mt-2"
+            >
+              <option
+                v-for="ws in workspace.workspaces"
+                :key="ws.id"
+                :value="ws.id"
+              >
+                {{ ws.name }} ({{ ws.kind }})
+              </option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid grid-cols-1 gap-6 lg:grid-cols-4">
         <DashboardMetricCard
-          label="Active Projects"
-          :value="workspace.projects.length"
+          label="Projects"
+          :value="workspace.activeProjects.length"
           trend="Live"
-          detail="Total number of ongoing projects in your workspace."
+          detail="Projects in this workspace"
           tone="brand"
           to="/projects"
         />
         <DashboardMetricCard
-          label="Project Progression"
-          :value="progressionValue"
+          label="Open tasks"
+          :value="openTasksCount"
           trend="Live"
-          detail="Tasks finished across all projects"
-          tone="brand"
-        />
-        <DashboardMetricCard
-          label="Upcoming Deadlines"
-          :value="workspace.tasks.length"
-          trend="Tracked"
-          detail="Tasks and milestones due within the next 7 days."
+          detail="Not DONE"
           tone="brand"
           to="/schedule"
+        />
+        <DashboardMetricCard
+          label="Overdue"
+          :value="workspace.tasksOverdue.length"
+          trend="Attention"
+          detail="Past due date"
+          tone="danger"
+          to="/schedule"
+        />
+        <DashboardMetricCard
+          label="Notes"
+          :value="workspace.activeNotes.length"
+          trend="Live"
+          detail="Context captured"
+          tone="brand"
         />
       </section>
 
       <div class="grid grid-cols-1 gap-6 xl:grid-cols-12">
-        <div class="xl:col-span-8 space-y-6">
-          <article class="dashboard-panel">
-            <div class="flex items-center justify-between">
-              <h3 class="font-display text-lg font-bold text-text">
-                Recent Projects
-              </h3>
-              <NuxtLink
-                to="/projects"
-                class="text-xs font-bold text-brand hover:underline"
-              >View Directory</NuxtLink>
-            </div>
+        <section class="dashboard-panel xl:col-span-7">
+          <div class="flex items-center justify-between">
+            <h2 class="font-display text-lg font-bold text-text">
+              Upcoming
+            </h2>
+            <NuxtLink
+              to="/schedule"
+              class="text-xs font-bold text-brand hover:underline"
+            >Open schedule</NuxtLink>
+          </div>
 
-            <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div
-                v-for="project in workspace.projects.slice(0, 4)"
-                :key="project.id"
-                class="project-card group cursor-pointer"
-                @click="openProject(project.id)"
-              >
-                <div class="flex items-start justify-between">
-                  <div
-                    class="h-10 w-10 rounded-lg flex items-center justify-center font-bold text-xs"
-                    :style="project.color_code ? { backgroundColor: project.color_code + '20', color: project.color_code } : undefined"
-                  >
-                    {{ project.name[0] }}
-                  </div>
-                  <span
-                    class="badge"
-                    :style="project.color_code ? { borderColor: project.color_code + '40', color: project.color_code } : undefined"
-                  >{{ project.status }}</span>
-                </div>
-                <h4 class="mt-4 font-display font-bold text-text group-hover:text-brand transition-colors">
-                  {{ project.name }}
-                </h4>
-                <div class="mt-4 flex items-center justify-between text-[11px] text-muted">
-                  <div class="flex items-center gap-3">
-                    <span class="flex items-center gap-1"><FolderKanban class="h-3 w-3" /> {{ project.card_count }} boards</span>
-                    <span class="flex items-center gap-1"><CalendarDays class="h-3 w-3" /> {{ project.task_count }} tasks</span>
-                  </div>
-                </div>
+          <div class="mt-6 space-y-2">
+            <NuxtLink
+              v-for="item in workspace.upcomingDeadlines.slice(0, 10)"
+              :key="item.kind + ':' + item.id"
+              class="flex items-center justify-between rounded-lg border border-border bg-panel/20 p-3 hover:border-brand/30 transition-colors"
+              :to="`/projects/${item.project_id}`"
+            >
+              <div class="min-w-0">
+                <p class="truncate text-xs font-bold text-text">{{ item.title }}</p>
+                <p class="truncate text-[10px] text-muted">{{ item.kind }} • {{ projectName(item.project_id) }}</p>
               </div>
-            </div>
-          </article>
-        </div>
+              <span class="text-[10px] font-mono text-faint">{{ item.due_date }}</span>
+            </NuxtLink>
 
-        <div class="xl:col-span-4">
-          <article class="dashboard-panel h-full">
-            <h3 class="font-display text-lg font-bold text-text">
-              Upcoming Tasks
-            </h3>
-            <p class="mt-1 text-xs text-muted">
-              Items requiring your attention soon.
+            <p
+              v-if="workspace.upcomingDeadlines.length === 0"
+              class="text-sm italic text-faint"
+            >
+              No upcoming deadlines.
             </p>
+          </div>
+        </section>
 
-            <div class="mt-6 space-y-4">
-              <div
-                v-for="task in workspace.tasks.slice(0, 5)"
-                :key="task.id"
-                class="flex items-center gap-4 p-3 rounded-lg border border-border bg-panel/30 hover:border-brand/30 transition-colors cursor-pointer"
-              >
-                <div
-                  class="h-2 w-2 rounded-full"
-                  :style="{ backgroundColor: task.status === 'DONE' ? 'rgb(var(--c-green))' : 'rgb(var(--c-amber))' }"
-                />
-                <div class="flex-1 min-w-0">
-                  <p class="truncate text-xs font-bold text-text">
-                    {{ task.title }}
-                  </p>
-                  <p class="truncate text-[10px] text-muted">
-                    {{ task.project_name }}
-                  </p>
-                </div>                <span class="text-[10px] font-mono text-faint">7d</span>
-              </div>
+        <section class="dashboard-panel xl:col-span-5">
+          <h2 class="font-display text-lg font-bold text-text">
+            Recent activity
+          </h2>
+          <div class="mt-6 space-y-3">
+            <div
+              v-for="a in workspace.recentActivity.slice(0, 8)"
+              :key="a.id"
+              class="rounded-lg border border-border bg-panel/20 p-3"
+            >
+              <p class="text-[10px] font-black uppercase tracking-widest text-faint">
+                {{ a.entity_type }} • {{ a.type }}
+              </p>
+              <p class="mt-2 text-sm text-text">
+                {{ a.message }}
+              </p>
+              <p class="mt-2 text-[10px] text-muted italic">
+                {{ a.timestamp }}
+              </p>
             </div>
-          </article>
-        </div>
+
+            <p
+              v-if="workspace.recentActivity.length === 0"
+              class="text-sm italic text-faint"
+            >
+              No activity yet.
+            </p>
+          </div>
+        </section>
       </div>
     </div>
 
-    <!-- Project Detail Sidebar -->
-    <ProjectDetailSidebar
-      v-model:open="isSidebarOpen"
-      :project-id="selectedProjectId"
-    />
+    <div
+      v-if="createOpen"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div class="w-full max-w-md rounded-2xl border border-border bg-surface p-5 shadow-2xl">
+        <div class="mb-4 flex items-center justify-between">
+          <h2 class="font-display text-lg font-bold text-text">
+            Create Workspace
+          </h2>
+          <button
+            class="text-faint hover:text-text"
+            aria-label="Close create workspace modal"
+            @click="createOpen = false"
+          >
+            ✕
+          </button>
+        </div>
+
+        <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-faint">Name</label>
+        <input
+          v-model="createName"
+          class="mb-4 w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 text-sm text-text outline-none focus:border-brand"
+          placeholder="e.g. Studio Alpha"
+        >
+
+        <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-faint">Kind</label>
+        <select
+          v-model="createKind"
+          class="input-base sketch-border"
+        >
+          <option value="PERSONAL">
+            PERSONAL
+          </option>
+          <option value="TEAM">
+            TEAM
+          </option>
+        </select>
+
+        <p
+          v-if="createError"
+          class="mt-3 text-xs text-red-400"
+        >
+          {{ createError }}
+        </p>
+
+        <div class="mt-5 flex justify-end gap-2">
+          <button
+            class="btn"
+            @click="createOpen = false"
+          >
+            Cancel
+          </button>
+          <button
+            class="btn btn-primary"
+            @click="submitCreate"
+          >
+            Create
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { FolderKanban, CalendarDays } from 'lucide-vue-next'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useWorkspaceStore } from '~/stores/workspace'
 import { useWorkspaceBoot } from '~/composables/useWorkspaceBoot'
 
 const workspace = useWorkspaceStore()
 const { ensureSession } = useWorkspaceBoot()
 
-const isSidebarOpen = ref(false)
-const selectedProjectId = ref<string | undefined>(undefined)
+const selectedWorkspaceId = ref<string>('')
 
-const progressionValue = computed(() => {
-  const total = workspace.tasks.length
-  const finished = workspace.tasks.filter(t => t.status === 'DONE').length
-  return `${finished} / ${total}`
-})
+const createOpen = ref(false)
+const createName = ref('')
+const createKind = ref<'PERSONAL' | 'TEAM'>('TEAM')
+const createError = ref('')
 
-function openProject(id: string) {
-  selectedProjectId.value = id
-  isSidebarOpen.value = true
+const openTasksCount = computed(() => workspace.activeTasks.filter(t => t.status !== 'DONE').length)
+
+function projectName(projectId: string) {
+  return workspace.getProjectById(projectId)?.name || 'Project'
 }
+
+function submitCreate() {
+  createError.value = ''
+  if (!createName.value.trim()) {
+    createError.value = 'Workspace name is required.'
+    return
+  }
+
+  const ws = workspace.createWorkspace({ name: createName.value, kind: createKind.value })
+  if (!ws) {
+    createError.value = 'Failed to create workspace.'
+    return
+  }
+
+  createOpen.value = false
+  createName.value = ''
+  selectedWorkspaceId.value = ws.id
+}
+
+watch(selectedWorkspaceId, (id) => {
+  if (!id) return
+  if (id === workspace.active_workspace_id) return
+  workspace.switchWorkspace(id)
+})
 
 onMounted(async () => {
   await ensureSession()
-  await workspace.fetchDashboardSummary()
+  selectedWorkspaceId.value = workspace.active_workspace_id || workspace.workspaces[0]?.id || ''
 })
 </script>

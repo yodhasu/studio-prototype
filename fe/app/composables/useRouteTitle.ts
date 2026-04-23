@@ -16,7 +16,11 @@ export function useRouteTitle(opts: {
 
     if (path === '/schedule') return 'Schedule'
 
+    if (path === '/workspace/dashboard') return 'Workspace'
     if (path.startsWith('/workspace/')) return opts.activeProject.value?.name || 'Workspace'
+
+    if (path === '/teams') return 'Team'
+    if (path === '/notes') return 'Notes'
 
     return 'Studio'
   })
@@ -31,7 +35,11 @@ export function useRouteTitle(opts: {
 
     if (path === '/schedule') return 'Kanban / Calendar'
 
+    if (path === '/workspace/dashboard') return 'Workspace overview'
     if (path.startsWith('/workspace/')) return 'Creative workspace'
+
+    if (path === '/teams') return 'Roster'
+    if (path === '/notes') return 'Context'
 
     return null
   })

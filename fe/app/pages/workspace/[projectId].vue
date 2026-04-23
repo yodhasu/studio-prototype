@@ -78,6 +78,6 @@ const project = computed(() => workspace.projects.find(p => p.id === projectId.v
 
 onMounted(async () => {
   await ensureSession()
-  await workspace.fetchProjects()
+  workspace.setCurrentProject(projectId.value)
 })
 </script>

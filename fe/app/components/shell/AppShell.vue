@@ -129,7 +129,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { LayoutDashboard, FolderKanban, CalendarDays } from 'lucide-vue-next'
+import { LayoutDashboard, FolderKanban, CalendarDays, Users, StickyNote } from 'lucide-vue-next'
 import AppLogo from '~/components/AppLogo.vue'
 import { useWorkspaceStore } from '~/stores/workspace'
 import { useRouteTitle } from '~/composables/useRouteTitle'
@@ -139,8 +139,11 @@ const workspace = useWorkspaceStore()
 
 const primaryNav = [
   { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
+  { label: 'Workspace', to: '/workspace/dashboard', icon: LayoutDashboard },
   { label: 'Projects', to: '/projects', icon: FolderKanban },
-  { label: 'Schedule', to: '/schedule', icon: CalendarDays }
+  { label: 'Schedule', to: '/schedule', icon: CalendarDays },
+  { label: 'Team', to: '/teams', icon: Users },
+  { label: 'Notes', to: '/notes', icon: StickyNote }
 ]
 
 const isActive = (to: string) => route.path === to || route.path.startsWith(to + '/')
@@ -148,12 +151,12 @@ const isActive = (to: string) => route.path === to || route.path.startsWith(to +
 const activeProjectId = computed(() => {
   const pid = route.params.projectId || route.params.id
   if (typeof pid === 'string' && pid) return pid
-  return workspace.currentProject?.id || null
+  return workspace.currentProjectId || null
 })
 
 const activeProject = computed(() => {
   if (!activeProjectId.value) return null
-  return workspace.projects.find(p => p.id === activeProjectId.value) || null
+  return workspace.getProjectById(activeProjectId.value) || null
 })
 
 const shellStyle = computed(() => {

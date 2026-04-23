@@ -48,7 +48,7 @@
             </div>
             <div class="flex items-center gap-2">
               <Calendar class="h-3.5 w-3.5 text-muted" />
-              <span class="text-[10px] font-bold uppercase tracking-widest text-faint">JUN 30</span>
+              <span class="text-[10px] font-bold uppercase tracking-widest text-faint">{{ nextDueLabel }}</span>
             </div>
           </div>
 
@@ -105,17 +105,6 @@
                 v-if="project"
                 :project-id="project.id"
               />
-
-              <div class="border-t border-border/10 pt-6">
-                <button
-                  type="button"
-                  class="btn btn-ghost h-10 w-full rounded-lg text-[10px] font-bold uppercase tracking-widest text-faint transition-colors hover:text-brand"
-                  @click="handleMonetization"
-                >
-                  <Banknote class="h-4 w-4" />
-                  View Financials
-                </button>
-              </div>
             </div>
 
             <div v-else-if="activeTab === 'activity'">
@@ -141,7 +130,7 @@
                       {{ activity.message }}
                     </p>
                     <p class="text-[10px] italic leading-tight text-faint">
-                      by {{ activity.user }}
+                      by {{ actorName(activity.actor_user_id) }}
                     </p>
                   </div>
                 </div>
@@ -182,7 +171,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { ArrowRightCircle, Banknote, Bolt, Calendar, ChevronRight, Clock, Users } from 'lucide-vue-next'
+import { ArrowRightCircle, Bolt, Calendar, ChevronRight, Clock, Users } from 'lucide-vue-next'
 import { useWorkspaceStore } from '~/stores/workspace'
 
 const isOpen = defineModel<boolean>('open', { default: false })
@@ -211,13 +200,33 @@ const tabItems = [
 
 const projectPriority = computed(() => {
   if (!project.value) return 'Normal'
-  return project.value.card_count > 10 ? 'High' : 'Normal'
+  const openTasks = workspace.tasks.filter(t => t.project_id === project.value!.id && t.status !== 'DONE').length
+  return openTasks >= 8 ? 'High' : openTasks >= 4 ? 'Medium' : 'Normal'
+})
+
+const nextDueLabel = computed(() => {
+  if (!project.value) return 'None'
+  const dues = workspace.tasks
+    .filter(t => t.project_id === project.value!.id)
+    .map(t => t.due_date)
+    .filter((d): d is string => Boolean(d))
+    .map(d => new Date(d).getTime())
+    .filter(ms => Number.isFinite(ms))
+    .sort((a, b) => a - b)
+
+  const next = dues[0]
+  if (!next) return 'None'
+  return new Date(next).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase()
 })
 
 const projectActivities = computed(() => {
   if (!props.projectId) return []
   return workspace.activities.filter(a => a.project_id === props.projectId)
 })
+
+function actorName(userId: string) {
+  return workspace.getUserById(userId)?.name || 'User'
+}
 
 function formatRelativeTime(dateStr: string) {
   const date = new Date(dateStr)
@@ -230,13 +239,9 @@ function formatRelativeTime(dateStr: string) {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
-function handleMonetization() {
-  alert('Financial overview unavailable in draft.')
-}
-
 function goToWorkspace() {
   if (project.value) {
-    workspace.currentProject = project.value
+    workspace.setCurrentProject(project.value.id)
     router.push(`/workspace/${project.value.id}`)
     isOpen.value = false
   }

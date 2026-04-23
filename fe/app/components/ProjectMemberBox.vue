@@ -30,7 +30,7 @@
         </div>
         <div class="flex flex-col">
           <span class="text-sm font-bold text-text">{{ member.name }}</span>
-          <span class="text-[10px] text-faint uppercase font-bold tracking-tight">{{ member.role || 'Member' }}</span>
+          <span class="text-[10px] text-faint uppercase font-bold tracking-tight">{{ member.title || 'Member' }}</span>
         </div>
         <div class="ml-auto">
           <span
@@ -45,15 +45,22 @@
       <button
         type="button"
         class="btn btn-ghost w-full text-[10px] font-bold uppercase tracking-widest"
+        @click="showMembers = true"
       >
-        Add Member
+        Manage Members
       </button>
+
+      <ProjectMemberModal
+        v-if="project"
+        v-model:open="showMembers"
+        :project-id="project.id"
+      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useWorkspaceStore } from '~/stores/workspace'
 
 const props = defineProps<{
@@ -61,6 +68,7 @@ const props = defineProps<{
 }>()
 
 const workspace = useWorkspaceStore()
+const showMembers = ref(false)
 
 const project = computed(() => workspace.projects.find(p => p.id === props.projectId))
 const projectMembers = computed(() => {

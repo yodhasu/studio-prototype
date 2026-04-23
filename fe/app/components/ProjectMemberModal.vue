@@ -65,7 +65,7 @@
                   {{ member.name }}
                 </p>
                 <p class="truncate text-xs text-muted">
-                  {{ member.role }}
+                  {{ member.title || 'Member' }}
                 </p>
               </div>
 
@@ -112,17 +112,17 @@ const projectMembers = computed(() => {
 })
 
 function addRandomMember() {
-  const unassigned = workspace.members.find(m => !project.value?.member_ids?.includes(m.id))
-  if (unassigned && project.value) {
-    if (!project.value.member_ids) project.value.member_ids = []
-    project.value.member_ids.push(unassigned.id)
-  }
+  if (!project.value) return
+  const current = project.value.member_ids || []
+  const unassigned = workspace.members.find(m => !current.includes(m.id))
+  if (!unassigned) return
+  workspace.setProjectMembers(project.value.id, [...current, unassigned.id])
 }
 
 function removeMember(memberId: string) {
-  if (project.value && project.value.member_ids) {
-    project.value.member_ids = project.value.member_ids.filter(id => id !== memberId)
-  }
+  if (!project.value) return
+  const current = project.value.member_ids || []
+  workspace.setProjectMembers(project.value.id, current.filter(id => id !== memberId))
 }
 
 function getInitials(name: string) {

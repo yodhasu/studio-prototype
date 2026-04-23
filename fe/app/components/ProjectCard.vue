@@ -29,10 +29,10 @@
               class="h-1.5 w-1.5 rounded-full"
               :style="dotStyle(project.id)"
             />
-            {{ project.card_count }} cards
+            {{ taskCount }} tasks
           </span>
           <span class="flex items-center gap-1.5">
-            {{ project.task_count }} tasks
+            {{ milestoneCount }} milestones
           </span>
         </div>
       </div>
@@ -57,6 +57,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useWorkspaceStore } from '~/stores/workspace'
 import type { Project } from '~/stores/workspace'
 
 const props = defineProps<{
@@ -68,4 +69,8 @@ const props = defineProps<{
 const openLabel = computed(() => props.openLabel || 'Command Sheet')
 const workspaceLabel = computed(() => props.workspaceLabel || 'Workspace')
 const { chipStyle, dotStyle } = useProjectColor()
+const workspace = useWorkspaceStore()
+
+const taskCount = computed(() => workspace.tasks.filter(t => t.project_id === props.project.id).length)
+const milestoneCount = computed(() => workspace.milestones.filter(m => m.project_id === props.project.id).length)
 </script>

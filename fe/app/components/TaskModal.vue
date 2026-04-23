@@ -130,6 +130,26 @@
                   </select>
                 </label>
 
+                <label class="block">
+                  <span class="field-label">Assignee</span>
+                  <select
+                    v-model="form.assignee_id"
+                    class="input-base sketch-border mt-1 disabled:cursor-not-allowed disabled:opacity-60"
+                    :disabled="isViewMode"
+                  >
+                    <option value="">
+                      Unassigned
+                    </option>
+                    <option
+                      v-for="member in projectMembers"
+                      :key="member.id"
+                      :value="member.id"
+                    >
+                      {{ member.name }}
+                    </option>
+                  </select>
+                </label>
+
                 <label class="block lg:col-span-2">
                   <span class="field-label">Description</span>
                   <textarea
@@ -236,6 +256,13 @@ const panelRef = ref<HTMLElement | null>(null)
 const statusOptions: TaskStatus[] = ['TODO', 'PROGRESS', 'BLOCKED', 'DONE']
 const priorityOptions: Array<Task['priority']> = ['LOW', 'MEDIUM', 'HIGH']
 
+const project = computed(() => workspace.getProjectById(props.projectId))
+const projectMembers = computed(() => {
+  const ids = project.value?.member_ids || []
+  if (!ids.length) return workspace.members
+  return workspace.members.filter(m => ids.includes(m.id))
+})
+
 const isViewMode = computed(() => mode.value === 'detail')
 const modalTitle = computed(() => mode.value === 'create' ? 'Create Task' : isViewMode.value ? 'Task Details' : 'Edit Task')
 const modalKicker = computed(() => mode.value === 'create' ? 'New deliverable' : isViewMode.value ? 'Inspect deliverable' : 'Update deliverable')
@@ -245,12 +272,14 @@ const form = ref<{
   detail: string
   status: TaskStatus
   priority: Task['priority']
+  assignee_id: string
   due_date: string
 }>({
   title: '',
   detail: '',
   status: 'TODO',
   priority: 'MEDIUM',
+  assignee_id: '',
   due_date: new Date().toISOString().slice(0, 10)
 })
 
@@ -265,6 +294,7 @@ function syncFormFromTask(task: Task | null) {
     detail: task.detail || '',
     status: task.status,
     priority: task.priority,
+    assignee_id: task.assignee_id || '',
     due_date: (task.due_date ?? new Date().toISOString()).slice(0, 10)
   }
 }
@@ -281,6 +311,7 @@ function resetForm() {
     detail: '',
     status: 'TODO',
     priority: 'MEDIUM',
+    assignee_id: '',
     due_date: new Date().toISOString().slice(0, 10)
   }
 }
@@ -369,13 +400,22 @@ async function handleSubmit() {
 
   loading.value = true
   try {
+    const payload = {
+      title: form.value.title,
+      detail: form.value.detail,
+      status: form.value.status,
+      priority: form.value.priority,
+      due_date: form.value.due_date,
+      assignee_id: form.value.assignee_id || undefined
+    }
+
     if (mode.value === 'create') {
       await workspace.createTask({
-        ...form.value,
+        ...payload,
         project_id: props.projectId
       })
     } else if (mode.value === 'edit' && localTask.value) {
-      workspace.updateTask(localTask.value.id, form.value)
+      workspace.updateTask(localTask.value.id, payload)
     }
     closeModal()
   } catch (err) {

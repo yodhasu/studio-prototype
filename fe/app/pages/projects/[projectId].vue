@@ -43,6 +43,13 @@
                 class="badge"
                 :style="project.color_code ? { borderColor: project.color_code + '40', color: project.color_code } : undefined"
               >{{ project.status }}</span>
+              <button
+                class="btn"
+                type="button"
+                @click="openEdit"
+              >
+                Edit
+              </button>
               <NuxtLink
                 class="btn btn-primary"
                 :to="`/workspace/${project.id}`"
@@ -53,10 +60,10 @@
           <div class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div class="rounded-xl border border-border bg-panel/20 p-3">
               <p class="text-[10px] font-black uppercase tracking-widest text-faint">
-                Cards
+                Milestones
               </p>
               <p class="mt-2 font-display text-lg font-black text-text">
-                {{ project.card_count }}
+                {{ milestoneCount }}
               </p>
             </div>
             <div class="rounded-xl border border-border bg-panel/20 p-3">
@@ -64,7 +71,7 @@
                 Tasks
               </p>
               <p class="mt-2 font-display text-lg font-black text-text">
-                {{ project.task_count }}
+                {{ taskCount }}
               </p>
             </div>
             <div class="rounded-xl border border-border bg-panel/20 p-3">
@@ -117,6 +124,110 @@
 
             <section class="dashboard-panel">
               <h2 class="font-display text-lg font-black text-text">
+                Milestones
+              </h2>
+              <div class="mt-5 space-y-2">
+                <div
+                  v-for="m in projectMilestones"
+                  :key="m.id"
+                  class="flex items-center justify-between rounded-lg border border-border bg-panel/20 p-3"
+                >
+                  <div class="min-w-0">
+                    <p class="truncate text-sm font-bold text-text">
+                      {{ m.title }}
+                    </p>
+                    <p class="mt-1 text-[10px] text-muted">
+                      Due {{ m.due_date || 'TBD' }} • {{ m.status }}
+                    </p>
+                  </div>
+                  <button
+                    class="btn btn-ghost text-[10px] font-black uppercase tracking-widest"
+                    type="button"
+                    @click="toggleMilestone(m.id)"
+                  >
+                    {{ m.status === 'DONE' ? 'Reopen' : 'Done' }}
+                  </button>
+                </div>
+
+                <p
+                  v-if="projectMilestones.length === 0"
+                  class="text-sm text-faint italic"
+                >
+                  No milestones yet.
+                </p>
+              </div>
+
+              <div class="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                <input
+                  v-model="newMilestoneTitle"
+                  class="input-base sketch-border sm:col-span-2"
+                  placeholder="New milestone title"
+                >
+                <input
+                  v-model="newMilestoneDue"
+                  type="date"
+                  class="input-base sketch-border"
+                >
+                <button
+                  class="btn btn-primary sm:col-span-3"
+                  type="button"
+                  @click="addMilestone"
+                >
+                  Add milestone
+                </button>
+              </div>
+            </section>
+
+            <section class="dashboard-panel">
+              <h2 class="font-display text-lg font-black text-text">
+                Notes
+              </h2>
+
+              <div class="mt-5 space-y-2">
+                <div
+                  v-for="n in projectNotes"
+                  :key="n.id"
+                  class="rounded-lg border border-border bg-panel/20 p-3"
+                >
+                  <p class="text-sm font-bold text-text">
+                    {{ n.title }}
+                  </p>
+                  <p class="mt-2 text-xs text-muted whitespace-pre-wrap">
+                    {{ n.body }}
+                  </p>
+                </div>
+
+                <p
+                  v-if="projectNotes.length === 0"
+                  class="text-sm text-faint italic"
+                >
+                  No notes yet.
+                </p>
+              </div>
+
+              <div class="mt-5 space-y-2">
+                <input
+                  v-model="newNoteTitle"
+                  class="input-base sketch-border"
+                  placeholder="Note title"
+                >
+                <textarea
+                  v-model="newNoteBody"
+                  class="input-base sketch-border min-h-24 resize-y"
+                  placeholder="Write context..."
+                />
+                <button
+                  class="btn btn-primary"
+                  type="button"
+                  @click="addNote"
+                >
+                  Add note
+                </button>
+              </div>
+            </section>
+
+            <section class="dashboard-panel">
+              <h2 class="font-display text-lg font-black text-text">
                 Activity
               </h2>
               <div
@@ -135,7 +246,7 @@
                     {{ a.message }}
                   </p>
                   <p class="mt-2 text-[10px] text-muted italic">
-                    by {{ a.user }}
+                    by {{ actorName(a.actor_user_id) }}
                   </p>
                 </div>
               </div>
@@ -165,12 +276,87 @@
         </div>
       </template>
     </div>
+
+    <div
+      v-if="editOpen && project"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div class="w-full max-w-md rounded-2xl border border-border bg-surface p-5 shadow-2xl">
+        <div class="mb-4 flex items-center justify-between">
+          <h2 class="font-display text-lg font-bold text-text">
+            Edit Project
+          </h2>
+          <button
+            class="text-faint hover:text-text"
+            aria-label="Close edit project modal"
+            @click="editOpen = false"
+          >
+            ✕
+          </button>
+        </div>
+
+        <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-faint">Name</label>
+        <input
+          v-model="editName"
+          class="mb-4 w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 text-sm text-text outline-none focus:border-brand"
+        >
+
+        <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-faint">Description</label>
+        <textarea
+          v-model="editDescription"
+          class="input-base sketch-border mb-4 min-h-24 resize-y"
+        />
+
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <label class="block">
+            <span class="mb-2 block text-xs font-semibold uppercase tracking-wider text-faint">Status</span>
+            <select
+              v-model="editStatus"
+              class="input-base sketch-border"
+            >
+              <option value="PLANNING">PLANNING</option>
+              <option value="ACTIVE">ACTIVE</option>
+              <option value="PAUSED">PAUSED</option>
+              <option value="COMPLETED">COMPLETED</option>
+            </select>
+          </label>
+
+          <label class="block">
+            <span class="mb-2 block text-xs font-semibold uppercase tracking-wider text-faint">Color</span>
+            <input
+              v-model="editColor"
+              type="color"
+              class="h-10 w-20 cursor-pointer rounded border border-border bg-surface-elevated"
+            >
+          </label>
+        </div>
+
+        <div class="mt-5 flex justify-end gap-2">
+          <button
+            class="btn"
+            type="button"
+            @click="editOpen = false"
+          >
+            Cancel
+          </button>
+          <button
+            class="btn btn-primary"
+            type="button"
+            @click="saveEdit"
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
-import { useWorkspaceStore } from '~/stores/workspace'
+import { computed, onMounted, ref } from 'vue'
+import { useWorkspaceStore, type ProjectStatus } from '~/stores/workspace'
 import { useWorkspaceBoot } from '~/composables/useWorkspaceBoot'
 
 const workspace = useWorkspaceStore()
@@ -180,6 +366,79 @@ const route = useRoute()
 const projectId = computed(() => route.params.projectId as string)
 
 const project = computed(() => workspace.projects.find(p => p.id === projectId.value) || null)
+
+const editOpen = ref(false)
+const editName = ref('')
+const editDescription = ref('')
+const editStatus = ref<ProjectStatus>('PLANNING')
+const editColor = ref('#6A5AF9')
+
+function openEdit() {
+  if (!project.value) return
+  editName.value = project.value.name
+  editDescription.value = project.value.description || ''
+  editStatus.value = project.value.status
+  editColor.value = project.value.color_code || '#6A5AF9'
+  editOpen.value = true
+}
+
+function saveEdit() {
+  if (!project.value) return
+  const name = editName.value.trim()
+  if (!name) return
+
+  workspace.updateProject(project.value.id, {
+    name,
+    description: editDescription.value.trim() || undefined,
+    status: editStatus.value,
+    color_code: editColor.value
+  })
+
+  editOpen.value = false
+}
+
+const taskCount = computed(() => workspace.tasks.filter(t => t.project_id === projectId.value).length)
+const milestoneCount = computed(() => workspace.milestones.filter(m => m.project_id === projectId.value).length)
+
+function actorName(userId: string) {
+  return workspace.getUserById(userId)?.name || 'User'
+}
+
+const projectMilestones = computed(() => workspace.milestones.filter(m => m.project_id === projectId.value))
+const projectNotes = computed(() => workspace.notes.filter(n => n.project_id === projectId.value))
+
+const newMilestoneTitle = ref('')
+const newMilestoneDue = ref('')
+
+function addMilestone() {
+  const title = newMilestoneTitle.value.trim()
+  if (!title) return
+  workspace.createMilestone({
+    project_id: projectId.value,
+    title,
+    due_date: newMilestoneDue.value || undefined
+  })
+  newMilestoneTitle.value = ''
+  newMilestoneDue.value = ''
+}
+
+function toggleMilestone(milestoneId: string) {
+  const m = workspace.milestones.find(x => x.id === milestoneId)
+  if (!m) return
+  workspace.updateMilestone(milestoneId, { status: m.status === 'DONE' ? 'OPEN' : 'DONE' })
+}
+
+const newNoteTitle = ref('')
+const newNoteBody = ref('')
+
+function addNote() {
+  const title = newNoteTitle.value.trim()
+  const body = newNoteBody.value.trim()
+  if (!title || !body) return
+  workspace.createNote({ title, body, project_id: projectId.value })
+  newNoteTitle.value = ''
+  newNoteBody.value = ''
+}
 
 const projectActivities = computed(() => {
   const p = project.value
@@ -215,6 +474,6 @@ const nextDueLabel = computed(() => {
 onMounted(async () => {
   await ensureSession()
   const p = project.value
-  if (p) workspace.currentProject = p
+  if (p) workspace.setCurrentProject(p.id)
 })
 </script>

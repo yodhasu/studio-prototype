@@ -1,235 +1,43 @@
 <template>
   <div class="premium-scroll h-full overflow-y-auto p-8">
-    <div class="mx-auto max-w-7xl space-y-8">
-      <header class="flex items-end justify-between">
-        <div>
-          <h1 class="font-display text-2xl font-bold tracking-tight text-text">
-            Studio Pulse
-          </h1>
-          <p class="mt-1 text-sm text-muted">
-            Financial health and resource allocation overview.
-          </p>
-        </div>
-        <div class="flex items-center gap-3">
+    <div class="mx-auto max-w-4xl space-y-6">
+      <header class="sketch-border bg-surface p-6">
+        <p class="text-[10px] font-black uppercase tracking-widest text-faint">
+          Module Stub
+        </p>
+        <h1 class="mt-3 font-display text-2xl font-black tracking-tight text-text">
+          Management
+        </h1>
+        <p class="mt-3 text-sm text-muted">
+          Business dashboards (revenue, burn, invoices, client pipeline) are excluded from Phase 1.
+          This route is preserved only as a placeholder.
+        </p>
+
+        <div class="mt-5 flex flex-wrap gap-3">
           <NuxtLink
-            to="/billing"
-            class="btn btn-ghost"
-          >Financial Ledger</NuxtLink>
-          <button
+            class="btn btn-primary"
+            to="/dashboard"
+          >Back to Dashboard</NuxtLink>
+          <NuxtLink
             class="btn"
-            @click="openNewProjectModal"
-          >
-            New Project
-          </button>
-          <button class="btn btn-primary">
-            Generate Report
-          </button>
+            to="/projects"
+          >Projects</NuxtLink>
         </div>
       </header>
 
-      <section class="grid grid-cols-1 gap-6 lg:grid-cols-4">
-        <DashboardMetricCard
-          label="Total Revenue"
-          value="$150,000"
-          trend="MTD"
-          detail="Total recognized revenue this month."
-          tone="success"
-        />
-        <DashboardMetricCard
-          label="Burn Rate"
-          value="$45,000"
-          trend="Stable"
-          detail="Current monthly operational spend."
-          tone="warning"
-        />
-        <DashboardMetricCard
-          label="Active Clients"
-          value="12"
-          trend="+2"
-          detail="Total unique clients with active projects."
-          tone="brand"
-        />
-        <DashboardMetricCard
-          label="Open Invoices"
-          value="5"
-          trend="Attention"
-          detail="Awaiting client payment or final approval."
-          tone="danger"
-        />
-      </section>
-
-      <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <article class="dashboard-panel">
-          <h3 class="font-display text-lg font-bold text-text">
-            Resource Capacity
-          </h3>
-          <p class="mt-1 text-xs text-muted">
-            Team bandwidth snapshot across production.
+      <section class="dashboard-panel">
+        <p class="text-xs font-bold uppercase tracking-widest text-muted">
+          Status
+        </p>
+        <div class="mt-4 rounded-xl border border-border bg-panel/20 p-4">
+          <p class="text-sm text-text">
+            <span class="font-bold">Disabled.</span> Await Phase 3.
           </p>
-
-          <div class="mt-6 space-y-6">
-            <div
-              v-for="member in teamCapacity"
-              :key="member.name"
-              class="space-y-2"
-            >
-              <div class="flex items-center justify-between text-xs">
-                <span class="font-bold text-text">{{ member.name }}</span>
-                <span class="font-mono text-faint">{{ member.percent }}%</span>
-              </div>
-              <div class="h-1.5 overflow-hidden rounded-full bg-overlay">
-                <div
-                  class="h-full rounded-full transition-all duration-500"
-                  :class="member.percent > 90 ? 'bg-red' : member.percent > 70 ? 'bg-amber' : 'bg-brand'"
-                  :style="{ width: `${member.percent}%` }"
-                />
-              </div>
-            </div>
-          </div>
-        </article>
-
-        <article class="dashboard-panel">
-          <h3 class="font-display text-lg font-bold text-text">
-            Client Pipeline
-          </h3>
-          <p class="mt-1 text-xs text-muted">
-            Upcoming delivery milestones and risk signals.
+          <p class="mt-2 text-xs text-muted">
+            No state changes occur on this page.
           </p>
-
-          <div class="mt-6 space-y-4">
-            <div
-              v-for="client in clientPipeline"
-              :key="client.name"
-              class="flex items-center justify-between p-3 rounded-lg border border-border bg-panel/30"
-            >
-              <div class="min-w-0">
-                <p class="truncate text-xs font-bold text-text">
-                  {{ client.name }}
-                </p>
-                <p class="truncate text-[10px] text-muted">
-                  {{ client.project }}
-                </p>
-              </div>
-              <div class="text-right">
-                <p class="text-[10px] font-bold text-brand uppercase tracking-wider">
-                  {{ client.status }}
-                </p>
-                <p class="text-[9px] text-faint">
-                  {{ client.milestone }}
-                </p>
-              </div>
-            </div>
-          </div>
-        </article>
-      </div>
-
-      <div
-        v-if="showCreateProject"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
-        role="dialog"
-        aria-modal="true"
-      >
-        <div class="w-full max-w-md rounded-xl border border-border bg-surface p-5 shadow-2xl">
-          <div class="mb-4 flex items-center justify-between">
-            <h2 class="font-display text-lg font-bold text-text">
-              Create New Project
-            </h2>
-            <button
-              class="text-faint hover:text-text"
-              aria-label="Close create project modal"
-              @click="closeNewProjectModal"
-            >
-              ✕
-            </button>
-          </div>
-
-          <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-faint">Project Name</label>
-          <input
-            v-model="newProjectName"
-            class="mb-4 w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 text-sm text-text outline-none focus:border-brand"
-            placeholder="e.g. New Enterprise Program"
-          >
-
-          <p
-            v-if="createProjectError"
-            class="mb-3 text-xs text-red-400"
-          >
-            {{ createProjectError }}
-          </p>
-
-          <div class="flex justify-end gap-2">
-            <button
-              class="btn"
-              @click="closeNewProjectModal"
-            >
-              Cancel
-            </button>
-            <button
-              class="btn btn-primary"
-              @click="createProjectFromManagement"
-            >
-              Create Project
-            </button>
-          </div>
         </div>
-      </div>
+      </section>
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { ref } from 'vue'
-import { useWorkspaceStore } from '~/stores/workspace'
-import { useWorkspaceBoot } from '~/composables/useWorkspaceBoot'
-
-const workspace = useWorkspaceStore()
-const { ensureSession } = useWorkspaceBoot()
-
-const showCreateProject = ref(false)
-const newProjectName = ref('')
-const createProjectError = ref('')
-
-function openNewProjectModal() {
-  showCreateProject.value = true
-}
-
-function closeNewProjectModal() {
-  showCreateProject.value = false
-  createProjectError.value = ''
-}
-
-async function createProjectFromManagement() {
-  if (!newProjectName.value.trim()) {
-    createProjectError.value = 'Project name is required.'
-    return
-  }
-
-  const created = await workspace.createProject({ name: newProjectName.value })
-  if (!created) {
-    createProjectError.value = 'Failed to create project.'
-    return
-  }
-
-  closeNewProjectModal()
-  newProjectName.value = ''
-  await navigateTo(`/projects/${created.id}`)
-}
-
-const teamCapacity = [
-  { name: 'Alex Mercer', role: 'Lead Illustrator', percent: 95 },
-  { name: 'Mira Chen', role: 'Motion Designer', percent: 72 },
-  { name: 'Jules Hart', role: 'Compositor', percent: 45 },
-  { name: 'Sana Patel', role: 'Coordinator', percent: 88 }
-]
-
-const clientPipeline = [
-  { name: 'Northstar Labs', project: 'Orbit campaign visuals', status: 'In Production', milestone: 'Final pass due Fri' },
-  { name: 'Atelier M', project: 'Packaging system', status: 'Review Loop', milestone: 'Client feedback Tue' },
-  { name: 'Helio Motion', project: 'Launch kit', status: 'Final Polish', milestone: 'Delivery today' }
-]
-
-onMounted(async () => {
-  await ensureSession()
-  await workspace.fetchDashboardSummary()
-})
-</script>

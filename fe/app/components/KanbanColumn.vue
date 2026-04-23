@@ -33,7 +33,7 @@
                   {{ element.title }}
                 </p>
                 <p class="truncate text-[10px] text-muted">
-                  {{ element.project_name || 'Project' }}
+                  {{ projectName(element.project_id) }}
                 </p>
                 <p
                   v-if="element.due_date"
@@ -87,7 +87,11 @@ watch(
 )
 
 function projectColor(projectId: string) {
-  const p = workspace.projects.find(x => x.id === projectId)
+  const p = workspace.getProjectById(projectId)
   return p?.color_code || 'rgb(var(--c-border))'
+}
+
+function projectName(projectId: string) {
+  return workspace.getProjectById(projectId)?.name || 'Project'
 }
 </script>

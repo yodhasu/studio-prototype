@@ -79,7 +79,7 @@
 
       <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         <ProjectCard
-          v-for="project in workspace.projects"
+          v-for="project in workspace.activeProjects"
           :key="project.id"
           :project="project"
         />
