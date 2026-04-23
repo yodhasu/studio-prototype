@@ -176,7 +176,7 @@ import { useWorkspaceBoot } from '~/composables/useWorkspaceBoot'
 const workspace = useWorkspaceStore()
 const { ensureSession } = useWorkspaceBoot()
 
-const openTasksCount = computed(() => workspace.activeTasks.filter(t => t.status !== 'DONE').length)
+const openTasksCount = computed(() => workspace.activeTasks.filter(t => t.status !== 'COMPLETED').length)
 
 function projectName(projectId: string) {
   return workspace.getProjectById(projectId)?.name || 'Project'

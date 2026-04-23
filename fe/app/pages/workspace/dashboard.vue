@@ -235,7 +235,7 @@ const createName = ref('')
 const createKind = ref<'PERSONAL' | 'TEAM'>('TEAM')
 const createError = ref('')
 
-const openTasksCount = computed(() => workspace.activeTasks.filter(t => t.status !== 'DONE').length)
+const openTasksCount = computed(() => workspace.activeTasks.filter(t => t.status !== 'COMPLETED').length)
 
 function projectName(projectId: string) {
   return workspace.getProjectById(projectId)?.name || 'Project'

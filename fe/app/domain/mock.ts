@@ -22,10 +22,10 @@ export function createMockSnapshot(now = new Date()): StudioSnapshot {
   const ts = isoNow(now)
 
   const users: User[] = [
-    { id: 'u-you', name: 'You' },
-    { id: 'u-mira', name: 'Mira Chen' },
-    { id: 'u-jules', name: 'Jules Hart' },
-    { id: 'u-sana', name: 'Sana Patel' }
+    { id: 'u-you', name: 'You', email: 'you@ivoryforge.local' },
+    { id: 'u-mira', name: 'Mira Chen', email: 'mira@ivoryforge.local' },
+    { id: 'u-jules', name: 'Jules Hart', email: 'jules@ivoryforge.local' },
+    { id: 'u-sana', name: 'Sana Patel', email: 'sana@ivoryforge.local' }
   ]
 
   const workspaces: Workspace[] = [
@@ -107,7 +107,7 @@ export function createMockSnapshot(now = new Date()): StudioSnapshot {
       project_id: 'p-trailer',
       title: 'Animatic pass',
       detail: 'Cut timing, add temp SFX, verify beats.',
-      status: 'PROGRESS',
+      status: 'ACTIVE',
       priority: 'HIGH',
       due_date: yyyyMmDd(day(now, 2)),
       assignee_id: 'u-you',
@@ -120,7 +120,7 @@ export function createMockSnapshot(now = new Date()): StudioSnapshot {
       project_id: 'p-trailer',
       title: 'Color script thumbnails',
       detail: 'Mood exploration for key moments.',
-      status: 'TODO',
+      status: 'PLANNING',
       priority: 'MEDIUM',
       due_date: yyyyMmDd(day(now, 5)),
       assignee_id: 'u-mira',
@@ -132,7 +132,7 @@ export function createMockSnapshot(now = new Date()): StudioSnapshot {
       project_id: 'p-trailer',
       title: 'Comp polish',
       detail: 'Grain, glows, and final overlays.',
-      status: 'BLOCKED',
+      status: 'PAUSED',
       priority: 'MEDIUM',
       due_date: yyyyMmDd(day(now, 6)),
       assignee_id: 'u-jules',
@@ -145,7 +145,7 @@ export function createMockSnapshot(now = new Date()): StudioSnapshot {
       project_id: 'p-concepts',
       title: 'Silhouette exploration sheet',
       detail: '20 thumbnails, pick 5 for refinement.',
-      status: 'PROGRESS',
+      status: 'ACTIVE',
       priority: 'HIGH',
       due_date: yyyyMmDd(day(now, 1)),
       assignee_id: 'u-mira',
@@ -158,7 +158,7 @@ export function createMockSnapshot(now = new Date()): StudioSnapshot {
       project_id: 'p-concepts',
       title: 'Insignia variants',
       detail: '3 families, 6 variants each.',
-      status: 'TODO',
+      status: 'PLANNING',
       priority: 'MEDIUM',
       due_date: yyyyMmDd(day(now, 3)),
       assignee_id: 'u-sana',
@@ -171,7 +171,7 @@ export function createMockSnapshot(now = new Date()): StudioSnapshot {
       project_id: 'p-style',
       title: 'Token inventory',
       detail: 'Collect spacing/typography/color tokens.',
-      status: 'TODO',
+      status: 'PLANNING',
       priority: 'LOW',
       due_date: yyyyMmDd(day(now, 4)),
       assignee_id: 'u-you',
@@ -221,7 +221,7 @@ export function createMockSnapshot(now = new Date()): StudioSnapshot {
       entity_type: 'TASK',
       entity_id: 't-silhouettes',
       project_id: 'p-concepts',
-      message: 'Task status → PROGRESS: Silhouette exploration sheet',
+      message: 'Task status → ACTIVE: Silhouette exploration sheet',
       timestamp: isoNow(day(now, -1))
     }
   ]

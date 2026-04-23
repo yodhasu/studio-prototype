@@ -129,7 +129,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { LayoutDashboard, FolderKanban, CalendarDays, Users, StickyNote } from 'lucide-vue-next'
+import { LayoutDashboard, FolderKanban, CalendarDays, Users } from 'lucide-vue-next'
 import AppLogo from '~/components/AppLogo.vue'
 import { useWorkspaceStore } from '~/stores/workspace'
 import { useRouteTitle } from '~/composables/useRouteTitle'
@@ -142,8 +142,7 @@ const primaryNav = [
   { label: 'Workspace', to: '/workspace/dashboard', icon: LayoutDashboard },
   { label: 'Projects', to: '/projects', icon: FolderKanban },
   { label: 'Schedule', to: '/schedule', icon: CalendarDays },
-  { label: 'Team', to: '/teams', icon: Users },
-  { label: 'Notes', to: '/notes', icon: StickyNote }
+  { label: 'Team', to: '/teams', icon: Users }
 ]
 
 const isActive = (to: string) => route.path === to || route.path.startsWith(to + '/')

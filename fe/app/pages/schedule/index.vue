@@ -107,27 +107,31 @@
         <div class="grid grid-cols-1 gap-6 xl:grid-cols-4">
           <KanbanColumn
             v-model="draftList"
-            title="Draft"
-            subtitle="TODO"
-            @moved="(id) => setStatus(id, 'TODO')"
+            title="Planning"
+            subtitle="PLANNING"
+            @moved="(id) => setStatus(id, 'PLANNING')"
+            @open="openTask"
           />
           <KanbanColumn
             v-model="reviewList"
-            title="Review"
-            subtitle="PROGRESS"
-            @moved="(id) => setStatus(id, 'PROGRESS')"
+            title="Active"
+            subtitle="ACTIVE"
+            @moved="(id) => setStatus(id, 'ACTIVE')"
+            @open="openTask"
           />
           <KanbanColumn
             v-model="polishList"
-            title="Polish"
-            subtitle="BLOCKED"
-            @moved="(id) => setStatus(id, 'BLOCKED')"
+            title="Paused"
+            subtitle="PAUSED"
+            @moved="(id) => setStatus(id, 'PAUSED')"
+            @open="openTask"
           />
           <KanbanColumn
             v-model="finalList"
-            title="Final"
-            subtitle="DONE"
-            @moved="(id) => setStatus(id, 'DONE')"
+            title="Completed"
+            subtitle="COMPLETED"
+            @moved="(id) => setStatus(id, 'COMPLETED')"
+            @open="openTask"
           />
         </div>
 
@@ -136,60 +140,190 @@
         </p>
       </section>
 
-      <!-- Calendar view (week list) -->
+      <!-- Calendar view (month grid) -->
       <section
         v-else
-        class="dashboard-panel"
+        class="space-y-6"
       >
-        <h2 class="text-xs font-bold uppercase tracking-widest text-muted">
-          Week View
-        </h2>
-        <div class="mt-6 space-y-4">
-          <div
-            v-for="day in weekDays"
-            :key="day.iso"
-            class="sketch-border bg-panel/20 p-4"
-          >
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-[10px] font-bold uppercase tracking-widest text-faint">
-                  {{ day.weekday }}
-                </p>
-                <p class="mt-1 text-sm font-bold text-text">
-                  {{ day.label }}
-                </p>
+        <div class="dashboard-panel">
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 class="text-xs font-bold uppercase tracking-widest text-muted">
+                Calendar
+              </h2>
+              <p class="mt-2 font-display text-lg font-bold text-text">
+                {{ monthLabel }}
+              </p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button
+                class="btn btn-ghost"
+                type="button"
+                @click="prevMonth"
+              >
+                Prev
+              </button>
+              <button
+                class="btn"
+                type="button"
+                @click="goToday"
+              >
+                Today
+              </button>
+              <button
+                class="btn btn-ghost"
+                type="button"
+                @click="nextMonth"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6 xl:grid-cols-12">
+          <aside class="dashboard-panel xl:col-span-3">
+            <p class="text-[10px] font-black uppercase tracking-widest text-faint">
+              Selected day
+            </p>
+            <p class="mt-2 text-sm font-bold text-text">
+              {{ selectedDayLabel }}
+            </p>
+
+            <div class="mt-5 grid grid-cols-7 gap-1">
+              <div
+                v-for="w in weekdayLabels"
+                :key="w"
+                class="text-center text-[9px] font-black uppercase tracking-widest text-faint"
+              >
+                {{ w }}
               </div>
-              <span class="text-[10px] font-mono text-muted">{{ day.iso }}</span>
+
+              <button
+                v-for="d in monthDays"
+                :key="'mini-' + d.iso"
+                type="button"
+                class="rounded-md border border-border/40 bg-surface/50 px-0 py-2 text-center text-[10px] font-mono transition-colors hover:border-brand/30"
+                :class="{
+                  'opacity-40': !d.inMonth,
+                  'border-brand/40 bg-brand/10 text-brand': d.iso === selectedDayIso,
+                  'ring-1 ring-brand/30': d.isToday
+                }"
+                @click="selectedDayIso = d.iso"
+              >
+                {{ d.day }}
+              </button>
             </div>
 
-            <div class="mt-4 space-y-2">
-              <NuxtLink
-                v-for="t in tasksByDueDate(day.iso)"
-                :key="t.id"
-                class="flex items-center gap-3 rounded-lg border border-border bg-surface/60 p-3 hover:border-brand/30 transition-colors"
-                :to="`/projects/${t.project_id}`"
-              >
-                <div
-                  class="h-2 w-2 rounded-full"
-                  :style="{ backgroundColor: projectColor(t.project_id) }"
-                />
-                <div class="min-w-0 flex-1">
-                  <p class="truncate text-xs font-bold text-text">{{ t.title }}</p>
-                  <p class="truncate text-[10px] text-muted">{{ projectName(t.project_id) }} • {{ t.status }}</p>
-                </div>
-              </NuxtLink>
-
-              <p
-                v-if="tasksByDueDate(day.iso).length === 0"
-                class="text-xs text-faint italic"
-              >
-                No date-bound items.
+            <div class="mt-6">
+              <p class="text-[10px] font-black uppercase tracking-widest text-faint">
+                Day items
               </p>
+              <div class="mt-3 space-y-2">
+                <button
+                  v-for="t in tasksByDueDate(selectedDayIso)"
+                  :key="t.id"
+                  type="button"
+                  class="w-full rounded-lg border border-border bg-panel/20 p-3 text-left hover:border-brand/30"
+                  @click="openTask(t)"
+                >
+                  <div class="flex items-center justify-between gap-3">
+                    <div class="min-w-0">
+                      <p class="truncate text-xs font-bold text-text">
+                        {{ t.title }}
+                      </p>
+                      <p class="truncate text-[10px] text-muted">
+                        {{ projectName(t.project_id) }} • {{ t.status }}
+                      </p>
+                    </div>
+                    <span
+                      class="h-2 w-2 shrink-0 rounded-full"
+                      :style="{ backgroundColor: projectColor(t.project_id) }"
+                    />
+                  </div>
+                </button>
+
+                <p
+                  v-if="tasksByDueDate(selectedDayIso).length === 0"
+                  class="text-sm italic text-faint"
+                >
+                  No date-bound items.
+                </p>
+              </div>
+            </div>
+          </aside>
+
+          <div class="dashboard-panel xl:col-span-9">
+            <div class="grid grid-cols-7 gap-2">
+              <div
+                v-for="w in weekdayLabels"
+                :key="'header-' + w"
+                class="text-center text-[10px] font-black uppercase tracking-widest text-faint"
+              >
+                {{ w }}
+              </div>
+            </div>
+
+            <div class="mt-3 grid grid-cols-7 gap-2">
+              <button
+                v-for="d in monthDays"
+                :key="d.iso"
+                type="button"
+                class="relative min-h-[110px] rounded-xl border border-border bg-surface/40 p-2 text-left transition-colors hover:border-brand/30"
+                :class="{
+                  'opacity-50': !d.inMonth,
+                  'border-brand/40 bg-brand/10': d.iso === selectedDayIso,
+                  'ring-1 ring-brand/30': d.isToday
+                }"
+                @click="selectedDayIso = d.iso"
+              >
+                <div class="flex items-center justify-between">
+                  <p class="text-[10px] font-mono text-muted">
+                    {{ d.day }}
+                  </p>
+                  <span
+                    v-if="tasksByDueDate(d.iso).length"
+                    class="text-[9px] font-black uppercase tracking-widest text-faint"
+                  >
+                    {{ tasksByDueDate(d.iso).length }}
+                  </span>
+                </div>
+
+                <div class="mt-2 space-y-1">
+                  <button
+                    v-for="t in tasksByDueDate(d.iso).slice(0, 3)"
+                    :key="t.id"
+                    type="button"
+                    class="flex w-full items-center gap-2 rounded-md border border-border/40 bg-panel/20 px-2 py-1 text-left text-[10px] text-text hover:border-brand/30"
+                    @click.stop="openTask(t)"
+                  >
+                    <span
+                      class="h-2 w-2 shrink-0 rounded-full"
+                      :style="{ backgroundColor: projectColor(t.project_id) }"
+                    />
+                    <span class="truncate">{{ t.title }}</span>
+                  </button>
+
+                  <p
+                    v-if="tasksByDueDate(d.iso).length > 3"
+                    class="text-[10px] text-faint"
+                  >
+                    +{{ tasksByDueDate(d.iso).length - 3 }} more
+                  </p>
+                </div>
+              </button>
             </div>
           </div>
         </div>
       </section>
     </div>
+
+    <TaskModal
+      v-model:open="taskModalOpen"
+      :task="selectedTask"
+      :project-id="selectedTask?.project_id || ''"
+      :initial-mode="'detail'"
+    />
   </div>
 </template>
 
@@ -210,15 +344,23 @@ const reviewList = ref<Task[]>([])
 const polishList = ref<Task[]>([])
 const finalList = ref<Task[]>([])
 
+const taskModalOpen = ref(false)
+const selectedTask = ref<Task | null>(null)
+
+function openTask(task: Task) {
+  selectedTask.value = task
+  taskModalOpen.value = true
+}
+
 function syncFromStore() {
   const base = memberFilter.value
     ? workspace.activeTasks.filter(t => t.assignee_id === memberFilter.value)
     : workspace.activeTasks
 
-  draftList.value = base.filter(t => t.status === 'TODO')
-  reviewList.value = base.filter(t => t.status === 'PROGRESS')
-  polishList.value = base.filter(t => t.status === 'BLOCKED')
-  finalList.value = base.filter(t => t.status === 'DONE')
+  draftList.value = base.filter(t => t.status === 'PLANNING')
+  reviewList.value = base.filter(t => t.status === 'ACTIVE')
+  polishList.value = base.filter(t => t.status === 'PAUSED')
+  finalList.value = base.filter(t => t.status === 'COMPLETED')
 }
 
 watch(
@@ -237,21 +379,81 @@ function setStatus(taskId: string, status: TaskStatus) {
   syncFromStore()
 }
 
-type WeekDay = { iso: string, label: string, weekday: string }
+const weekdayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
-const weekDays = computed<WeekDay[]>(() => {
-  const today = new Date()
-  return Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(today)
-    d.setDate(today.getDate() + i)
-    const iso = d.toISOString().slice(0, 10)
+type CalendarDay = { iso: string, day: number, inMonth: boolean, isToday: boolean }
+
+const calendarMonth = ref(startOfMonth(new Date()))
+const selectedDayIso = ref(localIso(new Date()))
+
+const monthLabel = computed(() => {
+  return calendarMonth.value.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+})
+
+const monthDays = computed<CalendarDay[]>(() => {
+  const first = startOfMonth(calendarMonth.value)
+  const offset = (first.getDay() + 6) % 7 // Monday-start
+  const start = new Date(first)
+  start.setDate(first.getDate() - offset)
+
+  const todayIso = localIso(new Date())
+
+  return Array.from({ length: 42 }, (_, i) => {
+    const d = new Date(start)
+    d.setDate(start.getDate() + i)
+    const iso = localIso(d)
+
     return {
       iso,
-      weekday: d.toLocaleDateString('en-US', { weekday: 'short' }),
-      label: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      day: d.getDate(),
+      inMonth: d.getMonth() === first.getMonth(),
+      isToday: iso === todayIso
     }
   })
 })
+
+const selectedDayLabel = computed(() => {
+  const d = parseIsoDate(selectedDayIso.value)
+  return d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' })
+})
+
+function prevMonth() {
+  const d = new Date(calendarMonth.value)
+  d.setMonth(d.getMonth() - 1, 1)
+  calendarMonth.value = startOfMonth(d)
+}
+
+function nextMonth() {
+  const d = new Date(calendarMonth.value)
+  d.setMonth(d.getMonth() + 1, 1)
+  calendarMonth.value = startOfMonth(d)
+}
+
+function goToday() {
+  const t = new Date()
+  calendarMonth.value = startOfMonth(t)
+  selectedDayIso.value = localIso(t)
+}
+
+function startOfMonth(d: Date) {
+  return new Date(d.getFullYear(), d.getMonth(), 1)
+}
+
+function localIso(d: Date) {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+function parseIsoDate(iso: string) {
+  const parts = iso.split('-').map(Number)
+  const now = new Date()
+  const y = Number.isFinite(parts[0]) ? parts[0]! : now.getFullYear()
+  const m = Number.isFinite(parts[1]) ? parts[1]! : now.getMonth() + 1
+  const d = Number.isFinite(parts[2]) ? parts[2]! : 1
+  return new Date(y, m - 1, d)
+}
 
 function tasksByDueDate(isoDate: string) {
   const base = memberFilter.value
@@ -271,7 +473,7 @@ function assigneeName(userId: string) {
 
 function isOverdue(t: Task) {
   if (!t.due_date) return false
-  if (t.status === 'DONE') return false
+  if (t.status === 'COMPLETED') return false
   const ms = new Date(t.due_date).getTime()
   if (!Number.isFinite(ms)) return false
 
@@ -284,7 +486,7 @@ const tasksSorted = computed(() => {
     ? workspace.activeTasks.filter(t => t.assignee_id === memberFilter.value)
     : workspace.activeTasks
 
-  const scoreStatus = (s: TaskStatus) => ({ TODO: 0, PROGRESS: 1, BLOCKED: 2, DONE: 3 }[s] ?? 9)
+  const scoreStatus = (s: TaskStatus) => ({ PLANNING: 0, ACTIVE: 1, PAUSED: 2, COMPLETED: 3 }[s] ?? 9)
 
   return [...base].sort((a, b) => {
     const ad = (a.due_date || '').slice(0, 10)

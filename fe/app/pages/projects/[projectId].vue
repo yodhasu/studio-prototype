@@ -448,7 +448,7 @@ const projectActivities = computed(() => {
 
 const stageLabel = computed(() => {
   const total = workspace.tasks.filter(t => t.project_id === projectId.value).length
-  const done = workspace.tasks.filter(t => t.project_id === projectId.value && t.status === 'DONE').length
+  const done = workspace.tasks.filter(t => t.project_id === projectId.value && t.status === 'COMPLETED').length
   if (!total) return 'Draft'
   const ratio = done / total
   if (ratio >= 1) return 'Final'

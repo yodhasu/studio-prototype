@@ -87,6 +87,7 @@ const selectedTask = ref<Task | null>(null)
 const projectTasks = computed(() => {
   return workspace.tasks
     .filter(t => t.project_id === props.projectId)
+    .filter(t => t.status !== 'COMPLETED')
     .sort((a, b) => {
       const dateA = a.due_date ? new Date(a.due_date).getTime() : Number.POSITIVE_INFINITY
       const dateB = b.due_date ? new Date(b.due_date).getTime() : Number.POSITIVE_INFINITY
@@ -107,9 +108,9 @@ function getPriorityClass(priority: string) {
 
 function getStatusClass(status: TaskStatus) {
   switch (status) {
-    case 'DONE': return 'badge-income'
-    case 'PROGRESS': return 'badge-cyan'
-    case 'BLOCKED': return 'badge-expense'
+    case 'COMPLETED': return 'badge-income'
+    case 'ACTIVE': return 'badge-cyan'
+    case 'PAUSED': return 'badge-expense'
     default: return ''
   }
 }

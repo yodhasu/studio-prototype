@@ -2,9 +2,14 @@ export type ID = string
 
 export type WorkspaceKind = 'PERSONAL' | 'TEAM'
 
-export type ProjectStatus = 'PLANNING' | 'ACTIVE' | 'PAUSED' | 'COMPLETED'
+export const WORKFLOW_STATUSES = ['PLANNING', 'ACTIVE', 'PAUSED', 'COMPLETED'] as const
+export type WorkflowStatus = typeof WORKFLOW_STATUSES[number]
+
+// Single workflow status modifier shared by Project + Task.
+export type ProjectStatus = WorkflowStatus
+export type TaskStatus = WorkflowStatus
+
 export type MilestoneStatus = 'OPEN' | 'DONE'
-export type TaskStatus = 'TODO' | 'PROGRESS' | 'BLOCKED' | 'DONE'
 export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH'
 
 // Placeholders (Phase 1)
@@ -23,6 +28,7 @@ export type ModuleAccess = {
 export type User = {
   id: ID
   name: string
+  email?: string
   avatar_url?: string
 }
 
@@ -111,7 +117,7 @@ export type NoteIdea = {
   updated_at: string
 }
 
-export type ActivityEntityType = 'WORKSPACE' | 'PROJECT' | 'MILESTONE' | 'TASK' | 'NOTE' | 'SCHEDULE'
+export type ActivityEntityType = 'WORKSPACE' | 'TEAM' | 'PROJECT' | 'MILESTONE' | 'TASK' | 'NOTE' | 'SCHEDULE'
 export type ActivityEventType = 'CREATE' | 'UPDATE' | 'STATUS' | 'ASSIGN' | 'LINK'
 
 export type ActivityEvent = {

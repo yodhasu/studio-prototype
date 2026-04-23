@@ -22,28 +22,10 @@
         ghost-class="opacity-40"
       >
         <template #item="{ element }">
-          <article class="rounded-lg border border-border bg-surface/70 p-3 sketch-border">
-            <div class="flex items-start gap-3">
-              <div
-                class="mt-1 h-2.5 w-2.5 rounded-full"
-                :style="{ backgroundColor: projectColor(element.project_id) }"
-              />
-              <div class="min-w-0 flex-1">
-                <p class="truncate text-xs font-bold text-text">
-                  {{ element.title }}
-                </p>
-                <p class="truncate text-[10px] text-muted">
-                  {{ projectName(element.project_id) }}
-                </p>
-                <p
-                  v-if="element.due_date"
-                  class="mt-2 text-[10px] font-mono text-faint"
-                >
-                  Due {{ element.due_date.slice(0, 10) }}
-                </p>
-              </div>
-            </div>
-          </article>
+          <TaskCard
+            :task="element"
+            @open="(t) => emit('open', t)"
+          />
         </template>
 
         <template #footer>
@@ -63,12 +45,9 @@
 import { computed, watch } from 'vue'
 import { VueDraggable } from 'vue-draggable-plus'
 import type { Task } from '~/stores/workspace'
-import { useWorkspaceStore } from '~/stores/workspace'
-
-const workspace = useWorkspaceStore()
 
 const props = defineProps<{ title: string, subtitle: string, modelValue: Task[] }>()
-const emit = defineEmits<{ 'update:modelValue': [value: Task[]], 'moved': [taskId: string] }>()
+const emit = defineEmits<{ 'update:modelValue': [value: Task[]], 'moved': [taskId: string], 'open': [task: Task] }>()
 
 const localList = computed({
   get: () => props.modelValue,
@@ -85,13 +64,4 @@ watch(
   },
   { flush: 'post' }
 )
-
-function projectColor(projectId: string) {
-  const p = workspace.getProjectById(projectId)
-  return p?.color_code || 'rgb(var(--c-border))'
-}
-
-function projectName(projectId: string) {
-  return workspace.getProjectById(projectId)?.name || 'Project'
-}
 </script>

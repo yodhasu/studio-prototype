@@ -253,7 +253,7 @@ const workspace = useWorkspaceStore()
 const localTask = ref<Task | null>(props.task || null)
 const panelRef = ref<HTMLElement | null>(null)
 
-const statusOptions: TaskStatus[] = ['TODO', 'PROGRESS', 'BLOCKED', 'DONE']
+const statusOptions: TaskStatus[] = ['PLANNING', 'ACTIVE', 'PAUSED', 'COMPLETED']
 const priorityOptions: Array<Task['priority']> = ['LOW', 'MEDIUM', 'HIGH']
 
 const project = computed(() => workspace.getProjectById(props.projectId))
@@ -277,7 +277,7 @@ const form = ref<{
 }>({
   title: '',
   detail: '',
-  status: 'TODO',
+  status: 'PLANNING',
   priority: 'MEDIUM',
   assignee_id: '',
   due_date: new Date().toISOString().slice(0, 10)
@@ -309,7 +309,7 @@ function resetForm() {
   form.value = {
     title: '',
     detail: '',
-    status: 'TODO',
+    status: 'PLANNING',
     priority: 'MEDIUM',
     assignee_id: '',
     due_date: new Date().toISOString().slice(0, 10)
@@ -365,9 +365,9 @@ onBeforeUnmount(() => {
 
 function getStatusClass(status: TaskStatus) {
   switch (status) {
-    case 'DONE': return 'badge-income'
-    case 'PROGRESS': return 'badge-cyan'
-    case 'BLOCKED': return 'badge-expense'
+    case 'COMPLETED': return 'badge-income'
+    case 'ACTIVE': return 'badge-cyan'
+    case 'PAUSED': return 'badge-expense'
     default: return ''
   }
 }

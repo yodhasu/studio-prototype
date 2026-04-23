@@ -165,7 +165,7 @@ export const useWorkspaceStore = defineStore('workspace', {
       const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()
 
       return this.activeTasks
-        .filter(t => t.status !== 'DONE' && Boolean(t.due_date))
+        .filter(t => t.status !== 'COMPLETED' && Boolean(t.due_date))
         .map(t => ({ t, ms: dateOnlyMs(t.due_date) }))
         .filter(x => x.ms !== null && x.ms! < todayStart)
         .sort((a, b) => (a.ms! - b.ms!))
@@ -178,7 +178,7 @@ export const useWorkspaceStore = defineStore('workspace', {
       const cutoff = todayStart + 7 * 24 * 60 * 60 * 1000
 
       const tasks = this.activeTasks
-        .filter(t => t.status !== 'DONE' && Boolean(t.due_date))
+        .filter(t => t.status !== 'COMPLETED' && Boolean(t.due_date))
         .map(t => ({ kind: 'TASK' as const, id: t.id, project_id: t.project_id, title: t.title, due_date: t.due_date! }))
 
       const milestones = this.activeMilestones
@@ -195,7 +195,7 @@ export const useWorkspaceStore = defineStore('workspace', {
 
     assignedToMe(): Task[] {
       return this.activeTasks
-        .filter(t => t.assignee_id === this.active_user_id && t.status !== 'DONE')
+        .filter(t => t.assignee_id === this.active_user_id && t.status !== 'COMPLETED')
         .slice()
         .sort((a, b) => {
           const aMs = dateOnlyMs(a.due_date) ?? Number.POSITIVE_INFINITY
@@ -268,6 +268,49 @@ export const useWorkspaceStore = defineStore('workspace', {
       this.active_workspace_id = workspaceId
       this.currentProjectId = null
       this.logActivity({ type: 'UPDATE', entity_type: 'WORKSPACE', entity_id: workspaceId, message: 'Switched workspace.' })
+    },
+
+    inviteToActiveTeam(payload: { user_id: ID, title?: string }) {
+      const ws = this.activeWorkspace
+      if (!ws || ws.kind !== 'TEAM' || !ws.team_id) return
+
+      const teamId = ws.team_id
+      const exists = this.team_members.some(tm => tm.team_id === teamId && tm.user_id === payload.user_id)
+      if (exists) return
+
+      this.team_members.push({
+        id: uid('tm'),
+        team_id: teamId,
+        user_id: payload.user_id,
+        title: payload.title,
+        created_at: isoNow()
+      })
+
+      const u = this.getUserById(payload.user_id)
+      this.logActivity({
+        type: 'ASSIGN',
+        entity_type: 'TEAM',
+        entity_id: teamId,
+        message: `Invited ${u?.name || 'member'} to team.`
+      })
+    },
+
+    removeFromActiveTeam(userId: ID) {
+      const ws = this.activeWorkspace
+      if (!ws || ws.kind !== 'TEAM' || !ws.team_id) return
+
+      const teamId = ws.team_id
+      const idx = this.team_members.findIndex(tm => tm.team_id === teamId && tm.user_id === userId)
+      if (idx === -1) return
+
+      const u = this.getUserById(userId)
+      this.team_members.splice(idx, 1)
+      this.logActivity({
+        type: 'UPDATE',
+        entity_type: 'TEAM',
+        entity_id: teamId,
+        message: `Removed ${u?.name || 'member'} from team.`
+      })
     },
 
     createProject(payload: { name: string, description?: string, color_code?: string }) {
@@ -350,7 +393,7 @@ export const useWorkspaceStore = defineStore('workspace', {
         project_id: payload.project_id,
         title: payload.title.trim() || 'New Task',
         detail: payload.detail?.trim() || undefined,
-        status: payload.status || 'TODO',
+        status: payload.status || 'PLANNING',
         priority: payload.priority || 'MEDIUM',
         due_date: payload.due_date,
         assignee_id: payload.assignee_id,

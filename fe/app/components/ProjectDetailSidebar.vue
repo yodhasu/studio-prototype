@@ -200,7 +200,7 @@ const tabItems = [
 
 const projectPriority = computed(() => {
   if (!project.value) return 'Normal'
-  const openTasks = workspace.tasks.filter(t => t.project_id === project.value!.id && t.status !== 'DONE').length
+  const openTasks = workspace.tasks.filter(t => t.project_id === project.value!.id && t.status !== 'COMPLETED').length
   return openTasks >= 8 ? 'High' : openTasks >= 4 ? 'Medium' : 'Normal'
 })
 
