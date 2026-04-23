@@ -265,3 +265,37 @@ This is critical:
 If you had to compress TTMC3 into one sentence:
 
 > **“A scalable workspace OS for managing projects, tasks, teams, and operational context without forcing complexity upfront.”**
+
+# DEVELOPMENT PHASE
+Phase 1: Frontend foundation, non-business management
+Build the visible operating layer first:
+
+workspace structure
+projects
+tasks
+milestones
+schedules
+team/member views
+notes/ideas/context
+dashboard based on real derived state
+account/workspace/module scaffolding
+integration-ready architecture
+
+Phase 2: Backend support for those same modules
+Once the shape is right:
+
+entity definitions
+DB schema
+API contracts
+auth/workspace boundaries
+store-to-endpoint replacement
+
+Phase 3: Business/operational logic
+Only after the core app already feels correct:
+
+billing
+accounting-style logic
+ERP/MRP behavior
+finance rules
+subscription enforcement depth
+business reporting
