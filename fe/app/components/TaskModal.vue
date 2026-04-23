@@ -1,15 +1,20 @@
 <template>
   <UModal
     v-model:open="isOpen"
-    :ui="{ overlay: 'z-[100]', content: 'z-[101] max-w-md' }"
+    :ui="{ overlay: 'z-[100]', content: 'z-[101] max-w-2xl w-full' }"
   >
-    <div class="p-0 overflow-hidden bg-surface sketch-border border-0">
-      <div class="p-6 border-b border-border/10 bg-overlay/20 flex items-center justify-between">
+    <div class="overflow-hidden border-0 bg-surface sketch-border">
+      <div class="flex items-center justify-between border-b border-border/10 bg-overlay/20 p-6">
         <div class="flex items-center gap-2">
-          <div class="w-2 h-6 rounded-full bg-brand" />
-          <h3 class="text-lg font-bold tracking-tight">
-            {{ mode === 'create' ? 'Create Task' : mode === 'edit' ? 'Edit Task' : 'Task Details' }}
-          </h3>
+          <div class="h-6 w-2 rounded-full bg-brand" />
+          <div>
+            <h3 class="text-lg font-bold tracking-tight">
+              {{ mode === 'create' ? 'Create Task' : isViewMode ? 'Task Details' : 'Edit Task' }}
+            </h3>
+            <p class="text-[10px] font-black uppercase tracking-widest text-faint">
+              {{ mode === 'create' ? 'New deliverable' : isViewMode ? 'Inspect deliverable' : 'Update deliverable' }}
+            </p>
+          </div>
         </div>
         <UButton
           color="neutral"
@@ -19,146 +24,139 @@
         />
       </div>
 
-      <div class="p-6 space-y-6">
+      <div class="max-h-[80vh] overflow-y-auto p-6">
         <div
-          v-if="mode === 'detail' && localTask"
-          class="space-y-6"
+          v-if="localTask && isViewMode"
+          class="mb-5 grid gap-3 sm:grid-cols-3"
         >
-          <div>
-            <h4 class="text-[10px] font-bold text-faint uppercase tracking-widest mb-1">
-              Title
-            </h4>
-            <p class="text-lg font-bold text-text">
-              {{ localTask.title }}
+          <div class="rounded-xl border border-border/40 bg-panel/20 p-3">
+            <p class="text-[10px] font-black uppercase tracking-widest text-faint">
+              Status
             </p>
+            <UBadge
+              :color="getStatusColor(localTask.status)"
+              variant="subtle"
+              class="mt-2 w-full justify-center"
+            >
+              {{ localTask.status }}
+            </UBadge>
           </div>
-
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <h4 class="text-[10px] font-bold text-faint uppercase tracking-widest mb-1 text-center">
-                Status
-              </h4>
-              <UBadge
-                :color="getStatusColor(localTask.status)"
-                variant="subtle"
-                class="w-full justify-center"
-              >
-                {{ localTask.status }}
-              </UBadge>
-            </div>
-            <div>
-              <h4 class="text-[10px] font-bold text-faint uppercase tracking-widest mb-1 text-center">
-                Priority
-              </h4>
-              <UBadge
-                :color="getPriorityColor(localTask.priority)"
-                variant="subtle"
-                class="w-full justify-center"
-              >
-                {{ localTask.priority }}
-              </UBadge>
-            </div>
-          </div>
-
-          <div>
-            <h4 class="text-[10px] font-bold text-faint uppercase tracking-widest mb-1">
-              Description
-            </h4>
-            <p class="text-sm text-muted leading-relaxed italic bg-panel/30 p-3 rounded-lg border border-border/10">
-              {{ localTask.detail || 'No description provided.' }}
+          <div class="rounded-xl border border-border/40 bg-panel/20 p-3">
+            <p class="text-[10px] font-black uppercase tracking-widest text-faint">
+              Priority
             </p>
+            <UBadge
+              :color="getPriorityColor(localTask.priority)"
+              variant="subtle"
+              class="mt-2 w-full justify-center"
+            >
+              {{ localTask.priority }}
+            </UBadge>
           </div>
-
-          <div class="flex items-center justify-between items-end pt-4 border-t border-border/10">
-            <div class="flex items-center gap-2 text-faint">
-              <UIcon
-                name="i-heroicons-calendar"
-                class="w-4 h-4"
-              />
-              <span class="text-xs font-medium">Due {{ formatDate(localTask.due_date) }}</span>
-            </div>
-            <UButton
-              label="Edit Task"
-              icon="i-heroicons-pencil"
-              size="xs"
-              color="primary"
-              variant="ghost"
-              class="hover:bg-brand/5"
-              @click="setMode('edit')"
-            />
+          <div class="rounded-xl border border-border/40 bg-panel/20 p-3">
+            <p class="text-[10px] font-black uppercase tracking-widest text-faint">
+              Due Date
+            </p>
+            <p class="mt-2 text-sm font-bold text-text">
+              {{ formatDate(localTask.due_date) }}
+            </p>
           </div>
         </div>
 
-        <div
-          v-else
-          class="space-y-4"
+        <form
+          class="space-y-5"
+          @submit.prevent="handleSubmit"
         >
-          <UFormField
-            label="Task Title"
-            name="title"
-            :ui="{ label: 'text-[10px] font-bold text-faint uppercase tracking-widest p-1' }"
-          >
-            <UInput
-              v-model="form.title"
-              placeholder="What needs doing?"
-              class="sketch-border"
-              variant="none"
-            />
-          </UFormField>
+          <div class="grid gap-5 lg:grid-cols-2">
+            <div class="lg:col-span-2">
+              <UFormField
+                label="Task Title"
+                name="title"
+                :ui="{ label: 'px-1 py-1 text-[10px] font-bold uppercase tracking-widest text-faint' }"
+              >
+                <UInput
+                  v-model="form.title"
+                  placeholder="What needs doing?"
+                  class="sketch-border"
+                  variant="none"
+                  :disabled="isViewMode"
+                />
+              </UFormField>
+            </div>
 
-          <div class="grid grid-cols-2 gap-4">
             <UFormField
               label="Status"
               name="status"
-              :ui="{ label: 'text-[10px] font-bold text-faint uppercase tracking-widest p-1' }"
+              :ui="{ label: 'px-1 py-1 text-[10px] font-bold uppercase tracking-widest text-faint' }"
             >
               <USelect
                 v-model="form.status"
                 :options="statusOptions"
                 class="sketch-border"
                 variant="none"
+                :disabled="isViewMode"
               />
             </UFormField>
+
             <UFormField
               label="Priority"
               name="priority"
-              :ui="{ label: 'text-[10px] font-bold text-faint uppercase tracking-widest p-1' }"
+              :ui="{ label: 'px-1 py-1 text-[10px] font-bold uppercase tracking-widest text-faint' }"
             >
               <USelect
                 v-model="form.priority"
                 :options="priorityOptions"
                 class="sketch-border"
                 variant="none"
+                :disabled="isViewMode"
               />
             </UFormField>
+
+            <div class="lg:col-span-2">
+              <UFormField
+                label="Description"
+                name="detail"
+                :ui="{ label: 'px-1 py-1 text-[10px] font-bold uppercase tracking-widest text-faint' }"
+              >
+                <UTextarea
+                  v-model="form.detail"
+                  placeholder="Add context..."
+                  class="sketch-border"
+                  variant="none"
+                  :rows="5"
+                  :disabled="isViewMode"
+                />
+              </UFormField>
+            </div>
+
+            <UFormField
+              label="Due Date"
+              name="due_date"
+              :ui="{ label: 'px-1 py-1 text-[10px] font-bold uppercase tracking-widest text-faint' }"
+            >
+              <UInput
+                v-model="form.due_date"
+                type="date"
+                class="sketch-border"
+                variant="none"
+                :disabled="isViewMode"
+              />
+            </UFormField>
+
+            <div class="flex items-end justify-end">
+              <div
+                v-if="localTask"
+                class="rounded-xl border border-border/40 bg-panel/20 px-3 py-2 text-right"
+              >
+                <p class="text-[10px] font-black uppercase tracking-widest text-faint">
+                  Project task
+                </p>
+                <p class="mt-1 text-xs font-bold text-text">
+                  {{ localTask.title }}
+                </p>
+              </div>
+            </div>
           </div>
-
-          <UFormField
-            label="Description"
-            name="detail"
-            :ui="{ label: 'text-[10px] font-bold text-faint uppercase tracking-widest p-1' }"
-          >
-            <UTextarea
-              v-model="form.detail"
-              placeholder="Add context..."
-              class="sketch-border"
-              variant="none"
-              :rows="3"
-            />
-          </UFormField>
-
-          <UFormField
-            label="Due Date"
-            name="due_date"
-            :ui="{ label: 'text-[10px] font-bold text-faint uppercase tracking-widest p-1' }"
-          >
-            <UInput
-              v-model="form.due_date"
-              type="date"
-              class="sketch-border"
-              variant="none"
-            />
-          </UFormField>
 
           <p
             v-if="formError"
@@ -167,33 +165,56 @@
             {{ formError }}
           </p>
 
-          <div class="pt-4 flex gap-3">
+          <div class="flex gap-3 pt-2">
             <UButton
-              v-if="mode === 'edit'"
-              label="Cancel"
+              v-if="isViewMode"
+              label="Edit Task"
+              color="primary"
+              variant="ghost"
+              block
+              class="flex-1"
+              type="button"
+              @click="setMode('edit')"
+            />
+            <UButton
+              v-if="isViewMode"
+              label="Close"
               color="neutral"
               variant="ghost"
               block
               class="flex-1"
-              @click="setMode('detail')"
+              type="button"
+              @click="isOpen = false"
             />
-            <UButton
-              :label="mode === 'create' ? 'Create Task' : 'Save Changes'"
-              color="primary"
-              block
-              class="flex-[2] rounded-xl font-bold sketch-border"
-              :loading="loading"
-              @click="handleSubmit"
-            />
+            <template v-else>
+              <UButton
+                v-if="mode === 'edit'"
+                label="Cancel"
+                color="neutral"
+                variant="ghost"
+                block
+                class="flex-1"
+                type="button"
+                @click="setMode('detail')"
+              />
+              <UButton
+                :label="mode === 'create' ? 'Create Task' : 'Save Changes'"
+                color="primary"
+                block
+                class="flex-[2] rounded-xl font-bold sketch-border"
+                :loading="loading"
+                type="submit"
+              />
+            </template>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   </UModal>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useWorkspaceStore, type Task, type TaskStatus } from '~/stores/workspace'
 
 const props = defineProps<{
@@ -207,11 +228,12 @@ const mode = ref<'create' | 'detail' | 'edit'>(props.initialMode || 'detail')
 const loading = ref(false)
 const formError = ref('')
 const workspace = useWorkspaceStore()
-
 const localTask = ref<Task | null>(props.task || null)
 
 const statusOptions: TaskStatus[] = ['TODO', 'PROGRESS', 'BLOCKED', 'DONE']
 const priorityOptions: Array<Task['priority']> = ['LOW', 'MEDIUM', 'HIGH']
+
+const isViewMode = computed(() => mode.value === 'detail')
 
 const form = ref<{
   title: string
@@ -227,38 +249,26 @@ const form = ref<{
   due_date: new Date().toISOString().slice(0, 10)
 })
 
-function setMode(newMode: 'create' | 'detail' | 'edit') {
-  mode.value = newMode
-  if (newMode === 'edit' && localTask.value) {
-    form.value = {
-      title: localTask.value.title,
-      detail: localTask.value.detail || '',
-      status: localTask.value.status,
-      priority: localTask.value.priority,
-      due_date: (localTask.value.due_date ?? new Date().toISOString()).slice(0, 10)
-    }
+function syncFormFromTask(task: Task | null) {
+  if (!task) {
+    resetForm()
+    return
+  }
+
+  form.value = {
+    title: task.title,
+    detail: task.detail || '',
+    status: task.status,
+    priority: task.priority,
+    due_date: (task.due_date ?? new Date().toISOString()).slice(0, 10)
   }
 }
 
-watch(() => props.task, (newVal) => {
-  localTask.value = newVal || null
-  if (newVal) {
-    if (props.initialMode) mode.value = props.initialMode
-    else mode.value = 'detail'
-  } else {
-    mode.value = 'create'
-    resetForm()
-  }
-}, { immediate: true })
-
-watch(isOpen, (newVal) => {
-  if (!newVal) {
-    // Reset after close
-    setTimeout(() => {
-      mode.value = 'detail'
-    }, 300)
-  }
-})
+function setMode(newMode: 'create' | 'detail' | 'edit') {
+  mode.value = newMode
+  if (newMode === 'edit') syncFormFromTask(localTask.value)
+  if (newMode === 'create') resetForm()
+}
 
 function resetForm() {
   form.value = {
@@ -269,6 +279,28 @@ function resetForm() {
     due_date: new Date().toISOString().slice(0, 10)
   }
 }
+
+watch([() => props.task, () => props.initialMode], ([newTask, initialMode]) => {
+  localTask.value = newTask || null
+
+  if (newTask) {
+    mode.value = initialMode === 'edit' ? 'edit' : 'detail'
+    syncFormFromTask(newTask)
+    return
+  }
+
+  mode.value = 'create'
+  resetForm()
+}, { immediate: true })
+
+watch(isOpen, (newVal) => {
+  if (!newVal) {
+    setTimeout(() => {
+      mode.value = localTask.value ? 'detail' : 'create'
+      formError.value = ''
+    }, 250)
+  }
+})
 
 function getStatusColor(status: TaskStatus): 'success' | 'info' | 'error' | 'neutral' {
   switch (status) {

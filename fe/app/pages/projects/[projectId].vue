@@ -87,7 +87,7 @@
         </header>
 
         <div class="grid grid-cols-1 gap-6 xl:grid-cols-12">
-          <section class="dashboard-panel xl:col-span-7">
+          <section class="dashboard-panel flex h-full min-h-0 flex-col xl:col-span-7">
             <div class="flex items-center justify-between">
               <h2 class="font-display text-lg font-black text-text">
                 Deliverables
@@ -97,7 +97,7 @@
                 to="/schedule"
               >Open Schedule</NuxtLink>
             </div>
-            <div class="mt-6">
+            <div class="mt-6 flex-1 min-h-0">
               <ProjectTaskList :project-id="project.id" />
             </div>
           </section>

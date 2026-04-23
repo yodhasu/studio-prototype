@@ -1,44 +1,42 @@
 <template>
-  <div class="flex flex-col gap-3">
+  <div class="flex h-full min-h-0 flex-col gap-3">
     <div class="flex items-center justify-between px-1">
       <div class="flex items-center gap-2.5">
-        <span class="text-[10px] font-black text-muted uppercase tracking-[0.18em]">Active Tasks</span>
-        <span class="bg-brand/10 text-brand text-[9px] font-bold px-1.5 py-0.5 rounded-full">{{ projectTasks.length }}</span>
+        <span class="text-[10px] font-black uppercase tracking-[0.18em] text-muted">Active Tasks</span>
+        <span class="rounded-full bg-brand/10 px-1.5 py-0.5 text-[9px] font-bold text-brand">{{ projectTasks.length }}</span>
       </div>
       <button
-        class="flex items-center gap-1.5 px-3 py-1 bg-surface-elevated hover:bg-surface border border-border/40 hover:border-brand/40 sketch-border text-[9px] font-bold uppercase tracking-widest text-muted hover:text-brand transition-all shadow-sm"
+        class="flex items-center gap-1.5 border border-border/40 bg-surface-elevated px-3 py-1 text-[9px] font-bold uppercase tracking-widest text-muted shadow-sm transition-all hover:border-brand/40 hover:bg-surface hover:text-brand"
         @click="createTask"
       >
-        <Plus class="w-3 h-3" />
+        <Plus class="h-3 w-3" />
         Add Task
       </button>
     </div>
 
-    <div
-      class="transition-all duration-300 overflow-y-auto custom-scrollbar"
-      :class="{ 'max-h-[400px] pr-2': isExpanded }"
-    >
+    <div class="custom-scrollbar min-h-0 flex-1 overflow-y-auto pr-2">
       <TransitionGroup
         name="list"
         tag="div"
         class="space-y-2"
       >
-        <div
-          v-for="task in displayedTasks"
+        <button
+          v-for="task in projectTasks"
           :key="task.id"
-          class="flex items-center gap-3 p-3 rounded-xl border border-border/30 bg-surface/30 hover:bg-surface-elevated hover:border-brand/40 transition-all cursor-pointer group"
+          type="button"
+          class="group flex w-full items-center gap-3 rounded-xl border border-border/30 bg-surface/30 p-3 text-left transition-all hover:border-brand/40 hover:bg-surface-elevated"
           :aria-label="`View details for task: ${task.title}`"
           @click="openTask(task)"
         >
           <div
-            class="w-1.5 h-8 rounded-full"
+            class="h-8 w-1.5 rounded-full"
             :class="getPriorityClass(task.priority)"
           />
-          <div class="flex-1 min-w-0">
-            <p class="text-sm font-bold text-text truncate">
+          <div class="min-w-0 flex-1">
+            <p class="truncate text-sm font-bold text-text">
               {{ task.title }}
             </p>
-            <div class="flex items-center gap-2 mt-1">
+            <div class="mt-1 flex items-center gap-2">
               <UBadge
                 size="xs"
                 :color="getStatusColor(task.status)"
@@ -46,34 +44,22 @@
               >
                 {{ task.status }}
               </UBadge>
-              <span class="text-[10px] text-muted font-medium flex items-center gap-1">
-                <Calendar class="w-2.5 h-2.5" /> Due {{ task.due_date ? formatDate(task.due_date) : 'TBD' }}
+              <span class="flex items-center gap-1 font-medium text-muted text-[10px]">
+                <Calendar class="h-2.5 w-2.5" /> Due {{ task.due_date ? formatDate(task.due_date) : 'TBD' }}
               </span>
             </div>
           </div>
-          <ArrowUpRight class="w-4 h-4 text-faint group-hover:text-brand transition-colors" />
-        </div>
+          <ArrowUpRight class="h-4 w-4 text-faint transition-colors group-hover:text-brand" />
+        </button>
       </TransitionGroup>
 
       <div
         v-if="projectTasks.length === 0"
-        class="p-4 text-center rounded-xl border border-dashed border-border/50 text-sm text-faint italic"
+        class="rounded-xl border border-dashed border-border/50 p-4 text-center text-sm italic text-faint"
       >
         No active tasks for this project.
       </div>
     </div>
-
-    <button
-      v-if="projectTasks.length > 3"
-      class="flex items-center justify-center gap-2 py-2 px-3 text-xs font-bold text-muted hover:text-brand transition-all border border-border/40 bg-surface/20 hover:bg-surface-elevated rounded-lg mt-1"
-      @click="isExpanded = !isExpanded"
-    >
-      <ChevronDown
-        class="w-4 h-4 transition-transform duration-300"
-        :class="{ 'rotate-180': isExpanded }"
-      />
-      {{ isExpanded ? 'Show Less' : `Show all (${projectTasks.length})` }}
-    </button>
 
     <TaskModal
       v-model:open="isModalOpen"
@@ -85,8 +71,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { Calendar, ArrowUpRight, ChevronDown } from 'lucide-vue-next'
+import { computed, ref } from 'vue'
+import { Calendar, ArrowUpRight } from 'lucide-vue-next'
 import { useWorkspaceStore } from '~/stores/workspace'
 import type { Task, TaskStatus } from '~/stores/workspace'
 
@@ -95,7 +81,6 @@ const props = defineProps<{
 }>()
 
 const workspace = useWorkspaceStore()
-const isExpanded = ref(false)
 const isModalOpen = ref(false)
 const modalMode = ref<'create' | 'detail' | 'edit'>('detail')
 const selectedTask = ref<Task | null>(null)
@@ -104,22 +89,13 @@ const projectTasks = computed(() => {
   return workspace.tasks
     .filter(t => t.project_id === props.projectId)
     .sort((a, b) => {
-      // Sort by due date first
       const dateA = a.due_date ? new Date(a.due_date).getTime() : Number.POSITIVE_INFINITY
       const dateB = b.due_date ? new Date(b.due_date).getTime() : Number.POSITIVE_INFINITY
       if (dateA !== dateB) return dateA - dateB
 
-      // Then by priority
       const priorityMap = { HIGH: 3, MEDIUM: 2, LOW: 1 }
       return priorityMap[b.priority] - priorityMap[a.priority]
     })
-})
-
-const displayedTasks = computed(() => {
-  if (isExpanded.value) {
-    return projectTasks.value
-  }
-  return projectTasks.value.slice(0, 3)
 })
 
 function getPriorityClass(priority: string) {
@@ -157,10 +133,6 @@ function createTask() {
 </script>
 
 <style scoped>
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-
 .list-enter-active,
 .list-leave-active {
   transition: all 0.3s ease;
