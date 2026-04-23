@@ -1,131 +1,267 @@
----
-type: architecture
-status: stable
-tags: [core, documentation, studio]
-related: ["[[docs/frontend_documentation/app_overview]]"]
----
-# PROJECT OVERHAUL: PROJECT STUDIO MANAGEMENT C3
+# TTMC3 — Updated Product Overview
 
-**Version:** 1.0  
-**Vision:** The definitive high-agency platform for creative studios. Production-focused, business-automated, and zero-bullshit.
+## 1. Core Identity
 
----
+TTMC3 is a **Workspace Management SaaS**.
 
-## I. CORE ARCHITECTURE: THE DUAL-HUB SYSTEM
+It provides a unified environment where users can:
 
-The app is strictly partitioned into two operational environments to prevent context-leakage between creative flow and business stress.
+* manage projects
+* organize tasks and schedules
+* coordinate teams
+* store ideas and work context
+* handle operational workflows (light → heavy depending on scale)
 
-### 1. THE WORKSPACE (The Production Floor)
+It is designed to work across different user types:
 
-_User Persona: Artists, Animators, Lead Designers._
-Focus: Execution, visual context, and immediate task priority.
+* individuals (solo use)
+* small teams / indie groups
+* creative studios
+* IT/product teams
+* startups
+* scalable toward enterprise workflows
 
-- **Workspace Dashboard:** A "Today's Mission" view. Shows active project timelines, personal task lists, and recent activity from the Creative Hub.
-- **Integrated Kanban:** \* One card = One specific deliverable.
-  - Columns are customizable but optimized for art pipelines (Draft > Review > Polish > Final).
-  - Context-Aware: Every card links directly to relevant nodes in the Creative Hub.
-- **Creative Hub (Visual Knowledge Graph):**
-  - An Obsidian-style graph view for visual assets.
-  - Allows users to link moodboards, style guides, and references to specific project stages.
-  - Solves the "where was that reference?" problem by maintaining persistent context.
-- **Granular Scheduling:**
-  - Visual timeline of task assignments.
-  - Focuses on "Who owns what" and "What's the deadline."
-  - **Anti-Feature:** No time-tracking. We measure progress by deliverables, not by hours spent sitting.
+The system adapts based on:
 
-### 2. THE MANAGEMENT (The Business Office)
-
-_User Persona: Studio Owners, Accountants, Project Managers._
-Focus: Financial health, client relations, and team bandwidth.
-
-- **Management Dashboard:** A high-level flight deck. Shows studio-wide KPIs:
-  - `Studio Burn Rate`
-  - `Unpaid Invoices`
-  - `Active Client Count`
-  - `Total Pipeline Value`
-- **Finance Module (The "Better Excel"):** \* Automatic invoice generation based on project milestones.
-  - Expense tracking with categorization.
-  - Financial forecasting based on current project schedules.
-- **Resource Capacity:**
-  - Heat-map of team bandwidth.
-  - Shows who is overloaded and who is "bench" (available) without invasive monitoring.
-- **Client & Contract CRM:**
-  - Storage for legal docs, contact info, and project history.
+* account type
+* subscription tier
+* team structure
+* enabled modules
 
 ---
 
-## II. THE USER WORKFLOW (The "Golden Path")
+## 2. Product Philosophy
 
-The application follows a circular lifecycle where data flows between hubs.
+TTMC3 is built on one core principle:
 
-1.  **Project Initialization:** Admin creates a project in **Management**, links a client, and sets a budget.
-2.  **Visual Brainstorming:** Lead Creative populates the **Creative Hub** with references, moodboards, and art style guides.
-3.  **Task Orchestration:** Lead Creative breaks production into **Kanban** tasks, tagging specific artists.
-4.  **Focused Execution:** Artists work within the **Workspace Dashboard**, accessing linked references directly within their task view.
-5.  **Administrative Loop:** When the "Final" column is triggered, the **Management Hub** flags the Admin to generate an invoice.
+**“Same system, different complexity levels.”**
 
----
+Instead of making:
 
-## III. USER SCENARIOS (Case Studies)
+* a “simple app” for individuals
+* and a “complex app” for companies
 
-### Scenario A: The New Hire / Freelancer
+TTMC3 is one system that **scales in capability** without forcing complexity early.
 
-- **Action:** A freelancer is added to an ongoing project.
-- **Result:** Instead of reading 100 Discord messages, they open the **Creative Hub**. They see the visual evolution of the character/scene via the Knowledge Graph. They have full context in minutes.
+So:
 
-### Scenario B: The Scope Creep
+* small users get essentials only
+* growing teams unlock coordination
+* larger orgs expand into operations
 
-- **Action:** A client requests extra revisions.
-- **Result:** Lead Creative adds tasks to the Kanban. The **Management Dashboard** automatically updates the "Resource Capacity" view, flagging to the PM that the current deadline is now impossible. Data-driven pushback against the client is now instant.
-
-### Scenario C: The Billing Panic
-
-- **Action:** It's the end of the month.
-- **Result:** Admin checks the **Management Dashboard**. They see a list of projects that hit the "Final" column but have $0 in "Invoiced Amount." One click generates the bill.
+No forced bloat. No artificial limitations.
 
 ---
 
-## IV. RBAC (ROLE-BASED ACCESS CONTROL)
+## 3. Core Concept: The Workspace
 
-We implement a "Need-to-Know" permissions layer to keep the UI clean and sensitive data secure.
+Everything revolves around the idea of a **Workspace**.
 
-| Role                     | Access Level               | Description                                                                                    |
-| :----------------------- | :------------------------- | :--------------------------------------------------------------------------------------------- |
-| **Studio Owner / Admin** | Full Access                | Complete control over Finance, Management, and Workspace.                                      |
-| **Project Manager**      | Management + Production    | Can edit schedules and view project finances, but cannot see global studio burn rates.         |
-| **Lead Creative**        | Production Full + Capacity | Can manage the Kanban/Hub and view team capacity to assign tasks. No Finance access.           |
-| **Artist / Contributor** | Production Restricted      | Can view/edit assigned tasks and contribute to the Creative Hub. Cannot see studio management. |
-| **External Client**      | Reviewer Mode              | View-only access to specific project progress and the ability to approve/comment on tasks.     |
+A workspace can be:
 
----
+* personal (individual)
+* team-based
+* organization-level
 
-## III. TECHNICAL SPECIFICATIONS
+Inside a workspace, users can:
 
-- **Frontend:** [[docs/frontend_documentation/app_overview|Nuxt (Composition API) + Vite]].
-- **Styling:** [[docs/assets/css/main.css|Tailwind CSS]] (Theme: Custom Slate-900 based Dark Mode).
-- **State Management:** [[docs/frontend_documentation/app_overview#3-state-management|Pinia]] (Separated into `useWorkspaceStore` and `useManagementStore`).
-- **Backend:** FastAPI (Python) for asynchronous performance.
-- **Database:** Supabase (PostgreSQL).
-- **Storage:** Supabase Buckets (for high-res asset hosting).
-- **Real-time:** WebSockets (for live Kanban updates and collaborative moodboards).
+* create projects
+* manage tasks
+* organize schedules
+* assign members
+* store ideas/context
+* enable additional modules
 
----
+Think of workspace as:
 
-## IV. UI/UX MANIFESTO
-
-1.  **Dark Mode First:** `#0f172a` (Slate 900) is the base. High-end art looks better on dark surfaces.
-2.  **Typography:** Inter for UI clarity; JetBrains Mono for metadata and technical tags.
-3.  **H-Fit Constraint:** Widgets must never stretch to fill vertical space unnecessarily. Content defines height.
-4.  **Zero Corporate Fluff:** No "Welcome back!" banners. Show the data, show the work, then get out of the way.
-5.  **Context Persistence:** A user should be able to jump from an Invoice to the specific Task that triggered it in one click.
+> a container for work, context, and coordination
 
 ---
 
-## V. DEFINITION OF DONE
+## 4. Core Building Blocks
 
-A feature is "Done" when:
+TTMC3 is built from a few fundamental entities:
 
-- It is responsive across desktop/tablet.
-- RBAC permissions are correctly enforced via Supabase policies.
-- It doesn't break the "Dual-Hub" logic.
-- The UI follows the modern, minimalist sleek aesthetic.
+### Workspace Layer
+
+* Workspace
+* User
+* Team
+* Role / Permission (future RBAC)
+
+### Work Layer
+
+* Project
+* Task
+* Milestone
+* Schedule Item
+
+### Context Layer
+
+* Notes / Ideas
+* References (future creative link)
+* Activity / Updates
+
+### Operational Layer (expandable)
+
+* Bills / Records
+* Resource / Capacity (future)
+* ERP / MRP modules (future expansion)
+
+These layers should feel connected, not separate products.
+
+---
+
+## 5. Product Behavior by Scale
+
+### Level 1 — Individual Use
+
+User experience:
+
+* simple workspace
+* personal projects
+* task tracking
+* scheduling
+* idea capture
+
+No team complexity. No enterprise noise.
+
+---
+
+### Level 2 — Team Coordination
+
+Unlocked when user creates a team:
+
+* shared projects
+* task assignment
+* member roles (basic)
+* team schedule visibility
+* shared activity
+
+Now TTMC3 becomes a coordination tool.
+
+---
+
+### Level 3 — Operational Expansion (Future)
+
+For larger usage:
+
+* deeper workflow modules
+* resource planning
+* operational tracking
+* ERP/MRP-like extensions
+* advanced permissions
+
+This layer should feel like **expansion**, not default UI.
+
+---
+
+## 6. What TTMC3 Is NOT
+
+To avoid design confusion:
+
+TTMC3 is **not**:
+
+* a deep creative workspace (that’s separate)
+* a pure ERP system
+* a simple to-do app
+* a bloated “everything dashboard”
+
+It sits in the middle as a:
+
+> **structured coordination system for work**
+
+---
+
+## 7. Relationship to Creative Workspace (Important)
+
+Creative execution (canvas, graph, assets, etc.) lives in a **separate app/service**.
+
+TTMC3 interacts with it by:
+
+* linking projects to workspace instances
+* storing metadata about progress
+* showing summaries / activity
+* acting as the coordination layer
+
+So:
+
+* TTMC3 = control + structure
+* Workspace app = execution + creation
+
+---
+
+## 8. UX Philosophy
+
+TTMC3 UI should feel:
+
+* minimal but powerful
+* structured, not cluttered
+* fast to understand
+* progressive in complexity
+
+Rules:
+
+* show only what’s needed
+* reveal complexity when relevant
+* avoid dead dashboards
+* every screen must serve a workflow
+
+---
+
+## 9. Core Flows (Golden Paths)
+
+### Individual Flow
+
+* create workspace
+* create project
+* create tasks
+* schedule work
+* track progress
+* store ideas
+
+---
+
+### Team Flow
+
+* create team
+* add members (mock initially)
+* assign tasks
+* coordinate schedule
+* monitor project progress
+
+---
+
+### Growth Flow
+
+* enable more modules
+* expand workspace capabilities
+* manage more complex operations
+
+---
+
+## 10. Engineering Direction (Frontend)
+
+The frontend must:
+
+* reflect real domain structure
+* maintain consistent state across pages
+* simulate real workflows using mock/local data
+* be ready for:
+
+  * backend APIs
+  * database schema
+  * RBAC
+  * subscription logic
+
+This is critical:
+
+> frontend should define the system clearly before backend exists
+
+---
+
+## 11. One-Line Mental Model
+
+If you had to compress TTMC3 into one sentence:
+
+> **“A scalable workspace OS for managing projects, tasks, teams, and operational context without forcing complexity upfront.”**
