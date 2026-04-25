@@ -139,7 +139,6 @@ const workspace = useWorkspaceStore()
 
 const primaryNav = [
   { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
-  { label: 'Workspace', to: '/workspace/dashboard', icon: LayoutDashboard },
   { label: 'Projects', to: '/projects', icon: FolderKanban },
   { label: 'Schedule', to: '/schedule', icon: CalendarDays },
   { label: 'Team', to: '/teams', icon: Users }
