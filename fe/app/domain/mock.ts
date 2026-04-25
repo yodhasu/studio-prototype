@@ -22,14 +22,16 @@ export function createMockSnapshot(now = new Date()): StudioSnapshot {
   const ts = isoNow(now)
 
   const users: User[] = [
-    { id: 'u-you', name: 'You', email: 'you@ivoryforge.local' },
+    // Free tier owner account
+    { id: 'u-you', name: 'Free Owner', email: 'free@ttmc3.local' },
 
     // Free tier roster + candidates
     { id: 'u-free-1', name: 'Ari Free', email: 'ari.free@ivoryforge.local' },
     { id: 'u-free-2', name: 'Bex Free', email: 'bex.free@ivoryforge.local' },
     { id: 'u-free-3', name: 'Cora Free', email: 'cora.free@ivoryforge.local' },
 
-    // Pro tier roster + candidates
+    // Pro tier owner + roster + candidates
+    { id: 'u-pro-owner', name: 'Pro Owner', email: 'pro@ttmc3.local' },
     { id: 'u-pro-1', name: 'Mira Chen', email: 'mira@ivoryforge.local' },
     { id: 'u-pro-2', name: 'Jules Hart', email: 'jules@ivoryforge.local' },
     { id: 'u-pro-3', name: 'Sana Patel', email: 'sana@ivoryforge.local' },
@@ -37,7 +39,8 @@ export function createMockSnapshot(now = new Date()): StudioSnapshot {
     { id: 'u-pro-5', name: 'Lena Pro', email: 'lena.pro@ivoryforge.local' },
     { id: 'u-pro-6', name: 'Rafi Pro', email: 'rafi.pro@ivoryforge.local' },
 
-    // Enterprise tier roster + candidates
+    // Enterprise tier owner + roster + candidates
+    { id: 'u-ent-owner', name: 'Enterprise Owner', email: 'enterprise@ttmc3.local' },
     { id: 'u-ent-1', name: 'Ava Enterprise', email: 'ava.enterprise@ivoryforge.local' },
     { id: 'u-ent-2', name: 'Noah Enterprise', email: 'noah.enterprise@ivoryforge.local' },
     { id: 'u-ent-3', name: 'Mia Enterprise', email: 'mia.enterprise@ivoryforge.local' },
@@ -52,8 +55,8 @@ export function createMockSnapshot(now = new Date()): StudioSnapshot {
   const workspaces: Workspace[] = [
     { id: 'ws-personal', kind: 'PERSONAL', name: 'Personal Workspace', owner_user_id: 'u-you', plan: 'FREE', created_at: ts },
     { id: 'ws-team-free', kind: 'TEAM', name: 'Tier Demo — Free', owner_user_id: 'u-you', team_id: 'team-free', plan: 'FREE', created_at: ts },
-    { id: 'ws-team-pro', kind: 'TEAM', name: 'Tier Demo — Pro', owner_user_id: 'u-you', team_id: 'team-pro', plan: 'PRO', created_at: ts },
-    { id: 'ws-team-enterprise', kind: 'TEAM', name: 'Tier Demo — Enterprise', owner_user_id: 'u-you', team_id: 'team-enterprise', plan: 'ENTERPRISE', created_at: ts }
+    { id: 'ws-team-pro', kind: 'TEAM', name: 'Tier Demo — Pro', owner_user_id: 'u-pro-owner', team_id: 'team-pro', plan: 'PRO', created_at: ts },
+    { id: 'ws-team-enterprise', kind: 'TEAM', name: 'Tier Demo — Enterprise', owner_user_id: 'u-ent-owner', team_id: 'team-enterprise', plan: 'ENTERPRISE', created_at: ts }
   ]
 
   const teams: Team[] = [
@@ -69,7 +72,7 @@ export function createMockSnapshot(now = new Date()): StudioSnapshot {
     { id: 'tm-free-3', team_id: 'team-free', user_id: 'u-free-2', title: 'Member', created_at: ts },
 
     // PRO tier: 7 / 10 used
-    { id: 'tm-pro-1', team_id: 'team-pro', user_id: 'u-you', title: 'Producer', created_at: ts },
+    { id: 'tm-pro-1', team_id: 'team-pro', user_id: 'u-pro-owner', title: 'Owner', created_at: ts },
     { id: 'tm-pro-2', team_id: 'team-pro', user_id: 'u-pro-1', title: 'Lead Artist', created_at: ts },
     { id: 'tm-pro-3', team_id: 'team-pro', user_id: 'u-pro-2', title: 'Compositor', created_at: ts },
     { id: 'tm-pro-4', team_id: 'team-pro', user_id: 'u-pro-3', title: 'Coordinator', created_at: ts },
@@ -78,7 +81,7 @@ export function createMockSnapshot(now = new Date()): StudioSnapshot {
     { id: 'tm-pro-7', team_id: 'team-pro', user_id: 'u-pro-6', title: 'Design Ops', created_at: ts },
 
     // ENTERPRISE tier: 10+ used, unlimited invites
-    { id: 'tm-ent-1', team_id: 'team-enterprise', user_id: 'u-you', title: 'Program Director', created_at: ts },
+    { id: 'tm-ent-1', team_id: 'team-enterprise', user_id: 'u-ent-owner', title: 'Owner', created_at: ts },
     { id: 'tm-ent-2', team_id: 'team-enterprise', user_id: 'u-ent-1', title: 'Ops Manager', created_at: ts },
     { id: 'tm-ent-3', team_id: 'team-enterprise', user_id: 'u-ent-2', title: 'Tech Lead', created_at: ts },
     { id: 'tm-ent-4', team_id: 'team-enterprise', user_id: 'u-ent-3', title: 'Product Lead', created_at: ts },

@@ -117,6 +117,24 @@
             />
             <span class="max-w-[240px] truncate text-[11px] font-black text-text">{{ activeProject.name }}</span>
           </div>
+
+          <div class="hidden items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 md:flex">
+            <div class="min-w-0">
+              <p class="truncate text-[10px] font-black uppercase tracking-widest text-text">
+                {{ accountLabel }}
+              </p>
+              <p class="truncate text-[9px] font-bold uppercase tracking-widest text-faint">
+                {{ accountTier }}
+              </p>
+            </div>
+            <button
+              class="btn btn-ghost px-2 py-1 text-[10px]"
+              type="button"
+              @click="logout"
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </header>
 
@@ -132,10 +150,13 @@ import { computed } from 'vue'
 import { LayoutDashboard, FolderKanban, CalendarDays, Users } from 'lucide-vue-next'
 import AppLogo from '~/components/AppLogo.vue'
 import { useWorkspaceStore } from '~/stores/workspace'
+import { useAuthStore } from '~/stores/auth'
 import { useRouteTitle } from '~/composables/useRouteTitle'
 
 const route = useRoute()
+const router = useRouter()
 const workspace = useWorkspaceStore()
+const auth = useAuthStore()
 
 const primaryNav = [
   { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
@@ -163,6 +184,14 @@ const shellStyle = computed(() => {
     '--ui-primary': primary
   } as Record<string, string>
 })
+
+const accountLabel = computed(() => auth.currentAccount?.label || 'Session')
+const accountTier = computed(() => auth.currentAccount?.tier || '—')
+
+function logout() {
+  auth.logout()
+  router.replace('/login')
+}
 
 const { title: routeTitle, subtitle: routeSubtitle } = useRouteTitle({ route, activeProject })
 </script>

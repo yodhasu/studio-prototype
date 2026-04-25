@@ -1,40 +1,106 @@
 import { defineStore } from 'pinia'
 
-export interface AuthOrgLink {
-  org_id: string
-  role: string
+export type SubscriptionTier = 'FREE' | 'PRO' | 'ENTERPRISE'
+
+export type MockLoginAccount = {
+  id: string
+  label: string
+  email: string
+  password: string
+  tier: SubscriptionTier
+  user_id: string
+  workspace_id: string
 }
 
-export interface AuthUser {
-  id: string
-  email: string
-  full_name?: string | null
-  subscription_tier: string
-  org_links: AuthOrgLink[]
-}
+export const MOCK_LOGIN_ACCOUNTS: MockLoginAccount[] = [
+  {
+    id: 'acc-free',
+    label: 'Free Demo',
+    email: 'free@ttmc3.local',
+    password: 'free123',
+    tier: 'FREE',
+    user_id: 'u-you',
+    workspace_id: 'ws-team-free'
+  },
+  {
+    id: 'acc-pro',
+    label: 'Pro Demo',
+    email: 'pro@ttmc3.local',
+    password: 'pro123',
+    tier: 'PRO',
+    user_id: 'u-pro-owner',
+    workspace_id: 'ws-team-pro'
+  },
+  {
+    id: 'acc-enterprise',
+    label: 'Enterprise Demo',
+    email: 'enterprise@ttmc3.local',
+    password: 'enterprise123',
+    tier: 'ENTERPRISE',
+    user_id: 'u-ent-owner',
+    workspace_id: 'ws-team-enterprise'
+  }
+]
+
+const AUTH_STORAGE_KEY = 'ttmc3.mock.auth'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    user: {
-      id: 'mock-user-123',
-      email: 'dev@studio.local',
-      full_name: 'Studio Designer',
-      subscription_tier: 'STUDIO_PRO',
-      org_links: [{ org_id: 'mock-org-1', role: 'TIER_1' }]
-    } as AuthUser | null,
-    token: 'mock-token' as string | null,
-    activeOrgId: 'mock-org-1' as string | null
+    active_account_id: '' as string,
+    initialized: false,
+    lastError: '' as string
   }),
+
   getters: {
-    isLoggedIn: state => Boolean(state.token),
-    orgId: state => state.activeOrgId || state.user?.org_links?.[0]?.org_id || null
+    isAuthenticated: state => Boolean(state.active_account_id),
+
+    currentAccount(state): MockLoginAccount | null {
+      if (!state.active_account_id) return null
+      return MOCK_LOGIN_ACCOUNTS.find(a => a.id === state.active_account_id) || null
+    }
   },
+
   actions: {
+    initFromStorage() {
+      if (this.initialized) return
+      this.initialized = true
+
+      if (import.meta.server) return
+
+      const id = window.localStorage.getItem(AUTH_STORAGE_KEY) || ''
+      if (id && MOCK_LOGIN_ACCOUNTS.some(a => a.id === id)) {
+        this.active_account_id = id
+      }
+    },
+
+    login(email: string, password: string) {
+      this.lastError = ''
+      const e = email.trim().toLowerCase()
+      const hit = MOCK_LOGIN_ACCOUNTS.find(a => a.email.toLowerCase() === e && a.password === password)
+      if (!hit) {
+        this.lastError = 'Invalid email or password.'
+        return false
+      }
+
+      this.active_account_id = hit.id
+      if (import.meta.client) window.localStorage.setItem(AUTH_STORAGE_KEY, hit.id)
+      return true
+    },
+
+    quickLogin(accountId: string) {
+      this.lastError = ''
+      const hit = MOCK_LOGIN_ACCOUNTS.find(a => a.id === accountId)
+      if (!hit) return false
+
+      this.active_account_id = hit.id
+      if (import.meta.client) window.localStorage.setItem(AUTH_STORAGE_KEY, hit.id)
+      return true
+    },
+
     logout() {
-      this.user = null
-      this.token = null
-      this.activeOrgId = null
-      navigateTo('/login')
+      this.active_account_id = ''
+      this.lastError = ''
+      if (import.meta.client) window.localStorage.removeItem(AUTH_STORAGE_KEY)
     }
   }
 })

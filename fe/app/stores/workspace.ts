@@ -263,6 +263,28 @@ export const useWorkspaceStore = defineStore('workspace', {
       this.currentProjectId = projectId
     },
 
+    setSessionContext(userId: ID, workspaceId?: ID) {
+      this.active_user_id = userId
+
+      if (workspaceId && this.workspaces.some(w => w.id === workspaceId)) {
+        this.active_workspace_id = workspaceId
+        return
+      }
+
+      const owned = this.workspaces.find(w => w.owner_user_id === userId)
+      if (owned) {
+        this.active_workspace_id = owned.id
+        return
+      }
+
+      const asMember = this.workspaces.find((w) => {
+        if (!w.team_id) return false
+        return this.team_members.some(tm => tm.team_id === w.team_id && tm.user_id === userId)
+      })
+
+      this.active_workspace_id = asMember?.id || this.workspaces[0]?.id || null
+    },
+
     createWorkspace(payload: { name: string, kind: 'PERSONAL' | 'TEAM', plan?: AccountPlan }) {
       const name = payload.name.trim()
       if (!name) return null

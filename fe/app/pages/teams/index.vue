@@ -28,21 +28,6 @@
             <p class="rounded-lg border border-border bg-panel/30 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-faint">
               {{ workspace.activePlan }} • {{ memberLimitLabel }}
             </p>
-
-            <div class="min-w-[220px]">
-              <select
-                v-model="selectedTeamWorkspaceId"
-                class="input-base sketch-border h-10"
-              >
-                <option
-                  v-for="ws in teamWorkspaces"
-                  :key="ws.id"
-                  :value="ws.id"
-                >
-                  {{ ws.name }} ({{ ws.plan }})
-                </option>
-              </select>
-            </div>
           </div>
 
           <div>
@@ -280,7 +265,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useWorkspaceStore } from '~/stores/workspace'
 import { useWorkspaceBoot } from '~/composables/useWorkspaceBoot'
 
@@ -294,7 +279,6 @@ const inviteQuery = ref('')
 
 const detailOpen = ref(false)
 const selectedUserId = ref<string | null>(null)
-const selectedTeamWorkspaceId = ref('')
 
 const isTeamWorkspace = computed(() => workspace.activeWorkspace?.kind === 'TEAM')
 const inviteCapReached = computed(() => !workspace.canInviteMore)
@@ -308,8 +292,6 @@ const memberLimitLabel = computed(() => {
   if (workspace.memberLimit === null) return `${workspace.membersUsed} members • unlimited`
   return `${workspace.membersUsed}/${workspace.memberLimit} members`
 })
-
-const teamWorkspaces = computed(() => workspace.workspaces.filter(w => w.kind === 'TEAM'))
 
 const teamMemberIds = computed(() => new Set(workspace.members.map(m => m.id)))
 
@@ -393,26 +375,8 @@ function openMember(userId: string) {
   detailOpen.value = true
 }
 
-watch(selectedTeamWorkspaceId, (id) => {
-  if (!id) return
-  if (id === workspace.active_workspace_id) return
-  workspace.switchWorkspace(id)
-})
-
 onMounted(async () => {
   await ensureSession()
-
-  const queryTeam = typeof route.query.team === 'string' ? route.query.team : ''
-  const initialTeam = queryTeam && teamWorkspaces.value.some(w => w.id === queryTeam)
-    ? queryTeam
-    : workspace.activeWorkspace?.kind === 'TEAM'
-      ? workspace.activeWorkspace.id
-      : teamWorkspaces.value[0]?.id || ''
-
-  selectedTeamWorkspaceId.value = initialTeam
-  if (initialTeam && workspace.active_workspace_id !== initialTeam) {
-    workspace.switchWorkspace(initialTeam)
-  }
 
   if (route.query.invite === '1') {
     inviteOpen.value = true
