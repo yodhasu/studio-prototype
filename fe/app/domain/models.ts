@@ -2,6 +2,8 @@ export type ID = string
 
 export type WorkspaceKind = 'PERSONAL' | 'TEAM'
 
+export type AccountPlan = 'FREE' | 'PRO' | 'ENTERPRISE'
+
 export const WORKFLOW_STATUSES = ['PLANNING', 'ACTIVE', 'PAUSED', 'COMPLETED'] as const
 export type WorkflowStatus = typeof WORKFLOW_STATUSES[number]
 
@@ -38,6 +40,7 @@ export type Workspace = {
   name: string
   owner_user_id: ID
   team_id?: ID
+  plan: AccountPlan
   created_at: string
 }
 

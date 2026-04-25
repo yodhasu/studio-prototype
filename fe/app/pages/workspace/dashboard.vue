@@ -248,7 +248,7 @@ function submitCreate() {
     return
   }
 
-  const ws = workspace.createWorkspace({ name: createName.value, kind: createKind.value })
+  const ws = workspace.createWorkspace({ name: createName.value, kind: createKind.value, plan: 'FREE' })
   if (!ws) {
     createError.value = 'Failed to create workspace.'
     return

@@ -14,7 +14,8 @@ import type {
   Team,
   TeamMember,
   User,
-  Workspace
+  Workspace,
+  AccountPlan
 } from '~/domain/models'
 
 export type {
@@ -31,7 +32,8 @@ export type {
   Team,
   TeamMember,
   User,
-  Workspace
+  Workspace,
+  AccountPlan
 }
 
 function uid(prefix: string) {
@@ -82,7 +84,10 @@ export const useWorkspaceStore = defineStore('workspace', {
     activities: [] as ActivityEvent[],
 
     // UI convenience
-    currentProjectId: null as ID | null
+    currentProjectId: null as ID | null,
+
+    // UI feedback
+    lastInviteError: '' as string
   }),
 
   getters: {
@@ -93,6 +98,29 @@ export const useWorkspaceStore = defineStore('workspace', {
     activeTeam(state): Team | null {
       if (!state.active_workspace_id) return null
       return state.teams.find(t => t.workspace_id === state.active_workspace_id) || null
+    },
+
+    activePlan(): AccountPlan {
+      return this.activeWorkspace?.plan || 'FREE'
+    },
+
+    memberLimit(): number | null {
+      switch (this.activePlan) {
+        case 'FREE': return 3
+        case 'PRO': return 10
+        case 'ENTERPRISE': return null
+        default: return 3
+      }
+    },
+
+    membersUsed(): number {
+      return this.members.length
+    },
+
+    canInviteMore(): boolean {
+      const limit = this.memberLimit
+      if (limit === null) return true
+      return this.membersUsed < limit
     },
 
     // Users in the active workspace/team (Phase 1: show all users for personal, team roster for team)
@@ -235,7 +263,7 @@ export const useWorkspaceStore = defineStore('workspace', {
       this.currentProjectId = projectId
     },
 
-    createWorkspace(payload: { name: string, kind: 'PERSONAL' | 'TEAM' }) {
+    createWorkspace(payload: { name: string, kind: 'PERSONAL' | 'TEAM', plan?: AccountPlan }) {
       const name = payload.name.trim()
       if (!name) return null
 
@@ -245,6 +273,7 @@ export const useWorkspaceStore = defineStore('workspace', {
         kind: payload.kind,
         name,
         owner_user_id: this.active_user_id,
+        plan: payload.plan || 'FREE',
         created_at: isoNow()
       }
 
@@ -271,12 +300,22 @@ export const useWorkspaceStore = defineStore('workspace', {
     },
 
     inviteToActiveTeam(payload: { user_id: ID, title?: string }) {
+      this.lastInviteError = ''
+
       const ws = this.activeWorkspace
-      if (!ws || ws.kind !== 'TEAM' || !ws.team_id) return
+      if (!ws || ws.kind !== 'TEAM' || !ws.team_id) return false
+
+      if (!this.canInviteMore) {
+        const limit = this.memberLimit
+        this.lastInviteError = limit === null
+          ? 'Invite blocked.'
+          : `Member limit reached for ${this.activePlan} plan (${this.membersUsed}/${limit}).`
+        return false
+      }
 
       const teamId = ws.team_id
       const exists = this.team_members.some(tm => tm.team_id === teamId && tm.user_id === payload.user_id)
-      if (exists) return
+      if (exists) return true
 
       this.team_members.push({
         id: uid('tm'),
@@ -293,6 +332,7 @@ export const useWorkspaceStore = defineStore('workspace', {
         entity_id: teamId,
         message: `Invited ${u?.name || 'member'} to team.`
       })
+      return true
     },
 
     removeFromActiveTeam(userId: ID) {

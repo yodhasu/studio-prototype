@@ -29,11 +29,16 @@
           <button
             class="btn btn-primary"
             type="button"
-            :disabled="workspace.activeWorkspace?.kind !== 'TEAM'"
+            :disabled="workspace.activeWorkspace?.kind !== 'TEAM' || !workspace.canInviteMore"
             @click="inviteOpen = true"
           >
             Add Team
           </button>
+          <p class="text-[10px] font-black uppercase tracking-widest text-faint">
+            {{ workspace.activePlan }}
+            <span v-if="workspace.memberLimit !== null">• {{ workspace.membersUsed }}/{{ workspace.memberLimit }} members</span>
+            <span v-else>• unlimited invites</span>
+          </p>
         </div>
 
         <div class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -116,6 +121,13 @@
           class="input-base sketch-border"
           placeholder="Search: mira / mira@..."
         >
+
+        <p
+          v-if="workspace.lastInviteError"
+          class="mt-3 text-xs text-red-400"
+        >
+          {{ workspace.lastInviteError }}
+        </p>
 
         <div class="mt-4 max-h-[320px] space-y-2 overflow-y-auto pr-1">
           <button
@@ -311,6 +323,7 @@ function projectName(projectId: string) {
 function closeInvite() {
   inviteOpen.value = false
   inviteQuery.value = ''
+  workspace.lastInviteError = ''
 }
 
 function invite(userId: string) {

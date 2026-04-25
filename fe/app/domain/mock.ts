@@ -29,8 +29,8 @@ export function createMockSnapshot(now = new Date()): StudioSnapshot {
   ]
 
   const workspaces: Workspace[] = [
-    { id: 'ws-personal', kind: 'PERSONAL', name: 'Personal Workspace', owner_user_id: 'u-you', created_at: ts },
-    { id: 'ws-team', kind: 'TEAM', name: 'Ivory Forge Studio', owner_user_id: 'u-you', team_id: 'team-ivory', created_at: ts }
+    { id: 'ws-personal', kind: 'PERSONAL', name: 'Personal Workspace', owner_user_id: 'u-you', plan: 'FREE', created_at: ts },
+    { id: 'ws-team', kind: 'TEAM', name: 'Ivory Forge Studio', owner_user_id: 'u-you', team_id: 'team-ivory', plan: 'PRO', created_at: ts }
   ]
 
   const teams: Team[] = [
