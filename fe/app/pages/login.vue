@@ -76,13 +76,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { MOCK_LOGIN_ACCOUNTS, useAuthStore } from '~/stores/auth'
 
 definePageMeta({ layout: false })
 
 const auth = useAuthStore()
 const router = useRouter()
+const route = useRoute()
 
 const accounts = MOCK_LOGIN_ACCOUNTS
 
@@ -100,4 +101,14 @@ function submit() {
   if (!ok) return
   router.replace('/dashboard')
 }
+
+onMounted(() => {
+  const account = typeof route.query.account === 'string' ? route.query.account : ''
+  if (!account) return
+
+  const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/dashboard'
+  const ok = auth.quickLogin(account)
+  if (!ok) return
+  router.replace(redirect)
+})
 </script>
