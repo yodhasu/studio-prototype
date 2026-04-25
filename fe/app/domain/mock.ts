@@ -23,47 +23,93 @@ export function createMockSnapshot(now = new Date()): StudioSnapshot {
 
   const users: User[] = [
     { id: 'u-you', name: 'You', email: 'you@ivoryforge.local' },
-    { id: 'u-mira', name: 'Mira Chen', email: 'mira@ivoryforge.local' },
-    { id: 'u-jules', name: 'Jules Hart', email: 'jules@ivoryforge.local' },
-    { id: 'u-sana', name: 'Sana Patel', email: 'sana@ivoryforge.local' }
+
+    // Free tier roster + candidates
+    { id: 'u-free-1', name: 'Ari Free', email: 'ari.free@ivoryforge.local' },
+    { id: 'u-free-2', name: 'Bex Free', email: 'bex.free@ivoryforge.local' },
+    { id: 'u-free-3', name: 'Cora Free', email: 'cora.free@ivoryforge.local' },
+
+    // Pro tier roster + candidates
+    { id: 'u-pro-1', name: 'Mira Chen', email: 'mira@ivoryforge.local' },
+    { id: 'u-pro-2', name: 'Jules Hart', email: 'jules@ivoryforge.local' },
+    { id: 'u-pro-3', name: 'Sana Patel', email: 'sana@ivoryforge.local' },
+    { id: 'u-pro-4', name: 'Niko Pro', email: 'niko.pro@ivoryforge.local' },
+    { id: 'u-pro-5', name: 'Lena Pro', email: 'lena.pro@ivoryforge.local' },
+    { id: 'u-pro-6', name: 'Rafi Pro', email: 'rafi.pro@ivoryforge.local' },
+
+    // Enterprise tier roster + candidates
+    { id: 'u-ent-1', name: 'Ava Enterprise', email: 'ava.enterprise@ivoryforge.local' },
+    { id: 'u-ent-2', name: 'Noah Enterprise', email: 'noah.enterprise@ivoryforge.local' },
+    { id: 'u-ent-3', name: 'Mia Enterprise', email: 'mia.enterprise@ivoryforge.local' },
+    { id: 'u-ent-4', name: 'Liam Enterprise', email: 'liam.enterprise@ivoryforge.local' },
+    { id: 'u-ent-5', name: 'Eli Enterprise', email: 'eli.enterprise@ivoryforge.local' },
+    { id: 'u-ent-6', name: 'Ivy Enterprise', email: 'ivy.enterprise@ivoryforge.local' },
+    { id: 'u-ent-7', name: 'Omar Enterprise', email: 'omar.enterprise@ivoryforge.local' },
+    { id: 'u-ent-8', name: 'Rina Enterprise', email: 'rina.enterprise@ivoryforge.local' },
+    { id: 'u-ent-9', name: 'Theo Enterprise', email: 'theo.enterprise@ivoryforge.local' }
   ]
 
   const workspaces: Workspace[] = [
     { id: 'ws-personal', kind: 'PERSONAL', name: 'Personal Workspace', owner_user_id: 'u-you', plan: 'FREE', created_at: ts },
-    { id: 'ws-team', kind: 'TEAM', name: 'Ivory Forge Studio', owner_user_id: 'u-you', team_id: 'team-ivory', plan: 'PRO', created_at: ts }
+    { id: 'ws-team-free', kind: 'TEAM', name: 'Tier Demo — Free', owner_user_id: 'u-you', team_id: 'team-free', plan: 'FREE', created_at: ts },
+    { id: 'ws-team-pro', kind: 'TEAM', name: 'Tier Demo — Pro', owner_user_id: 'u-you', team_id: 'team-pro', plan: 'PRO', created_at: ts },
+    { id: 'ws-team-enterprise', kind: 'TEAM', name: 'Tier Demo — Enterprise', owner_user_id: 'u-you', team_id: 'team-enterprise', plan: 'ENTERPRISE', created_at: ts }
   ]
 
   const teams: Team[] = [
-    { id: 'team-ivory', workspace_id: 'ws-team', name: 'Core Team', created_at: ts }
+    { id: 'team-free', workspace_id: 'ws-team-free', name: 'Free Squad', created_at: ts },
+    { id: 'team-pro', workspace_id: 'ws-team-pro', name: 'Pro Squad', created_at: ts },
+    { id: 'team-enterprise', workspace_id: 'ws-team-enterprise', name: 'Enterprise Squad', created_at: ts }
   ]
 
   const team_members: TeamMember[] = [
-    { id: 'tm-1', team_id: 'team-ivory', user_id: 'u-you', title: 'Producer', created_at: ts },
-    { id: 'tm-2', team_id: 'team-ivory', user_id: 'u-mira', title: 'Lead Artist', created_at: ts },
-    { id: 'tm-3', team_id: 'team-ivory', user_id: 'u-jules', title: 'Compositor', created_at: ts },
-    { id: 'tm-4', team_id: 'team-ivory', user_id: 'u-sana', title: 'Coordinator', created_at: ts }
+    // FREE tier: capped at 3 (already full)
+    { id: 'tm-free-1', team_id: 'team-free', user_id: 'u-you', title: 'Owner', created_at: ts },
+    { id: 'tm-free-2', team_id: 'team-free', user_id: 'u-free-1', title: 'Member', created_at: ts },
+    { id: 'tm-free-3', team_id: 'team-free', user_id: 'u-free-2', title: 'Member', created_at: ts },
+
+    // PRO tier: 7 / 10 used
+    { id: 'tm-pro-1', team_id: 'team-pro', user_id: 'u-you', title: 'Producer', created_at: ts },
+    { id: 'tm-pro-2', team_id: 'team-pro', user_id: 'u-pro-1', title: 'Lead Artist', created_at: ts },
+    { id: 'tm-pro-3', team_id: 'team-pro', user_id: 'u-pro-2', title: 'Compositor', created_at: ts },
+    { id: 'tm-pro-4', team_id: 'team-pro', user_id: 'u-pro-3', title: 'Coordinator', created_at: ts },
+    { id: 'tm-pro-5', team_id: 'team-pro', user_id: 'u-pro-4', title: 'Editor', created_at: ts },
+    { id: 'tm-pro-6', team_id: 'team-pro', user_id: 'u-pro-5', title: 'Animator', created_at: ts },
+    { id: 'tm-pro-7', team_id: 'team-pro', user_id: 'u-pro-6', title: 'Design Ops', created_at: ts },
+
+    // ENTERPRISE tier: 10+ used, unlimited invites
+    { id: 'tm-ent-1', team_id: 'team-enterprise', user_id: 'u-you', title: 'Program Director', created_at: ts },
+    { id: 'tm-ent-2', team_id: 'team-enterprise', user_id: 'u-ent-1', title: 'Ops Manager', created_at: ts },
+    { id: 'tm-ent-3', team_id: 'team-enterprise', user_id: 'u-ent-2', title: 'Tech Lead', created_at: ts },
+    { id: 'tm-ent-4', team_id: 'team-enterprise', user_id: 'u-ent-3', title: 'Product Lead', created_at: ts },
+    { id: 'tm-ent-5', team_id: 'team-enterprise', user_id: 'u-ent-4', title: 'Architect', created_at: ts },
+    { id: 'tm-ent-6', team_id: 'team-enterprise', user_id: 'u-ent-5', title: 'QA Lead', created_at: ts },
+    { id: 'tm-ent-7', team_id: 'team-enterprise', user_id: 'u-ent-6', title: 'Data Lead', created_at: ts },
+    { id: 'tm-ent-8', team_id: 'team-enterprise', user_id: 'u-ent-7', title: 'Frontend Lead', created_at: ts },
+    { id: 'tm-ent-9', team_id: 'team-enterprise', user_id: 'u-ent-8', title: 'Backend Lead', created_at: ts },
+    { id: 'tm-ent-10', team_id: 'team-enterprise', user_id: 'u-ent-9', title: 'Infra Lead', created_at: ts }
   ]
 
   const projects: Project[] = [
     {
       id: 'p-trailer',
-      workspace_id: 'ws-team',
+      workspace_id: 'ws-team-pro',
       name: 'Cinematic Trailer Cut',
       description: 'Storyboard, animatic, and final cut pipeline.',
       color_code: '#8b5cf6',
       status: 'ACTIVE',
-      member_ids: ['u-you', 'u-mira', 'u-jules'],
+      member_ids: ['u-you', 'u-pro-1', 'u-pro-2'],
       created_at: isoNow(day(now, -21)),
       updated_at: ts
     },
     {
       id: 'p-concepts',
-      workspace_id: 'ws-team',
+      workspace_id: 'ws-team-pro',
       name: 'Faction Concept Sheets',
       description: 'Exploration sheets for silhouettes, materials, and insignia.',
       color_code: '#06b6d4',
       status: 'ACTIVE',
-      member_ids: ['u-mira', 'u-sana'],
+      member_ids: ['u-pro-1', 'u-pro-3'],
       created_at: isoNow(day(now, -14)),
       updated_at: ts
     },
@@ -123,7 +169,7 @@ export function createMockSnapshot(now = new Date()): StudioSnapshot {
       status: 'PLANNING',
       priority: 'MEDIUM',
       due_date: yyyyMmDd(day(now, 5)),
-      assignee_id: 'u-mira',
+      assignee_id: 'u-pro-1',
       created_at: isoNow(day(now, -17)),
       updated_at: ts
     },
@@ -135,7 +181,7 @@ export function createMockSnapshot(now = new Date()): StudioSnapshot {
       status: 'PAUSED',
       priority: 'MEDIUM',
       due_date: yyyyMmDd(day(now, 6)),
-      assignee_id: 'u-jules',
+      assignee_id: 'u-pro-2',
       milestone_id: 'm-trailer-lock',
       created_at: isoNow(day(now, -10)),
       updated_at: ts
@@ -148,7 +194,7 @@ export function createMockSnapshot(now = new Date()): StudioSnapshot {
       status: 'ACTIVE',
       priority: 'HIGH',
       due_date: yyyyMmDd(day(now, 1)),
-      assignee_id: 'u-mira',
+      assignee_id: 'u-pro-1',
       milestone_id: 'm-concepts-pack',
       created_at: isoNow(day(now, -8)),
       updated_at: ts
@@ -161,7 +207,7 @@ export function createMockSnapshot(now = new Date()): StudioSnapshot {
       status: 'PLANNING',
       priority: 'MEDIUM',
       due_date: yyyyMmDd(day(now, 3)),
-      assignee_id: 'u-sana',
+      assignee_id: 'u-pro-3',
       milestone_id: 'm-concepts-pack',
       created_at: isoNow(day(now, -6)),
       updated_at: ts
@@ -183,7 +229,7 @@ export function createMockSnapshot(now = new Date()): StudioSnapshot {
   const notes: NoteIdea[] = [
     {
       id: 'note-1',
-      workspace_id: 'ws-team',
+      workspace_id: 'ws-team-pro',
       title: 'Trailer beats',
       body: 'Ensure the reveal lands at 00:42, build tension earlier.',
       project_id: 'p-trailer',
@@ -204,7 +250,7 @@ export function createMockSnapshot(now = new Date()): StudioSnapshot {
   const activity: ActivityEvent[] = [
     {
       id: 'act-1',
-      workspace_id: 'ws-team',
+      workspace_id: 'ws-team-pro',
       actor_user_id: 'u-you',
       type: 'CREATE',
       entity_type: 'PROJECT',
@@ -215,8 +261,8 @@ export function createMockSnapshot(now = new Date()): StudioSnapshot {
     },
     {
       id: 'act-2',
-      workspace_id: 'ws-team',
-      actor_user_id: 'u-mira',
+      workspace_id: 'ws-team-pro',
+      actor_user_id: 'u-pro-1',
       type: 'STATUS',
       entity_type: 'TASK',
       entity_id: 't-silhouettes',
@@ -233,10 +279,14 @@ export function createMockSnapshot(now = new Date()): StudioSnapshot {
     teams,
     team_members,
     module_access: [
-      { id: 'mod-teams', workspace_id: 'ws-team', module_key: 'teams', enabled: true },
-      { id: 'mod-notes', workspace_id: 'ws-team', module_key: 'notes', enabled: true },
-      { id: 'mod-schedule', workspace_id: 'ws-team', module_key: 'schedule', enabled: true },
-      { id: 'mod-business', workspace_id: 'ws-team', module_key: 'business', enabled: false }
+      { id: 'mod-teams-pro', workspace_id: 'ws-team-pro', module_key: 'teams', enabled: true },
+      { id: 'mod-notes-pro', workspace_id: 'ws-team-pro', module_key: 'notes', enabled: true },
+      { id: 'mod-schedule-pro', workspace_id: 'ws-team-pro', module_key: 'schedule', enabled: true },
+      { id: 'mod-business-pro', workspace_id: 'ws-team-pro', module_key: 'business', enabled: false },
+      { id: 'mod-teams-free', workspace_id: 'ws-team-free', module_key: 'teams', enabled: true },
+      { id: 'mod-schedule-free', workspace_id: 'ws-team-free', module_key: 'schedule', enabled: true },
+      { id: 'mod-teams-enterprise', workspace_id: 'ws-team-enterprise', module_key: 'teams', enabled: true },
+      { id: 'mod-schedule-enterprise', workspace_id: 'ws-team-enterprise', module_key: 'schedule', enabled: true }
     ],
     projects,
     milestones,

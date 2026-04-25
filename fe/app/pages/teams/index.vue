@@ -13,7 +13,38 @@
       </header>
 
       <section class="dashboard-panel">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div class="space-y-4">
+          <div class="flex flex-wrap items-center gap-2">
+            <button
+              class="btn border-red/40"
+              :class="inviteButtonClass"
+              type="button"
+              :disabled="!isTeamWorkspace"
+              @click="openInvite"
+            >
+              Add Member
+            </button>
+
+            <p class="rounded-lg border border-border bg-panel/30 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-faint">
+              {{ workspace.activePlan }} • {{ memberLimitLabel }}
+            </p>
+
+            <div class="min-w-[220px]">
+              <select
+                v-model="selectedTeamWorkspaceId"
+                class="input-base sketch-border h-10"
+              >
+                <option
+                  v-for="ws in teamWorkspaces"
+                  :key="ws.id"
+                  :value="ws.id"
+                >
+                  {{ ws.name }} ({{ ws.plan }})
+                </option>
+              </select>
+            </div>
+          </div>
+
           <div>
             <p class="text-[10px] font-black uppercase tracking-widest text-faint">
               Active workspace
@@ -25,30 +56,19 @@
               {{ workspace.activeWorkspace?.kind === 'TEAM' ? 'Team workspace' : 'Personal workspace' }}
             </p>
           </div>
-
-          <button
-            class="btn btn-primary"
-            type="button"
-            :disabled="workspace.activeWorkspace?.kind !== 'TEAM' || !workspace.canInviteMore"
-            @click="inviteOpen = true"
-          >
-            Add Team
-          </button>
-          <p class="text-[10px] font-black uppercase tracking-widest text-faint">
-            {{ workspace.activePlan }}
-            <span v-if="workspace.memberLimit !== null">• {{ workspace.membersUsed }}/{{ workspace.memberLimit }} members</span>
-            <span v-else>• unlimited invites</span>
-          </p>
         </div>
 
         <div class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <button
+          <div
             v-for="m in workspace.members"
             :key="m.id"
-            type="button"
             class="group relative rounded-xl border border-border bg-panel/20 p-4 text-left transition-colors hover:border-brand/30"
+            role="button"
+            tabindex="0"
             :aria-label="`View member details: ${m.name}`"
             @click="openMember(m.id)"
+            @keydown.enter.prevent="openMember(m.id)"
+            @keydown.space.prevent="openMember(m.id)"
           >
             <button
               v-if="canRemove(m.id)"
@@ -78,7 +98,7 @@
               <span>Open tasks</span>
               <span class="font-mono text-text">{{ openTasksFor(m.id) }}</span>
             </div>
-          </button>
+          </div>
 
           <p
             v-if="workspace.members.length === 0"
@@ -104,7 +124,7 @@
               Invite to team
             </h2>
             <p class="mt-1 text-xs text-muted">
-              Search by name or email.
+              Search by username or email.
             </p>
           </div>
           <button
@@ -121,6 +141,10 @@
           class="input-base sketch-border"
           placeholder="Search: mira / mira@..."
         >
+
+        <p class="mt-2 text-[10px] font-black uppercase tracking-widest text-faint">
+          {{ workspace.activePlan }} • {{ memberLimitLabel }}
+        </p>
 
         <p
           v-if="workspace.lastInviteError"
@@ -256,9 +280,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useWorkspaceStore } from '~/stores/workspace'
 import { useWorkspaceBoot } from '~/composables/useWorkspaceBoot'
+
+const route = useRoute()
 
 const workspace = useWorkspaceStore()
 const { ensureSession } = useWorkspaceBoot()
@@ -268,13 +294,28 @@ const inviteQuery = ref('')
 
 const detailOpen = ref(false)
 const selectedUserId = ref<string | null>(null)
+const selectedTeamWorkspaceId = ref('')
+
+const isTeamWorkspace = computed(() => workspace.activeWorkspace?.kind === 'TEAM')
+const inviteCapReached = computed(() => !workspace.canInviteMore)
+
+const inviteButtonClass = computed(() => {
+  if (inviteCapReached.value) return 'bg-red text-white hover:bg-red'
+  return 'bg-[#2a1111] text-[#f3c5c5] hover:bg-[#3a1616]'
+})
+
+const memberLimitLabel = computed(() => {
+  if (workspace.memberLimit === null) return `${workspace.membersUsed} members • unlimited`
+  return `${workspace.membersUsed}/${workspace.memberLimit} members`
+})
+
+const teamWorkspaces = computed(() => workspace.workspaces.filter(w => w.kind === 'TEAM'))
 
 const teamMemberIds = computed(() => new Set(workspace.members.map(m => m.id)))
 
 const inviteResults = computed(() => {
   const q = inviteQuery.value.trim().toLowerCase()
-  const isTeamWs = workspace.activeWorkspace?.kind === 'TEAM'
-  if (!isTeamWs) return []
+  if (!isTeamWorkspace.value) return []
 
   return workspace.users
     .filter(u => !teamMemberIds.value.has(u.id))
@@ -310,8 +351,7 @@ function openTasksFor(userId: string) {
 }
 
 function canRemove(userId: string) {
-  const isTeamWs = workspace.activeWorkspace?.kind === 'TEAM'
-  if (!isTeamWs) return false
+  if (!isTeamWorkspace.value) return false
   if (userId === workspace.active_user_id) return false
   return true
 }
@@ -326,9 +366,18 @@ function closeInvite() {
   workspace.lastInviteError = ''
 }
 
+function openInvite() {
+  workspace.lastInviteError = ''
+  inviteOpen.value = true
+
+  if (inviteCapReached.value) {
+    if (workspace.memberLimit === null) return
+    workspace.lastInviteError = `Member limit reached for ${workspace.activePlan} plan (${workspace.membersUsed}/${workspace.memberLimit}).`
+  }
+}
+
 function invite(userId: string) {
   workspace.inviteToActiveTeam({ user_id: userId })
-  // Keep the modal open for batch invites.
 }
 
 function removeMember(userId: string) {
@@ -344,7 +393,30 @@ function openMember(userId: string) {
   detailOpen.value = true
 }
 
+watch(selectedTeamWorkspaceId, (id) => {
+  if (!id) return
+  if (id === workspace.active_workspace_id) return
+  workspace.switchWorkspace(id)
+})
+
 onMounted(async () => {
   await ensureSession()
+
+  const queryTeam = typeof route.query.team === 'string' ? route.query.team : ''
+  const initialTeam = queryTeam && teamWorkspaces.value.some(w => w.id === queryTeam)
+    ? queryTeam
+    : workspace.activeWorkspace?.kind === 'TEAM'
+      ? workspace.activeWorkspace.id
+      : teamWorkspaces.value[0]?.id || ''
+
+  selectedTeamWorkspaceId.value = initialTeam
+  if (initialTeam && workspace.active_workspace_id !== initialTeam) {
+    workspace.switchWorkspace(initialTeam)
+  }
+
+  if (route.query.invite === '1') {
+    inviteOpen.value = true
+    if (typeof route.query.q === 'string') inviteQuery.value = route.query.q
+  }
 })
 </script>
