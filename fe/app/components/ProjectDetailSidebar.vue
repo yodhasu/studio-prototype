@@ -76,7 +76,7 @@
                   Team Directory
                 </p>
                 <p class="text-[10px] text-faint">
-                  {{ project?.member_ids?.length ?? 0 }} collaborators hidden until opened
+                  {{ project ? workspace.getProjectMembers(project.id).length : 0 }} collaborators hidden until opened
                 </p>
               </div>
               <ChevronRight class="ml-auto h-4 w-4 text-faint" />

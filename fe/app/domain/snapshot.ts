@@ -4,21 +4,19 @@ import type {
   ModuleAccess,
   NoteIdea,
   Project,
-  Role,
+  ProjectMember,
   ScheduleItem,
   Task,
-  Team,
-  TeamMember,
   User,
-  Workspace
+  Workspace,
+  WorkspaceMember
 } from './models'
 
 export type StudioSnapshot = {
   workspaces: Workspace[]
   users: User[]
-  roles: Role[]
-  teams: Team[]
-  team_members: TeamMember[]
+  workspace_members: WorkspaceMember[]
+  project_members: ProjectMember[]
   module_access: ModuleAccess[]
   projects: Project[]
   milestones: Milestone[]

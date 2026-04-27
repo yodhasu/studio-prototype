@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 
-export type SubscriptionTier = 'FREE' | 'PRO' | 'ENTERPRISE'
+export type SubscriptionTier = 'FREE' | 'PRO' | 'BUSINESS'
 
 export type MockLoginAccount = {
   id: string
@@ -33,10 +33,10 @@ export const MOCK_LOGIN_ACCOUNTS: MockLoginAccount[] = [
   },
   {
     id: 'acc-enterprise',
-    label: 'Enterprise Demo',
+    label: 'Business Demo',
     email: 'enterprise@ttmc3.local',
     password: 'enterprise123',
-    tier: 'ENTERPRISE',
+    tier: 'BUSINESS',
     user_id: 'u-ent-owner',
     workspace_id: 'ws-team-enterprise'
   }

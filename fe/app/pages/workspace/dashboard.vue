@@ -31,7 +31,7 @@
               {{ workspace.activeWorkspace?.name || 'None' }}
             </p>
             <p class="mt-1 text-xs text-muted">
-              {{ workspace.activeWorkspace?.kind || '—' }}
+              {{ workspace.workspaceLabel }}
             </p>
           </div>
 
@@ -46,7 +46,7 @@
                 :key="ws.id"
                 :value="ws.id"
               >
-                {{ ws.name }} ({{ ws.kind }})
+                {{ ws.name }}
               </option>
             </select>
           </div>
@@ -181,19 +181,6 @@
           placeholder="e.g. Studio Alpha"
         >
 
-        <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-faint">Kind</label>
-        <select
-          v-model="createKind"
-          class="input-base sketch-border"
-        >
-          <option value="PERSONAL">
-            PERSONAL
-          </option>
-          <option value="TEAM">
-            TEAM
-          </option>
-        </select>
-
         <p
           v-if="createError"
           class="mt-3 text-xs text-red-400"
@@ -232,7 +219,6 @@ const selectedWorkspaceId = ref<string>('')
 
 const createOpen = ref(false)
 const createName = ref('')
-const createKind = ref<'PERSONAL' | 'TEAM'>('TEAM')
 const createError = ref('')
 
 const openTasksCount = computed(() => workspace.activeTasks.filter(t => t.status !== 'COMPLETED').length)
@@ -248,7 +234,7 @@ function submitCreate() {
     return
   }
 
-  const ws = workspace.createWorkspace({ name: createName.value, kind: createKind.value, plan: 'FREE' })
+  const ws = workspace.createWorkspace({ name: createName.value })
   if (!ws) {
     createError.value = 'Failed to create workspace.'
     return

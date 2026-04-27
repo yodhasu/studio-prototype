@@ -30,7 +30,7 @@
         </div>
         <div class="flex flex-col">
           <span class="text-sm font-bold text-text">{{ member.name }}</span>
-          <span class="text-[10px] text-faint uppercase font-bold tracking-tight">{{ member.title || 'Member' }}</span>
+          <span class="text-[10px] text-faint uppercase font-bold tracking-tight">Member</span>
         </div>
         <div class="ml-auto">
           <span
@@ -72,8 +72,8 @@ const showMembers = ref(false)
 
 const project = computed(() => workspace.projects.find(p => p.id === props.projectId))
 const projectMembers = computed(() => {
-  if (!project.value?.member_ids) return []
-  return workspace.members.filter(m => project.value?.member_ids?.includes(m.id))
+  if (!project.value) return []
+  return workspace.getProjectMembers(project.value.id)
 })
 
 function getInitials(name: string) {

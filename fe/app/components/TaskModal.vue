@@ -1,49 +1,34 @@
 <template>
-  <Teleport to="body">
-    <Transition name="task-modal">
-      <div
-        v-if="isOpen"
-        class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
-        role="dialog"
-        aria-modal="true"
-        :aria-label="modalTitle"
-      >
+  <BaseModal
+    v-model:open="isOpen"
+    max-width="2xl"
+    :show-close="false"
+  >
+    <template #header>
+      <div class="flex items-center justify-between w-full">
+        <div class="flex items-center gap-2">
+          <div class="h-6 w-2 rounded-full bg-brand" />
+          <div>
+            <h3 class="text-lg font-bold tracking-tight">
+              {{ modalTitle }}
+            </h3>
+            <p class="text-[10px] font-black uppercase tracking-widest text-faint">
+              {{ modalKicker }}
+            </p>
+          </div>
+        </div>
         <button
           type="button"
-          class="absolute inset-0 cursor-default bg-bg/80 backdrop-blur-sm"
+          class="btn btn-ghost btn-icon"
           aria-label="Close task modal"
           @click="closeModal"
-        />
-
-        <section
-          ref="panelRef"
-          class="relative z-[101] w-full max-w-2xl overflow-hidden border-0 bg-surface shadow-2xl outline-none sketch-border"
-          tabindex="-1"
         >
-          <header class="flex items-center justify-between border-b border-border/10 bg-overlay/20 p-6">
-            <div class="flex items-center gap-2">
-              <div class="h-6 w-2 rounded-full bg-brand" />
-              <div>
-                <h3 class="text-lg font-bold tracking-tight">
-                  {{ modalTitle }}
-                </h3>
-                <p class="text-[10px] font-black uppercase tracking-widest text-faint">
-                  {{ modalKicker }}
-                </p>
-              </div>
-            </div>
+          x
+        </button>
+      </div>
+    </template>
 
-            <button
-              type="button"
-              class="btn btn-ghost btn-icon"
-              aria-label="Close task modal"
-              @click="closeModal"
-            >
-              x
-            </button>
-          </header>
-
-          <div class="max-h-[80vh] overflow-y-auto p-6">
+    <div class="max-h-[80vh] overflow-y-auto p-6" ref="panelRef" tabindex="-1">
             <div
               v-if="localTask && isViewMode"
               class="mb-5 grid gap-3 sm:grid-cols-3"
@@ -228,15 +213,13 @@
                 </template>
               </div>
             </form>
-          </div>
-        </section>
-      </div>
-    </Transition>
-  </Teleport>
+    </div>
+  </BaseModal>
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
+import BaseModal from './base/BaseModal.vue'
 import { useWorkspaceStore, type Task, type TaskStatus } from '~/stores/workspace'
 
 const props = defineProps<{
@@ -258,9 +241,9 @@ const priorityOptions: Array<Task['priority']> = ['LOW', 'MEDIUM', 'HIGH']
 
 const project = computed(() => workspace.getProjectById(props.projectId))
 const projectMembers = computed(() => {
-  const ids = project.value?.member_ids || []
-  if (!ids.length) return workspace.members
-  return workspace.members.filter(m => ids.includes(m.id))
+  const members = workspace.getProjectMembers(props.projectId)
+  if (!members.length) return workspace.members
+  return members
 })
 
 const isViewMode = computed(() => mode.value === 'detail')
@@ -334,8 +317,6 @@ watch([() => props.task, () => props.initialMode], ([newTask, initialMode]) => {
 }, { immediate: true })
 
 watch(isOpen, async (newVal) => {
-  document.body.style.overflow = newVal ? 'hidden' : ''
-
   if (newVal) {
     await nextTick()
     panelRef.value?.focus()
@@ -346,21 +327,6 @@ watch(isOpen, async (newVal) => {
     mode.value = localTask.value ? 'detail' : 'create'
     formError.value = ''
   }, 250)
-})
-
-function handleKeydown(event: KeyboardEvent) {
-  if (event.key === 'Escape' && isOpen.value) {
-    closeModal()
-  }
-}
-
-onMounted(() => {
-  window.addEventListener('keydown', handleKeydown)
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener('keydown', handleKeydown)
-  document.body.style.overflow = ''
 })
 
 function getStatusClass(status: TaskStatus) {
@@ -436,26 +402,5 @@ async function handleSubmit() {
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-}
-
-.task-modal-enter-active,
-.task-modal-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.task-modal-enter-active section,
-.task-modal-leave-active section {
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-
-.task-modal-enter-from,
-.task-modal-leave-to {
-  opacity: 0;
-}
-
-.task-modal-enter-from section,
-.task-modal-leave-to section {
-  opacity: 0;
-  transform: translateY(10px) scale(0.98);
 }
 </style>

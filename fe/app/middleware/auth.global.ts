@@ -11,10 +11,11 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   if (auth.isAuthenticated) {
+    const wasBooted = workspace.booted
     await workspace.boot()
 
     const acc = auth.currentAccount
-    if (acc) {
+    if (acc && !wasBooted) {
       workspace.setSessionContext(acc.user_id, acc.workspace_id)
     }
 

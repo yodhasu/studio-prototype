@@ -1,34 +1,5 @@
 <template>
-  <Teleport to="body">
-    <Transition name="member-modal">
-      <div
-        v-if="isOpen"
-        class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Project members"
-      >
-        <button
-          type="button"
-          class="absolute inset-0 cursor-default bg-bg/80 backdrop-blur-sm"
-          aria-label="Close members modal"
-          @click="isOpen = false"
-        />
-
-        <section class="relative z-[101] w-full max-w-2xl overflow-hidden bg-surface shadow-2xl sketch-border">
-          <header class="flex items-center justify-between border-b border-border/50 p-6">
-            <h3 class="text-base font-semibold leading-6 text-text">
-              Project Members
-            </h3>
-            <button
-              type="button"
-              class="btn btn-ghost btn-icon"
-              aria-label="Close members modal"
-              @click="isOpen = false"
-            >
-              x
-            </button>
-          </header>
+  <BaseModal v-model:open="isOpen" title="Project Members" max-width="2xl">
 
           <div class="flex justify-end border-b border-border/50 px-6 py-4">
             <button
@@ -65,7 +36,7 @@
                   {{ member.name }}
                 </p>
                 <p class="truncate text-xs text-muted">
-                  {{ member.title || 'Member' }}
+                  Member
                 </p>
               </div>
 
@@ -86,15 +57,13 @@
               No members assigned to this production yet.
             </div>
           </div>
-        </section>
-      </div>
-    </Transition>
-  </Teleport>
+  </BaseModal>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import { X } from 'lucide-vue-next'
+import BaseModal from './base/BaseModal.vue'
 import { useWorkspaceStore } from '~/stores/workspace'
 
 const isOpen = defineModel<boolean>('open', { default: false })
@@ -107,22 +76,21 @@ const workspace = useWorkspaceStore()
 
 const project = computed(() => workspace.projects.find(p => p.id === props.projectId))
 const projectMembers = computed(() => {
-  if (!project.value?.member_ids) return []
-  return workspace.members.filter(m => project.value?.member_ids?.includes(m.id))
+  if (!project.value) return []
+  return workspace.getProjectMembers(project.value.id)
 })
 
 function addRandomMember() {
   if (!project.value) return
-  const current = project.value.member_ids || []
-  const unassigned = workspace.members.find(m => !current.includes(m.id))
+  const currentIds = new Set(projectMembers.value.map(m => m.id))
+  const unassigned = workspace.members.find(m => !currentIds.has(m.id))
   if (!unassigned) return
-  workspace.setProjectMembers(project.value.id, [...current, unassigned.id])
+  workspace.addProjectMember(project.value.id, unassigned.id)
 }
 
 function removeMember(memberId: string) {
   if (!project.value) return
-  const current = project.value.member_ids || []
-  workspace.setProjectMembers(project.value.id, current.filter(id => id !== memberId))
+  workspace.removeProjectMember(project.value.id, memberId)
 }
 
 function getInitials(name: string) {
@@ -136,13 +104,5 @@ function getInitials(name: string) {
 </script>
 
 <style scoped>
-.member-modal-enter-active,
-.member-modal-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.member-modal-enter-from,
-.member-modal-leave-to {
-  opacity: 0;
-}
+/* Scoped styles omitted, handled by BaseModal */
 </style>

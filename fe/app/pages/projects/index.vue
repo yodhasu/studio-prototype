@@ -1,47 +1,27 @@
 <template>
   <div class="premium-scroll h-full overflow-y-auto p-8">
     <div class="mx-auto max-w-7xl space-y-8">
-      <header class="flex items-end justify-between">
-        <div>
-          <h1 class="font-display text-2xl font-bold tracking-tight text-text">
-            Production Hub
-          </h1>
-          <p class="mt-1 text-sm text-muted">
-            Manage all active studio productions.
-          </p>
-        </div>
-        <button
-          class="btn btn-primary"
-          @click="createProject = true"
-        >
-          <Plus class="h-4 w-4 mr-2" /> New Project
-        </button>
-      </header>
-
-      <div
-        v-if="createProject"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
-        role="dialog"
-        aria-modal="true"
+      <BaseSectionHeader
+        title="Production Hub"
+        description="Manage all active studio productions."
       >
-        <div class="w-full max-w-md rounded-2xl border border-border bg-surface p-5 shadow-2xl">
-          <div class="mb-4 flex items-center justify-between">
-            <h2 class="font-display text-lg font-bold text-text">
-              Create New Project
-            </h2>
-            <button
-              class="text-faint hover:text-text"
-              aria-label="Close create project modal"
-              @click="closeCreateModal"
-            >
-              <X class="h-4 w-4" />
-            </button>
-          </div>
+        <template #action>
+          <BaseButton variant="primary" @click="createProject = true">
+            <Plus class="h-4 w-4 mr-2" /> New Project
+          </BaseButton>
+        </template>
+      </BaseSectionHeader>
 
+      <BaseModal
+        v-model:open="createProject"
+        title="Create New Project"
+        max-width="md"
+      >
+        <div class="p-6">
           <label class="mb-2 block text-xs font-semibold uppercase tracking-wider text-faint">Project Name</label>
           <input
             v-model="newProjectName"
-            class="mb-4 w-full rounded-lg border border-border bg-surface-elevated px-3 py-2 text-sm text-text outline-none focus:border-brand"
+            class="input-base mb-4 sketch-border"
             placeholder="e.g. Campaign Revamp"
             @keydown.enter.prevent="submitCreateProject"
           >
@@ -55,27 +35,21 @@
 
           <p
             v-if="createError"
-            class="mb-3 text-xs text-red-400"
+            class="mb-3 text-xs text-red"
           >
             {{ createError }}
           </p>
 
-          <div class="flex justify-end gap-2">
-            <button
-              class="btn"
-              @click="closeCreateModal"
-            >
+          <div class="flex justify-end gap-2 mt-4">
+            <BaseButton variant="ghost" @click="closeCreateModal">
               Cancel
-            </button>
-            <button
-              class="btn btn-primary"
-              @click="submitCreateProject"
-            >
+            </BaseButton>
+            <BaseButton variant="primary" @click="submitCreateProject">
               Create Project
-            </button>
+            </BaseButton>
           </div>
         </div>
-      </div>
+      </BaseModal>
 
       <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         <ProjectCard
@@ -89,11 +63,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Plus, X } from 'lucide-vue-next'
+import { ref, onMounted } from 'vue'
+import { Plus } from 'lucide-vue-next'
+import { useRouter } from 'vue-router'
+import BaseSectionHeader from '~/components/base/BaseSectionHeader.vue'
+import BaseButton from '~/components/base/BaseButton.vue'
+import BaseModal from '~/components/base/BaseModal.vue'
+import ProjectCard from '~/components/ProjectCard.vue'
 import { useWorkspaceStore } from '~/stores/workspace'
 import { useWorkspaceBoot } from '~/composables/useWorkspaceBoot'
 
+const router = useRouter()
 const workspace = useWorkspaceStore()
 const { ensureSession } = useWorkspaceBoot()
 const createProject = ref(false)
@@ -124,7 +104,7 @@ async function submitCreateProject() {
 
   closeCreateModal()
   newProjectName.value = ''
-  await navigateTo(`/projects/${created.id}`)
+  await router.push(`/projects/${created.id}`)
 }
 
 onMounted(async () => {

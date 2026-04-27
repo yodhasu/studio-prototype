@@ -11,14 +11,13 @@
           </p>
         </div>
 
-        <NuxtLink
-          to="/projects"
-          class="btn btn-primary"
-        >Open Projects</NuxtLink>
+        <NuxtLink to="/projects">
+          <BaseButton variant="primary">Open Projects</BaseButton>
+        </NuxtLink>
       </header>
 
       <section class="grid grid-cols-1 gap-6 lg:grid-cols-5">
-        <article class="dashboard-panel">
+        <BaseCard>
           <p class="text-[10px] font-black uppercase tracking-[0.2em] text-faint">
             Projects
           </p>
@@ -28,9 +27,9 @@
           <p class="mt-2 text-xs text-muted">
             Active workspace directory.
           </p>
-        </article>
+        </BaseCard>
 
-        <article class="dashboard-panel">
+        <BaseCard>
           <p class="text-[10px] font-black uppercase tracking-[0.2em] text-faint">
             Open tasks
           </p>
@@ -40,9 +39,9 @@
           <p class="mt-2 text-xs text-muted">
             Not DONE.
           </p>
-        </article>
+        </BaseCard>
 
-        <article class="dashboard-panel">
+        <BaseCard>
           <p class="text-[10px] font-black uppercase tracking-[0.2em] text-faint">
             Overdue
           </p>
@@ -52,9 +51,9 @@
           <p class="mt-2 text-xs text-muted">
             Tasks past due date.
           </p>
-        </article>
+        </BaseCard>
 
-        <article class="dashboard-panel">
+        <BaseCard>
           <p class="text-[10px] font-black uppercase tracking-[0.2em] text-faint">
             Next 7 days
           </p>
@@ -64,9 +63,9 @@
           <p class="mt-2 text-xs text-muted">
             Tasks + milestones due soon.
           </p>
-        </article>
+        </BaseCard>
 
-        <article class="dashboard-panel">
+        <BaseCard>
           <p class="text-[10px] font-black uppercase tracking-[0.2em] text-faint">
             Assigned to me
           </p>
@@ -76,20 +75,19 @@
           <p class="mt-2 text-xs text-muted">
             Open tasks owned by current user.
           </p>
-        </article>
+        </BaseCard>
       </section>
 
       <div class="grid grid-cols-1 gap-6 xl:grid-cols-12">
-        <section class="dashboard-panel xl:col-span-7">
-          <div class="flex items-center justify-between">
-            <h2 class="font-display text-lg font-black text-text">
-              Upcoming
-            </h2>
-            <NuxtLink
-              to="/schedule"
-              class="text-xs font-black text-brand hover:underline"
-            >Open schedule</NuxtLink>
-          </div>
+        <BaseCard class="xl:col-span-7">
+          <BaseSectionHeader title="Upcoming">
+            <template #action>
+              <NuxtLink
+                to="/schedule"
+                class="text-xs font-black text-brand hover:underline"
+              >Open schedule</NuxtLink>
+            </template>
+          </BaseSectionHeader>
 
           <div class="mt-6 space-y-2">
             <NuxtLink
@@ -105,19 +103,16 @@
               <span class="text-[10px] font-mono text-faint">{{ item.due_date }}</span>
             </NuxtLink>
 
-            <p
+            <BaseEmptyState
               v-if="workspace.upcomingDeadlines.length === 0"
-              class="text-sm text-faint italic"
-            >
-              No upcoming deadlines.
-            </p>
+              title="No upcoming deadlines"
+              description="You have no tasks or milestones due in the next 7 days."
+            />
           </div>
-        </section>
+        </BaseCard>
 
-        <section class="dashboard-panel xl:col-span-5">
-          <h2 class="font-display text-lg font-black text-text">
-            Recent activity
-          </h2>
+        <BaseCard class="xl:col-span-5">
+          <BaseSectionHeader title="Recent activity" />
           <div class="mt-6 space-y-3">
             <div
               v-for="a in workspace.recentActivity.slice(0, 8)"
@@ -135,26 +130,24 @@
               </p>
             </div>
 
-            <p
+            <BaseEmptyState
               v-if="workspace.recentActivity.length === 0"
-              class="text-sm text-faint italic"
-            >
-              No activity yet.
-            </p>
+              title="No activity yet"
+              description="Actions in your workspace will appear here."
+            />
           </div>
-        </section>
+        </BaseCard>
       </div>
 
-      <section class="dashboard-panel">
-        <div class="flex items-center justify-between">
-          <h2 class="font-display text-lg font-black text-text">
-            Projects
-          </h2>
-          <NuxtLink
-            to="/projects"
-            class="text-xs font-black text-brand hover:underline"
-          >View all</NuxtLink>
-        </div>
+      <BaseCard>
+          <BaseSectionHeader title="Projects">
+            <template #action>
+              <NuxtLink
+                to="/projects"
+                class="text-xs font-black text-brand hover:underline"
+              >View all</NuxtLink>
+            </template>
+          </BaseSectionHeader>
 
         <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <ProjectCard
@@ -163,13 +156,18 @@
             :project="project"
           />
         </div>
-      </section>
+      </BaseCard>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
+import BaseCard from '~/components/base/BaseCard.vue'
+import BaseSectionHeader from '~/components/base/BaseSectionHeader.vue'
+import BaseEmptyState from '~/components/base/BaseEmptyState.vue'
+import BaseButton from '~/components/base/BaseButton.vue'
+import ProjectCard from '~/components/ProjectCard.vue'
 import { useWorkspaceStore } from '~/stores/workspace'
 import { useWorkspaceBoot } from '~/composables/useWorkspaceBoot'
 

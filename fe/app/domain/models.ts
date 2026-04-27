@@ -1,8 +1,6 @@
 export type ID = string
 
-export type WorkspaceKind = 'PERSONAL' | 'TEAM'
-
-export type AccountPlan = 'FREE' | 'PRO' | 'ENTERPRISE'
+export type AccountPlan = 'FREE' | 'PRO' | 'BUSINESS'
 
 export const WORKFLOW_STATUSES = ['PLANNING', 'ACTIVE', 'PAUSED', 'COMPLETED'] as const
 export type WorkflowStatus = typeof WORKFLOW_STATUSES[number]
@@ -14,11 +12,7 @@ export type TaskStatus = WorkflowStatus
 export type MilestoneStatus = 'OPEN' | 'DONE'
 export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH'
 
-// Placeholders (Phase 1)
-export type Role = {
-  id: ID
-  name: string
-}
+export type WorkspaceMemberRole = 'owner' | 'custom'
 
 export type ModuleAccess = {
   id: ID
@@ -32,31 +26,22 @@ export type User = {
   name: string
   email?: string
   avatar_url?: string
+  plan: AccountPlan
 }
 
 export type Workspace = {
   id: ID
-  kind: WorkspaceKind
   name: string
   owner_user_id: ID
-  team_id?: ID
-  plan: AccountPlan
   created_at: string
 }
 
-export type Team = {
+export type WorkspaceMember = {
   id: ID
   workspace_id: ID
-  name: string
-  created_at: string
-}
-
-export type TeamMember = {
-  id: ID
-  team_id: ID
   user_id: ID
-  role_id?: ID
-  title?: string
+  role: WorkspaceMemberRole
+  custom_role_label?: string  // e.g. "Lead Artist", "Coordinator", etc.
   created_at: string
 }
 
@@ -67,9 +52,16 @@ export type Project = {
   description?: string
   color_code?: string | null
   status: ProjectStatus
-  member_ids: ID[]
+  created_by: ID
   created_at: string
   updated_at: string
+}
+
+export type ProjectMember = {
+  id: ID
+  project_id: ID
+  user_id: ID
+  created_at: string
 }
 
 export type Milestone = {
@@ -120,7 +112,7 @@ export type NoteIdea = {
   updated_at: string
 }
 
-export type ActivityEntityType = 'WORKSPACE' | 'TEAM' | 'PROJECT' | 'MILESTONE' | 'TASK' | 'NOTE' | 'SCHEDULE'
+export type ActivityEntityType = 'WORKSPACE' | 'PROJECT' | 'MILESTONE' | 'TASK' | 'NOTE' | 'SCHEDULE' | 'MEMBER'
 export type ActivityEventType = 'CREATE' | 'UPDATE' | 'STATUS' | 'ASSIGN' | 'LINK'
 
 export type ActivityEvent = {

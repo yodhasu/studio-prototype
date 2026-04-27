@@ -1,39 +1,41 @@
 import { defineStore } from 'pinia'
 import { createMockSnapshot } from '~/domain/mock'
 import type {
+  AccountPlan,
   ActivityEvent,
   ID,
   Milestone,
   ModuleAccess,
   NoteIdea,
   Project,
+  ProjectMember,
   ProjectStatus,
   Task,
   TaskPriority,
   TaskStatus,
-  Team,
-  TeamMember,
   User,
   Workspace,
-  AccountPlan
+  WorkspaceMember,
+  WorkspaceMemberRole
 } from '~/domain/models'
 
 export type {
+  AccountPlan,
   ActivityEvent,
   ID,
   Milestone,
   ModuleAccess,
   NoteIdea,
   Project,
+  ProjectMember,
   ProjectStatus,
   Task,
   TaskPriority,
   TaskStatus,
-  Team,
-  TeamMember,
   User,
   Workspace,
-  AccountPlan
+  WorkspaceMember,
+  WorkspaceMemberRole
 }
 
 function uid(prefix: string) {
@@ -72,9 +74,8 @@ export const useWorkspaceStore = defineStore('workspace', {
     // domain
     workspaces: [] as Workspace[],
     users: [] as User[],
-    roles: [] as Array<{ id: ID, name: string }>,
-    teams: [] as Team[],
-    team_members: [] as TeamMember[],
+    workspace_members: [] as WorkspaceMember[],
+    project_members: [] as ProjectMember[],
     module_access: [] as ModuleAccess[],
 
     projects: [] as Project[],
@@ -95,21 +96,22 @@ export const useWorkspaceStore = defineStore('workspace', {
       return state.active_workspace_id ? state.workspaces.find(w => w.id === state.active_workspace_id) || null : null
     },
 
-    activeTeam(state): Team | null {
-      if (!state.active_workspace_id) return null
-      return state.teams.find(t => t.workspace_id === state.active_workspace_id) || null
+    // ── Workspace owner's plan ─────────────────────────
+    // Plan belongs to the workspace owner, not the workspace.
+    ownerPlan(): AccountPlan {
+      const ws = this.activeWorkspace
+      if (!ws) return 'FREE'
+      const owner = this.users.find(u => u.id === ws.owner_user_id)
+      return owner?.plan || 'FREE'
     },
 
-    activePlan(): AccountPlan {
-      return this.activeWorkspace?.plan || 'FREE'
-    },
-
+    // ── Member limits based on owner's plan ────────────
     memberLimit(): number | null {
-      switch (this.activePlan) {
-        case 'FREE': return 3
-        case 'PRO': return 10
-        case 'ENTERPRISE': return null
-        default: return 3
+      switch (this.ownerPlan) {
+        case 'FREE': return 1
+        case 'PRO': return 5
+        case 'BUSINESS': return null
+        default: return 1
       }
     },
 
@@ -123,34 +125,35 @@ export const useWorkspaceStore = defineStore('workspace', {
       return this.membersUsed < limit
     },
 
-    // Users in the active workspace/team (Phase 1: show all users for personal, team roster for team)
-    members(state): Array<User & { title?: string }> {
-      const ws = state.active_workspace_id
-      if (!ws) return []
+    // ── Workspace members ──────────────────────────────
+    // Uses workspace_members table directly.
+    members(state): Array<User & { role: WorkspaceMemberRole, custom_role_label?: string }> {
+      const wsId = state.active_workspace_id
+      if (!wsId) return []
 
-      const workspace = state.workspaces.find(w => w.id === ws)
-      if (!workspace) return []
-
-      if (workspace.kind === 'PERSONAL') {
-        return state.users.map((u) => {
-          const title = u.id === state.active_user_id ? 'Owner' : undefined
-          return title ? { ...u, title } : { ...u }
-        })
-      }
-
-      const teamId = workspace.team_id
-      if (!teamId) return []
-
-      return state.team_members
-        .filter(tm => tm.team_id === teamId)
-        .flatMap((tm) => {
-          const u = state.users.find(x => x.id === tm.user_id)
+      return state.workspace_members
+        .filter(wm => wm.workspace_id === wsId)
+        .flatMap((wm) => {
+          const u = state.users.find(x => x.id === wm.user_id)
           if (!u) return []
-          const title = tm.title
-          return [title ? { ...u, title } : { ...u }]
+          return [{ ...u, role: wm.role, custom_role_label: wm.custom_role_label }]
         })
     },
 
+    // ── Derived workspace label ────────────────────────
+    // "Solo workspace" when 1 member, "Team workspace" when > 1
+    workspaceLabel(): string {
+      return this.membersUsed > 1 ? 'Team workspace' : 'Solo workspace'
+    },
+
+    // ── Active workspace is owned by current user ──────
+    isWorkspaceOwner(state): boolean {
+      const ws = this.activeWorkspace
+      if (!ws) return false
+      return ws.owner_user_id === state.active_user_id
+    },
+
+    // ── Projects ───────────────────────────────────────
     activeProjects(state): Project[] {
       const wsId = state.active_workspace_id
       if (!wsId) return []
@@ -163,6 +166,7 @@ export const useWorkspaceStore = defineStore('workspace', {
       return this.projects.find(p => p.id === pid) || null
     },
 
+    // ── Tasks scoped to active workspace ───────────────
     activeTasks(): Task[] {
       const projectIds = new Set(this.activeProjects.map(p => p.id))
       return this.tasks.filter(t => projectIds.has(t.project_id))
@@ -241,9 +245,8 @@ export const useWorkspaceStore = defineStore('workspace', {
         const snap = createMockSnapshot(new Date())
         this.workspaces = snap.workspaces
         this.users = snap.users
-        this.roles = snap.roles
-        this.teams = snap.teams
-        this.team_members = snap.team_members
+        this.workspace_members = snap.workspace_members
+        this.project_members = snap.project_members
         this.module_access = snap.module_access
         this.projects = snap.projects
         this.milestones = snap.milestones
@@ -271,44 +274,44 @@ export const useWorkspaceStore = defineStore('workspace', {
         return
       }
 
+      // Pick workspace owned by user, or first workspace they are a member of
       const owned = this.workspaces.find(w => w.owner_user_id === userId)
       if (owned) {
         this.active_workspace_id = owned.id
         return
       }
 
-      const asMember = this.workspaces.find((w) => {
-        if (!w.team_id) return false
-        return this.team_members.some(tm => tm.team_id === w.team_id && tm.user_id === userId)
-      })
-
+      const memberWsIds = new Set(
+        this.workspace_members.filter(wm => wm.user_id === userId).map(wm => wm.workspace_id)
+      )
+      const asMember = this.workspaces.find(w => memberWsIds.has(w.id))
       this.active_workspace_id = asMember?.id || this.workspaces[0]?.id || null
     },
 
-    createWorkspace(payload: { name: string, kind: 'PERSONAL' | 'TEAM', plan?: AccountPlan }) {
+    // ── Workspace CRUD ─────────────────────────────────
+    createWorkspace(payload: { name: string }) {
       const name = payload.name.trim()
       if (!name) return null
 
       const id = uid('ws')
       const ws: Workspace = {
         id,
-        kind: payload.kind,
         name,
         owner_user_id: this.active_user_id,
-        plan: payload.plan || 'FREE',
         created_at: isoNow()
       }
 
-      if (payload.kind === 'TEAM') {
-        const teamId = uid('team')
-        ws.team_id = teamId
-        this.teams.unshift({ id: teamId, workspace_id: id, name: `${name} Team`, created_at: isoNow() })
-        for (const u of this.users) {
-          this.team_members.push({ id: uid('tm'), team_id: teamId, user_id: u.id, created_at: isoNow() })
-        }
-      }
-
       this.workspaces.unshift(ws)
+
+      // Creator is automatically owner
+      this.workspace_members.push({
+        id: uid('wm'),
+        workspace_id: id,
+        user_id: this.active_user_id,
+        role: 'owner',
+        created_at: isoNow()
+      })
+
       this.active_workspace_id = id
       this.currentProjectId = null
       this.logActivity({ type: 'CREATE', entity_type: 'WORKSPACE', entity_id: id, message: `Created workspace: ${name}` })
@@ -321,60 +324,61 @@ export const useWorkspaceStore = defineStore('workspace', {
       this.logActivity({ type: 'UPDATE', entity_type: 'WORKSPACE', entity_id: workspaceId, message: 'Switched workspace.' })
     },
 
-    inviteToActiveTeam(payload: { user_id: ID, title?: string }) {
+    // ── Workspace member management ────────────────────
+    inviteMember(payload: { user_id: ID, custom_role_label?: string }) {
       this.lastInviteError = ''
 
-      const ws = this.activeWorkspace
-      if (!ws || ws.kind !== 'TEAM' || !ws.team_id) return false
+      const wsId = this.active_workspace_id
+      if (!wsId) return false
 
       if (!this.canInviteMore) {
         const limit = this.memberLimit
         this.lastInviteError = limit === null
           ? 'Invite blocked.'
-          : `Member limit reached for ${this.activePlan} plan (${this.membersUsed}/${limit}).`
+          : `Member limit reached for ${this.ownerPlan} plan (${this.membersUsed}/${limit}).`
         return false
       }
 
-      const teamId = ws.team_id
-      const exists = this.team_members.some(tm => tm.team_id === teamId && tm.user_id === payload.user_id)
+      const exists = this.workspace_members.some(wm => wm.workspace_id === wsId && wm.user_id === payload.user_id)
       if (exists) return true
 
-      this.team_members.push({
-        id: uid('tm'),
-        team_id: teamId,
+      this.workspace_members.push({
+        id: uid('wm'),
+        workspace_id: wsId,
         user_id: payload.user_id,
-        title: payload.title,
+        role: 'custom',
+        custom_role_label: payload.custom_role_label || 'Member',
         created_at: isoNow()
       })
 
       const u = this.getUserById(payload.user_id)
       this.logActivity({
         type: 'ASSIGN',
-        entity_type: 'TEAM',
-        entity_id: teamId,
-        message: `Invited ${u?.name || 'member'} to team.`
+        entity_type: 'MEMBER',
+        entity_id: payload.user_id,
+        message: `Invited ${u?.name || 'member'} to workspace.`
       })
       return true
     },
 
-    removeFromActiveTeam(userId: ID) {
-      const ws = this.activeWorkspace
-      if (!ws || ws.kind !== 'TEAM' || !ws.team_id) return
+    removeMember(userId: ID) {
+      const wsId = this.active_workspace_id
+      if (!wsId) return
 
-      const teamId = ws.team_id
-      const idx = this.team_members.findIndex(tm => tm.team_id === teamId && tm.user_id === userId)
+      const idx = this.workspace_members.findIndex(wm => wm.workspace_id === wsId && wm.user_id === userId)
       if (idx === -1) return
 
       const u = this.getUserById(userId)
-      this.team_members.splice(idx, 1)
+      this.workspace_members.splice(idx, 1)
       this.logActivity({
         type: 'UPDATE',
-        entity_type: 'TEAM',
-        entity_id: teamId,
-        message: `Removed ${u?.name || 'member'} from team.`
+        entity_type: 'MEMBER',
+        entity_id: userId,
+        message: `Removed ${u?.name || 'member'} from workspace.`
       })
     },
 
+    // ── Project CRUD ───────────────────────────────────
     createProject(payload: { name: string, description?: string, color_code?: string }) {
       const wsId = this.active_workspace_id
       if (!wsId) return null
@@ -389,12 +393,21 @@ export const useWorkspaceStore = defineStore('workspace', {
         description: payload.description?.trim() || undefined,
         color_code: payload.color_code || '#6A5AF9',
         status: 'PLANNING',
-        member_ids: [this.active_user_id],
+        created_by: this.active_user_id,
         created_at: now,
         updated_at: now
       }
 
       this.projects.unshift(project)
+
+      // Creator automatically added to project_members
+      this.project_members.push({
+        id: uid('pm'),
+        project_id: project.id,
+        user_id: this.active_user_id,
+        created_at: now
+      })
+
       this.logActivity({ type: 'CREATE', entity_type: 'PROJECT', entity_id: project.id, project_id: project.id, message: `Created project: ${project.name}` })
       return project
     },
@@ -407,14 +420,30 @@ export const useWorkspaceStore = defineStore('workspace', {
       this.logActivity({ type: 'UPDATE', entity_type: 'PROJECT', entity_id: projectId, project_id: projectId, message: `Updated project: ${this.projects[idx]!.name}` })
     },
 
-    setProjectMembers(projectId: ID, memberIds: ID[]) {
-      const idx = this.projects.findIndex(p => p.id === projectId)
-      if (idx === -1) return
-      const prev = this.projects[idx]!
-      this.projects[idx] = { ...prev, member_ids: [...memberIds], updated_at: isoNow() }
+    addProjectMember(projectId: ID, userId: ID) {
+      const exists = this.project_members.some(pm => pm.project_id === projectId && pm.user_id === userId)
+      if (exists) return
+      this.project_members.push({
+        id: uid('pm'),
+        project_id: projectId,
+        user_id: userId,
+        created_at: isoNow()
+      })
       this.logActivity({ type: 'ASSIGN', entity_type: 'PROJECT', entity_id: projectId, project_id: projectId, message: 'Updated project members.' })
     },
 
+    removeProjectMember(projectId: ID, userId: ID) {
+      const idx = this.project_members.findIndex(pm => pm.project_id === projectId && pm.user_id === userId)
+      if (idx === -1) return
+      this.project_members.splice(idx, 1)
+    },
+
+    getProjectMembers(projectId: ID): User[] {
+      const memberIds = new Set(this.project_members.filter(pm => pm.project_id === projectId).map(pm => pm.user_id))
+      return this.users.filter(u => memberIds.has(u.id))
+    },
+
+    // ── Milestones ─────────────────────────────────────
     createMilestone(payload: { project_id: ID, title: string, due_date?: string }) {
       const now = isoNow()
       const milestone: Milestone = {
@@ -439,6 +468,7 @@ export const useWorkspaceStore = defineStore('workspace', {
       this.logActivity({ type: 'UPDATE', entity_type: 'MILESTONE', entity_id: milestoneId, project_id: prev.project_id, message: `Updated milestone: ${this.milestones[idx]!.title}` })
     },
 
+    // ── Tasks ──────────────────────────────────────────
     createTask(payload: {
       project_id: ID
       title: string
@@ -481,6 +511,7 @@ export const useWorkspaceStore = defineStore('workspace', {
       }
     },
 
+    // ── Notes ──────────────────────────────────────────
     createNote(payload: { title: string, body: string, project_id?: ID, task_id?: ID }) {
       const wsId = this.active_workspace_id
       if (!wsId) return null
@@ -509,6 +540,7 @@ export const useWorkspaceStore = defineStore('workspace', {
       this.logActivity({ type: 'UPDATE', entity_type: 'NOTE', entity_id: noteId, project_id: prev.project_id, message: `Updated note: ${this.notes[idx]!.title}` })
     },
 
+    // ── Activity logging ───────────────────────────────
     logActivity(evt: { type: ActivityEvent['type'], entity_type: ActivityEvent['entity_type'], entity_id: ID, project_id?: ID, message: string }) {
       const wsId = this.active_workspace_id
       if (!wsId) return
@@ -527,12 +559,17 @@ export const useWorkspaceStore = defineStore('workspace', {
       this.activities.unshift(a)
     },
 
+    // ── Lookups ────────────────────────────────────────
     getProjectById(id: ID) {
       return this.projects.find(p => p.id === id) || null
     },
 
     getUserById(id: ID) {
       return this.users.find(u => u.id === id) || null
+    },
+
+    getWorkspaceMember(wsId: ID, userId: ID): WorkspaceMember | null {
+      return this.workspace_members.find(wm => wm.workspace_id === wsId && wm.user_id === userId) || null
     }
   }
 })

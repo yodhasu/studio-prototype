@@ -21,6 +21,8 @@ export function useRouteTitle(opts: {
 
     if (path === '/teams') return 'Team'
 
+    if (path.startsWith('/settings')) return 'Settings'
+
     return 'Studio'
   })
 
@@ -38,6 +40,8 @@ export function useRouteTitle(opts: {
     if (path.startsWith('/workspace/')) return 'Creative workspace'
 
     if (path === '/teams') return 'Roster'
+
+    if (path.startsWith('/settings')) return 'Account'
 
     return null
   })

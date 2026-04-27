@@ -1,33 +1,26 @@
 <template>
   <div class="premium-scroll h-full overflow-y-auto p-8">
     <div class="mx-auto max-w-7xl space-y-8">
-      <header class="flex items-end justify-between">
-        <div>
-          <h1 class="font-display text-2xl font-bold tracking-tight text-text">
-            Team
-          </h1>
-          <p class="mt-1 text-sm text-muted">
-            Workspace roster, invitations, and access control.
-          </p>
-        </div>
-      </header>
+      <BaseSectionHeader
+        title="Team"
+        description="Workspace roster, invitations, and access control."
+      />
 
-      <section class="dashboard-panel">
+      <BaseCard>
         <div class="space-y-4">
           <div class="flex flex-wrap items-center gap-2">
-            <button
-              class="btn border-red/40"
+            <BaseButton
+              :variant="inviteButtonClass === 'text-faint opacity-50 cursor-not-allowed' ? 'secondary' : 'primary'"
               :class="inviteButtonClass"
-              type="button"
-              :disabled="!isTeamWorkspace"
+              :disabled="inviteButtonClass === 'text-faint opacity-50 cursor-not-allowed'"
               @click="openInvite"
             >
               Add Member
-            </button>
+            </BaseButton>
 
-            <p class="rounded-lg border border-border bg-panel/30 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-faint">
-              {{ workspace.activePlan }} • {{ memberLimitLabel }}
-            </p>
+            <BaseBadge variant="default" class="px-3 py-2">
+              {{ workspace.ownerPlan }} • {{ memberLimitLabel }}
+            </BaseBadge>
           </div>
 
           <div>
@@ -38,7 +31,7 @@
               {{ workspace.activeWorkspace?.name || 'None' }}
             </p>
             <p class="mt-1 text-xs text-muted">
-              {{ workspace.activeWorkspace?.kind === 'TEAM' ? 'Team workspace' : 'Personal workspace' }}
+              {{ workspace.workspaceLabel }}
             </p>
           </div>
         </div>
@@ -60,7 +53,7 @@
               type="button"
               class="absolute right-2 top-2 h-7 w-7 rounded-lg border border-border bg-surface/70 text-xs font-black text-red opacity-0 transition-opacity hover:bg-surface group-hover:opacity-100"
               aria-label="Remove member"
-              @click.stop="removeMember(m.id)"
+              @click.stop="handleRemoveMember(m.id)"
             >
               ×
             </button>
@@ -69,14 +62,14 @@
               {{ m.name }}
             </p>
             <p class="mt-1 text-[10px] font-black uppercase tracking-widest text-faint">
-              {{ m.title || (m.id === workspace.active_user_id ? 'Owner' : 'Member') }}
+              {{ m.role === 'owner' ? 'Owner' : (m.custom_role_label || 'Member') }}
             </p>
 
             <p
-              v-if="workspace.getUserById(m.id)?.email"
+              v-if="m.email"
               class="mt-2 text-xs text-muted"
             >
-              {{ workspace.getUserById(m.id)?.email }}
+              {{ m.email }}
             </p>
 
             <div class="mt-4 flex items-center justify-between text-[10px] text-muted">
@@ -85,28 +78,26 @@
             </div>
           </div>
 
-          <p
+          <BaseEmptyState
             v-if="workspace.members.length === 0"
-            class="text-sm italic text-faint"
-          >
-            No members in this workspace.
-          </p>
+            title="No members"
+            description="No members in this workspace."
+          />
         </div>
-      </section>
+      </BaseCard>
     </div>
 
     <!-- Invite modal -->
-    <div
-      v-if="inviteOpen"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
-      role="dialog"
-      aria-modal="true"
+    <BaseModal
+      v-model:open="inviteOpen"
+      title="Invite to workspace"
+      max-width="lg"
     >
-      <div class="w-full max-w-lg rounded-2xl border border-border bg-surface p-5 shadow-2xl">
-        <div class="mb-4 flex items-center justify-between gap-4">
+      <template #header>
+        <div class="flex items-center justify-between w-full p-6 border-b border-border/50">
           <div>
             <h2 class="font-display text-lg font-bold text-text">
-              Invite to team
+              Invite to workspace
             </h2>
             <p class="mt-1 text-xs text-muted">
               Search by username or email.
@@ -120,6 +111,9 @@
             ✕
           </button>
         </div>
+      </template>
+
+      <div class="p-6">
 
         <input
           v-model="inviteQuery"
@@ -128,7 +122,7 @@
         >
 
         <p class="mt-2 text-[10px] font-black uppercase tracking-widest text-faint">
-          {{ workspace.activePlan }} • {{ memberLimitLabel }}
+          {{ workspace.ownerPlan }} • {{ memberLimitLabel }}
         </p>
 
         <p
@@ -168,33 +162,28 @@
         </div>
 
         <div class="mt-5 flex justify-end">
-          <button
-            class="btn"
-            type="button"
-            @click="closeInvite"
-          >
+          <BaseButton @click="closeInvite">
             Close
-          </button>
+          </BaseButton>
         </div>
       </div>
-    </div>
+    </BaseModal>
 
     <!-- Member detail modal -->
-    <div
-      v-if="detailOpen && selectedUser"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
-      role="dialog"
-      aria-modal="true"
+    <BaseModal
+      v-model:open="detailOpen"
+      :title="selectedUser?.name || 'Member Detail'"
+      max-width="lg"
     >
-      <div class="w-full max-w-lg rounded-2xl border border-border bg-surface p-5 shadow-2xl">
-        <div class="mb-4 flex items-start justify-between gap-4">
+      <template #header>
+        <div class="flex items-start justify-between w-full p-6 border-b border-border/50">
           <div>
             <h2 class="font-display text-lg font-bold text-text">
-              {{ selectedUser.name }}
+              {{ selectedUser?.name }}
             </h2>
             <p class="mt-1 text-xs text-muted">
-              {{ selectedTitle }}
-              <span v-if="selectedUser.email"> • {{ selectedUser.email }}</span>
+              {{ selectedRoleLabel }}
+              <span v-if="selectedUser?.email"> • {{ selectedUser.email }}</span>
             </p>
           </div>
           <button
@@ -205,6 +194,9 @@
             ✕
           </button>
         </div>
+      </template>
+
+      <div class="p-6" v-if="selectedUser">
 
         <div class="dashboard-panel">
           <div class="flex items-center justify-between">
@@ -242,30 +234,33 @@
         </div>
 
         <div class="mt-5 flex justify-end gap-2">
-          <button
-            class="btn"
-            type="button"
-            @click="detailOpen = false"
-          >
+          <BaseButton @click="detailOpen = false">
             Close
-          </button>
+          </BaseButton>
 
-          <button
+          <BaseButton
             v-if="canRemove(selectedUser.id)"
-            class="btn btn-ghost border-red/40 text-red hover:bg-red/10"
-            type="button"
-            @click="removeMember(selectedUser.id); detailOpen = false"
+            variant="ghost"
+            class="border-red/40 text-red hover:bg-red/10"
+            @click="handleRemoveMember(selectedUser.id); detailOpen = false"
           >
             Remove
-          </button>
+          </BaseButton>
         </div>
       </div>
-    </div>
+    </BaseModal>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
+import BaseSectionHeader from '~/components/base/BaseSectionHeader.vue'
+import BaseCard from '~/components/base/BaseCard.vue'
+import BaseButton from '~/components/base/BaseButton.vue'
+import BaseBadge from '~/components/base/BaseBadge.vue'
+import BaseModal from '~/components/base/BaseModal.vue'
+import BaseEmptyState from '~/components/base/BaseEmptyState.vue'
 import { useWorkspaceStore } from '~/stores/workspace'
 import { useWorkspaceBoot } from '~/composables/useWorkspaceBoot'
 
@@ -280,7 +275,6 @@ const inviteQuery = ref('')
 const detailOpen = ref(false)
 const selectedUserId = ref<string | null>(null)
 
-const isTeamWorkspace = computed(() => workspace.activeWorkspace?.kind === 'TEAM')
 const inviteCapReached = computed(() => !workspace.canInviteMore)
 
 const inviteButtonClass = computed(() => {
@@ -293,14 +287,13 @@ const memberLimitLabel = computed(() => {
   return `${workspace.membersUsed}/${workspace.memberLimit} members`
 })
 
-const teamMemberIds = computed(() => new Set(workspace.members.map(m => m.id)))
+const workspaceMemberIds = computed(() => new Set(workspace.members.map(m => m.id)))
 
 const inviteResults = computed(() => {
   const q = inviteQuery.value.trim().toLowerCase()
-  if (!isTeamWorkspace.value) return []
 
   return workspace.users
-    .filter(u => !teamMemberIds.value.has(u.id))
+    .filter(u => !workspaceMemberIds.value.has(u.id))
     .filter((u) => {
       if (!q) return true
       return u.name.toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q)
@@ -313,11 +306,12 @@ const selectedUser = computed(() => {
   return workspace.getUserById(selectedUserId.value)
 })
 
-const selectedTitle = computed(() => {
+const selectedRoleLabel = computed(() => {
   const id = selectedUserId.value
   if (!id) return 'Member'
   const m = workspace.members.find(x => x.id === id)
-  return m?.title || (id === workspace.active_user_id ? 'Owner' : 'Member')
+  if (!m) return 'Member'
+  return m.role === 'owner' ? 'Owner' : (m.custom_role_label || 'Member')
 })
 
 const selectedTasks = computed(() => {
@@ -333,8 +327,13 @@ function openTasksFor(userId: string) {
 }
 
 function canRemove(userId: string) {
-  if (!isTeamWorkspace.value) return false
+  // Can't remove workspace owner, can't remove yourself
+  const ws = workspace.activeWorkspace
+  if (!ws) return false
+  if (userId === ws.owner_user_id) return false
   if (userId === workspace.active_user_id) return false
+  // Only workspace owner can remove members
+  if (!workspace.isWorkspaceOwner) return false
   return true
 }
 
@@ -354,16 +353,16 @@ function openInvite() {
 
   if (inviteCapReached.value) {
     if (workspace.memberLimit === null) return
-    workspace.lastInviteError = `Member limit reached for ${workspace.activePlan} plan (${workspace.membersUsed}/${workspace.memberLimit}).`
+    workspace.lastInviteError = `Member limit reached for ${workspace.ownerPlan} plan (${workspace.membersUsed}/${workspace.memberLimit}).`
   }
 }
 
 function invite(userId: string) {
-  workspace.inviteToActiveTeam({ user_id: userId })
+  workspace.inviteMember({ user_id: userId })
 }
 
-function removeMember(userId: string) {
-  workspace.removeFromActiveTeam(userId)
+function handleRemoveMember(userId: string) {
+  workspace.removeMember(userId)
   if (selectedUserId.value === userId) {
     selectedUserId.value = null
     detailOpen.value = false
